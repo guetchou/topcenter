@@ -15,6 +15,10 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          {/* Nouvelles routes à implémenter dans la prochaine itération */}
+          {/* <Route path="/actualites" element={<News />} /> */}
+          {/* <Route path="/actualites/:id" element={<NewsDetail />} /> */}
+          {/* <Route path="/admin/actualites" element={<NewsAdmin />} /> */}
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
