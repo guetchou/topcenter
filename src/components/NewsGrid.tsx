@@ -4,20 +4,27 @@ const NEWS_DATA = [
   {
     id: 1,
     title: "Top Center étend ses services en Afrique Centrale",
-    description: "Notre entreprise continue son expansion avec de nouveaux partenariats stratégiques dans la région...",
+    description: "Notre centre d'appels continue son expansion avec de nouveaux partenariats stratégiques dans la région...",
     date: "2024-02-20",
     category: "company" as const,
     imageUrl: "/news/expansion.jpg"
   },
   {
     id: 2,
-    title: "Innovations dans le secteur IT en 2024",
-    description: "Les dernières tendances technologiques qui transforment le paysage informatique en Afrique...",
+    title: "L'évolution des centres d'appels en 2024",
+    description: "Les dernières tendances en matière de service client et de centres d'appels omnicanaux...",
     date: "2024-02-18",
     category: "industry" as const,
-    imageUrl: "/news/tech-trends.jpg"
+    imageUrl: "/news/call-center.jpg"
   },
-  // Plus d'articles peuvent être ajoutés ici
+  {
+    id: 3,
+    title: "Nouveau partenariat stratégique",
+    description: "Top Center signe un partenariat majeur pour améliorer ses services de support client...",
+    date: "2024-02-15",
+    category: "company" as const,
+    imageUrl: "/news/partnership.jpg"
+  }
 ];
 
 export const NewsGrid = () => {

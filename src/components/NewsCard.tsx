@@ -25,7 +25,7 @@ export const NewsCard = ({ title, description, date, category, imageUrl }: NewsC
       <CardHeader>
         <div className="flex items-center justify-between mb-2">
           <Badge variant={category === "company" ? "default" : "secondary"}>
-            {category === "company" ? "Entreprise" : "Industrie"}
+            {category === "company" ? "Top Center" : "Industrie"}
           </Badge>
           <div className="flex items-center text-sm text-muted-foreground">
             <CalendarIcon className="w-4 h-4 mr-1" />
