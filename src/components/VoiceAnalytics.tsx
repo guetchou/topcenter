@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Waveform } from "lucide-react";
+import { Mic, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 export const VoiceAnalytics = () => {
@@ -28,7 +28,7 @@ export const VoiceAnalytics = () => {
           className="animate-pulse-glow"
         >
           {isRecording ? (
-            <Waveform className="w-4 h-4 mr-2 animate-pulse" />
+            <Activity className="w-4 h-4 mr-2 animate-pulse" />
           ) : (
             <Mic className="w-4 h-4 mr-2" />
           )}
