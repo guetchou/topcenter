@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Camera, Phone3D } from "lucide-react";
+import { Camera, Smartphone } from "lucide-react";
 
 export const ARServicePreview = () => {
   const [isActive, setIsActive] = useState(false);

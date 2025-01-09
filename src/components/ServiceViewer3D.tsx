@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Cube, Phone, Headphones, Code, Shield } from "lucide-react";
+import { Box, Phone, Headphones, Code, Shield } from "lucide-react";
 
 const services = [
   {
