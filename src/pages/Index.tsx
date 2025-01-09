@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { NewsGrid } from "@/components/NewsGrid";
+import { TestimonialSection } from "@/components/TestimonialSection";
 import { MoveRight, Headphones, Phone, MessageSquare, Globe, Shield, Zap } from "lucide-react";
 
 const Index = () => {
@@ -28,26 +29,26 @@ const Index = () => {
         <div className="absolute inset-0 opacity-10 bg-grid-white" />
       </section>
 
-      {/* Services Section */}
+      {/* Services Section avec les nouvelles couleurs */}
       <section className="py-20 bg-secondary/20">
         <div className="container">
           <h2 className="mb-12 text-3xl font-bold text-center">Nos Services Omnicanaux</h2>
           <div className="grid gap-8 md:grid-cols-3">
-            <div className="p-6 transition-all rounded-lg bg-white hover:shadow-lg">
+            <div className="p-6 transition-all bg-white rounded-lg hover:shadow-lg">
               <Headphones className="w-12 h-12 mb-4 text-primary" />
               <h3 className="mb-2 text-xl font-semibold">Centre d'Appels</h3>
               <p className="text-muted-foreground">
                 Service client professionnel 24/7 en plusieurs langues
               </p>
             </div>
-            <div className="p-6 transition-all rounded-lg bg-white hover:shadow-lg">
+            <div className="p-6 transition-all bg-white rounded-lg hover:shadow-lg">
               <MessageSquare className="w-12 h-12 mb-4 text-primary" />
               <h3 className="mb-2 text-xl font-semibold">Chat & Messagerie</h3>
               <p className="text-muted-foreground">
                 Support client via chat, email et réseaux sociaux
               </p>
             </div>
-            <div className="p-6 transition-all rounded-lg bg-white hover:shadow-lg">
+            <div className="p-6 transition-all bg-white rounded-lg hover:shadow-lg">
               <Globe className="w-12 h-12 mb-4 text-primary" />
               <h3 className="mb-2 text-xl font-semibold">Services IT</h3>
               <p className="text-muted-foreground">
@@ -58,7 +59,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Stats Section avec les nouvelles couleurs */}
       <section className="py-16 bg-gradient-to-r from-primary/5 to-primary/10">
         <div className="container">
           <div className="grid gap-8 text-center md:grid-cols-4">
@@ -82,7 +83,10 @@ const Index = () => {
         </div>
       </section>
 
-      {/* News Section */}
+      {/* Nouvelle section témoignages */}
+      <TestimonialSection />
+
+      {/* News Section avec les nouvelles couleurs */}
       <section className="py-20 bg-secondary/50">
         <div className="container">
           <div className="flex items-center justify-between mb-12">
@@ -95,7 +99,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section avec les nouvelles couleurs */}
       <section className="py-20 text-white bg-gradient-to-r from-[#403E43] to-[#1A1F2C]">
         <div className="container text-center">
           <h2 className="mb-6 text-3xl font-bold">Prêt à améliorer votre service client ?</h2>
