@@ -12,19 +12,22 @@ interface NewsCardProps {
 
 export const NewsCard = ({ title, description, date, category, imageUrl }: NewsCardProps) => {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg">
+    <Card className="overflow-hidden transition-all hover-lift">
       {imageUrl && (
         <div className="relative h-48 overflow-hidden">
           <img 
             src={imageUrl} 
             alt={title} 
-            className="object-cover w-full h-full transition-transform hover:scale-105"
+            className="object-cover w-full h-full transition-transform duration-300 hover:scale-110"
           />
         </div>
       )}
       <CardHeader>
         <div className="flex items-center justify-between mb-2">
-          <Badge variant={category === "company" ? "default" : "secondary"}>
+          <Badge 
+            variant={category === "company" ? "default" : "secondary"}
+            className="animate-fade-in"
+          >
             {category === "company" ? "Top Center" : "Industrie"}
           </Badge>
           <div className="flex items-center text-sm text-muted-foreground">
@@ -32,11 +35,16 @@ export const NewsCard = ({ title, description, date, category, imageUrl }: NewsC
             {date}
           </div>
         </div>
-        <CardTitle className="line-clamp-2">{title}</CardTitle>
+        <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">
+          {title}
+        </CardTitle>
         <CardDescription className="line-clamp-3">{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <button className="text-primary hover:underline">Lire la suite →</button>
+        <button className="text-primary hover:underline group">
+          Lire la suite 
+          <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+        </button>
       </CardContent>
     </Card>
   );

@@ -18,10 +18,10 @@ export const TestimonialCard = ({
   avatarUrl,
 }: TestimonialCardProps) => {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-lg">
+    <Card className="overflow-hidden transition-all hover-lift">
       <CardContent className="p-6">
         <div className="flex items-center gap-4 mb-4">
-          <Avatar className="w-12 h-12">
+          <Avatar className="w-12 h-12 ring-2 ring-primary/20">
             <img
               src={avatarUrl || "/placeholder.svg"}
               alt={name}
@@ -29,21 +29,23 @@ export const TestimonialCard = ({
             />
           </Avatar>
           <div>
-            <h4 className="font-semibold">{name}</h4>
+            <h4 className="font-semibold text-primary">{name}</h4>
             <p className="text-sm text-muted-foreground">{role}</p>
           </div>
         </div>
-        <div className="flex mb-4">
+        <div className="flex mb-4 animate-fade-in">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
               key={i}
               className={`w-4 h-4 ${
-                i < rating ? "text-accent fill-accent" : "text-muted"
+                i < rating ? "text-primary fill-primary" : "text-muted"
               }`}
             />
           ))}
         </div>
-        <p className="text-muted-foreground">{content}</p>
+        <p className="text-muted-foreground hover:text-foreground transition-colors">
+          {content}
+        </p>
       </CardContent>
     </Card>
   );

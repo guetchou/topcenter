@@ -12,19 +12,19 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 255 83% 75%;
+    --primary: 24 95% 53%;      /* Orange */
     --primary-foreground: 210 40% 98%;
-    --secondary: 267 24% 54%;
+    --secondary: 217 91% 60%;   /* Royal Blue */
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 24 95% 53%;
+    --accent: 142 71% 45%;      /* Green */
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 255 83% 75%;
+    --ring: 24 95% 53%;
     --radius: 0.5rem;
   }
 
@@ -35,19 +35,19 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 255 83% 75%;
+    --primary: 24 95% 53%;      /* Orange */
     --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 267 24% 54%;
+    --secondary: 217 91% 60%;   /* Royal Blue */
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 24 95% 53%;
+    --accent: 142 71% 45%;      /* Green */
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 255 83% 75%;
+    --ring: 24 95% 53%;
   }
 
   * {
@@ -71,6 +71,22 @@
   .animate-fade-in {
     animation: fade-in 0.5s ease-out;
   }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 2s infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s infinite;
+  }
+
+  .hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
 }
 
 @keyframes slide-up {
@@ -90,5 +106,25 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
   }
 }
