@@ -2,6 +2,14 @@ import { Button } from "@/components/ui/button";
 import { NewsGrid } from "@/components/NewsGrid";
 import { TestimonialSection } from "@/components/TestimonialSection";
 import { MoveRight, Headphones, Phone, MessageSquare, Globe, Shield, Zap, Sparkles } from "lucide-react";
+import { AIChatAssistant } from "@/components/AIChatAssistant";
+import { ServiceViewer3D } from "@/components/ServiceViewer3D";
+import { RealTimeStats } from "@/components/RealTimeStats";
+import { ARServicePreview } from "@/components/ARServicePreview";
+import { VoiceAnalytics } from "@/components/VoiceAnalytics";
+import { RealTimeTranslation } from "@/components/RealTimeTranslation";
+import { AIPrediction } from "@/components/AIPrediction";
+import { Footer } from "@/components/Footer";
 
 const Index = () => {
   return (
@@ -34,37 +42,42 @@ const Index = () => {
         <div className="absolute inset-0 opacity-10 bg-grid-white" />
       </section>
 
-      {/* Services Section avec animations */}
+      {/* Services 3D Section */}
       <section className="py-20 bg-gradient-to-b from-secondary/5 to-transparent">
         <div className="container">
-          <h2 className="mb-12 text-3xl font-bold text-center">Nos Services Omnicanaux</h2>
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="p-6 transition-all bg-white rounded-lg hover-lift group">
-              <Headphones className="w-12 h-12 mb-4 text-primary transition-transform group-hover:scale-110" />
-              <h3 className="mb-2 text-xl font-semibold">Centre d'Appels</h3>
-              <p className="text-muted-foreground">
-                Service client professionnel 24/7 en plusieurs langues
-              </p>
-            </div>
-            <div className="p-6 transition-all bg-white rounded-lg hover-lift group">
-              <MessageSquare className="w-12 h-12 mb-4 text-primary transition-transform group-hover:scale-110" />
-              <h3 className="mb-2 text-xl font-semibold">Chat & Messagerie</h3>
-              <p className="text-muted-foreground">
-                Support client via chat, email et réseaux sociaux
-              </p>
-            </div>
-            <div className="p-6 transition-all bg-white rounded-lg hover-lift group">
-              <Globe className="w-12 h-12 mb-4 text-primary transition-transform group-hover:scale-110" />
-              <h3 className="mb-2 text-xl font-semibold">Services IT</h3>
-              <p className="text-muted-foreground">
-                Solutions technologiques sur mesure
-              </p>
-            </div>
+          <h2 className="mb-12 text-3xl font-bold text-center">
+            Découvrez Nos Services en 3D
+          </h2>
+          <ServiceViewer3D />
+        </div>
+      </section>
+
+      {/* Real-time Analytics Section */}
+      <section className="py-20 bg-gradient-to-r from-primary/5 to-secondary/5">
+        <div className="container">
+          <h2 className="mb-12 text-3xl font-bold text-center">
+            Performance en Temps Réel
+          </h2>
+          <div className="grid gap-8 md:grid-cols-2">
+            <RealTimeStats />
+            <AIPrediction />
           </div>
         </div>
       </section>
 
-      {/* Stats Section avec animations */}
+      {/* Voice & Translation Section */}
+      <section className="py-20 bg-gradient-to-b from-secondary/5 to-transparent">
+        <div className="container">
+          <h2 className="mb-12 text-3xl font-bold text-center">
+            Technologies Intelligentes
+          </h2>
+          <div className="grid gap-8 md:grid-cols-2">
+            <VoiceAnalytics />
+            <RealTimeTranslation />
+          </div>
+        </div>
+      </section>
+
       <section className="py-16 bg-gradient-to-r from-primary/5 to-secondary/5">
         <div className="container">
           <div className="grid gap-8 text-center md:grid-cols-4">
@@ -88,10 +101,8 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Section témoignages */}
       <TestimonialSection />
 
-      {/* News Section avec animations */}
       <section className="py-20 bg-gradient-to-b from-secondary/5 to-transparent">
         <div className="container">
           <div className="flex items-center justify-between mb-12">
@@ -105,7 +116,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* CTA Section avec animations */}
       <section className="py-20 text-white bg-gradient-to-r from-[#403E43] to-[#1A1F2C]">
         <div className="container text-center">
           <div className="inline-block mb-6 animate-bounce-subtle">
@@ -121,6 +131,13 @@ const Index = () => {
           </Button>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
+
+      {/* Floating Components */}
+      <AIChatAssistant />
+      <ARServicePreview />
     </div>
   );
 };
