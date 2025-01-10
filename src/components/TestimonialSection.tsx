@@ -6,21 +6,21 @@ const TESTIMONIALS = [
     role: "Directeur Commercial",
     content: "Un service client exceptionnel qui a transformé notre relation avec nos clients.",
     rating: 5,
-    avatarUrl: "/testimonials/avatar1.jpg"
+    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e"
   },
   {
     name: "Marie Claire",
     role: "Responsable Marketing",
     content: "L'équipe de Top Center a su s'adapter parfaitement à nos besoins spécifiques.",
     rating: 5,
-    avatarUrl: "/testimonials/avatar2.jpg"
+    avatarUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80"
   },
   {
     name: "Paul Martin",
     role: "CEO",
     content: "Une expertise technique et une qualité de service remarquables.",
     rating: 4,
-    avatarUrl: "/testimonials/avatar3.jpg"
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e"
   }
 ];
 

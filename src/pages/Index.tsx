@@ -33,7 +33,7 @@ const Index = () => {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <img 
-              src="https://images.unsplash.com/photo-1501854140801-50d01698950b" 
+              src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81" 
               alt="Top Center Logo" 
               className="w-12 h-12 rounded-full object-cover"
             />
@@ -93,7 +93,14 @@ const Index = () => {
             </div>
           </div>
         </div>
-        <div className="absolute inset-0 opacity-10 bg-grid-white" />
+        <div 
+          className="absolute inset-0 opacity-10"
+          style={{
+            backgroundImage: `url(https://images.unsplash.com/photo-1469474968028-56623f02e42e)`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        />
       </section>
 
       {/* Services Section */}
