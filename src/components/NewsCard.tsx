@@ -1,8 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface NewsCardProps {
+  id: number;
   title: string;
   description: string;
   date: string;
@@ -10,9 +12,11 @@ interface NewsCardProps {
   imageUrl?: string;
 }
 
-export const NewsCard = ({ title, description, date, category, imageUrl }: NewsCardProps) => {
+export const NewsCard = ({ id, title, description, date, category, imageUrl }: NewsCardProps) => {
+  const navigate = useNavigate();
+
   return (
-    <Card className="overflow-hidden transition-all hover-lift">
+    <Card className="overflow-hidden transition-all hover-lift cursor-pointer" onClick={() => navigate(`/actualites/${id}`)}>
       {imageUrl && (
         <div className="relative h-48 overflow-hidden">
           <img 
