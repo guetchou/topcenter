@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/components/ui/use-toast";
-import { MessageSquare, X, Send, Download, Smile, Loader2 } from "lucide-react";
+import { MessageSquare, X, Download, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ChatMessage } from "./ChatMessage";
+import { ChatToolbar } from "./ChatToolbar";
 
 interface Message {
   id: string;
@@ -82,7 +83,6 @@ export const LiveChat = () => {
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
 
-    // Add user message
     addMessage({
       id: Date.now().toString(),
       content: newMessage,
@@ -93,7 +93,6 @@ export const LiveChat = () => {
     setNewMessage("");
     setIsTyping(true);
 
-    // Simulate agent typing and response
     setTimeout(() => {
       setIsTyping(false);
       addMessage({
@@ -103,6 +102,20 @@ export const LiveChat = () => {
         timestamp: new Date(),
       });
     }, 2000);
+  };
+
+  const handleAttachFile = () => {
+    toast({
+      title: "Pièce jointe",
+      description: "La fonctionnalité d'attachement de fichiers sera bientôt disponible.",
+    });
+  };
+
+  const handleVoiceMessage = () => {
+    toast({
+      title: "Message vocal",
+      description: "La fonctionnalité de messages vocaux sera bientôt disponible.",
+    });
   };
 
   const getAutoResponse = (message: string): string => {
@@ -145,7 +158,6 @@ export const LiveChat = () => {
         </Button>
       ) : (
         <div className="w-96 h-[32rem] bg-white rounded-lg shadow-xl border animate-fade-in flex flex-col">
-          {/* Header */}
           <div className="p-4 border-b flex justify-between items-center bg-primary text-primary-foreground rounded-t-lg">
             <div>
               <h3 className="font-semibold">Chat en direct</h3>
@@ -170,29 +182,15 @@ export const LiveChat = () => {
             </Button>
           </div>
 
-          {/* Messages */}
           <ScrollArea className="flex-1 p-4" ref={scrollRef}>
             <div className="space-y-4">
               {messages.map((message) => (
-                <div
+                <ChatMessage
                   key={message.id}
-                  className={`flex ${
-                    message.sender === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.sender === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    <p>{message.content}</p>
-                    <span className="text-xs opacity-70 mt-1 block">
-                      {format(message.timestamp, 'HH:mm', { locale: fr })}
-                    </span>
-                  </div>
-                </div>
+                  content={message.content}
+                  sender={message.sender}
+                  timestamp={message.timestamp}
+                />
               ))}
               {isTyping && (
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -203,35 +201,25 @@ export const LiveChat = () => {
             </div>
           </ScrollArea>
 
-          {/* Input */}
-          <div className="p-4 border-t">
-            <div className="flex gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Écrivez votre message..."
-                className="flex-1"
-              />
-              <Button size="icon" onClick={() => {}}>
-                <Smile className="w-4 h-4" />
-              </Button>
-              <Button size="icon" onClick={handleSendMessage}>
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
-            {messages.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={downloadHistory}
-                className="mt-2 w-full text-xs"
-              >
-                <Download className="w-3 h-3 mr-1" />
-                Télécharger l'historique
-              </Button>
-            )}
-          </div>
+          <ChatToolbar
+            newMessage={newMessage}
+            setNewMessage={setNewMessage}
+            handleSendMessage={handleSendMessage}
+            handleAttachFile={handleAttachFile}
+            handleVoiceMessage={handleVoiceMessage}
+          />
+
+          {messages.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={downloadHistory}
+              className="mx-4 mb-2 text-xs"
+            >
+              <Download className="w-3 h-3 mr-1" />
+              Télécharger l'historique
+            </Button>
+          )}
         </div>
       )}
     </div>
