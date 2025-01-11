@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import {
 import { fr } from 'date-fns/locale';
 import { AppointmentType } from "@/types/appointment";
 import { useToast } from "@/components/ui/use-toast";
+import { calculateAvailableSlots, suggestOptimalSlot } from "@/utils/appointmentUtils";
 
 export const AppointmentForm = ({ onSubmit, onCancel }: {
   onSubmit: (data: any) => void;
@@ -27,6 +28,27 @@ export const AppointmentForm = ({ onSubmit, onCancel }: {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
+  const [preferences, setPreferences] = useState({ morning: false, afternoon: false });
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (date) {
+      // Simuler des créneaux déjà réservés
+      const bookedSlots = ["10:00", "14:00", "16:00"];
+      const slots = calculateAvailableSlots(date, bookedSlots);
+      setAvailableSlots(slots);
+
+      // Suggérer un créneau optimal
+      const suggestedSlot = suggestOptimalSlot(preferences, slots);
+      if (suggestedSlot && !time) {
+        setTime(suggestedSlot);
+        toast({
+          title: "Créneau suggéré",
+          description: `Nous vous suggérons le créneau de ${suggestedSlot}`,
+        });
+      }
+    }
+  }, [date, preferences]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +70,7 @@ export const AppointmentForm = ({ onSubmit, onCancel }: {
       email,
       phone,
       message,
+      preferences,
     });
   };
 
@@ -70,6 +93,26 @@ export const AppointmentForm = ({ onSubmit, onCancel }: {
         </div>
 
         <div>
+          <Label>Préférences horaires</Label>
+          <div className="flex gap-4 mt-2">
+            <Button
+              type="button"
+              variant={preferences.morning ? "default" : "outline"}
+              onClick={() => setPreferences(prev => ({ ...prev, morning: !prev.morning }))}
+            >
+              Matin
+            </Button>
+            <Button
+              type="button"
+              variant={preferences.afternoon ? "default" : "outline"}
+              onClick={() => setPreferences(prev => ({ ...prev, afternoon: !prev.afternoon }))}
+            >
+              Après-midi
+            </Button>
+          </div>
+        </div>
+
+        <div>
           <Label>Date</Label>
           <Calendar
             mode="single"
@@ -88,9 +131,9 @@ export const AppointmentForm = ({ onSubmit, onCancel }: {
               <SelectValue placeholder="Choisissez une heure" />
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 9 }, (_, i) => i + 9).map((hour) => (
-                <SelectItem key={hour} value={`${hour}:00`}>
-                  {`${hour}:00`}
+              {availableSlots.map((slot) => (
+                <SelectItem key={slot} value={slot}>
+                  {slot}
                 </SelectItem>
               ))}
             </SelectContent>
