@@ -7,6 +7,13 @@ import Index from "./pages/Index";
 import News from "./pages/News";
 import NewsDetail from "./pages/NewsDetail";
 import NewsAdmin from "./pages/NewsAdmin";
+import Analytics from "./pages/Analytics";
+import AgentDashboard from "./pages/AgentDashboard";
+import ClientPortal from "./pages/ClientPortal";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import Training from "./pages/Training";
+import Support from "./pages/Support";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +28,13 @@ const App = () => (
           <Route path="/actualites" element={<News />} />
           <Route path="/actualites/:id" element={<NewsDetail />} />
           <Route path="/admin/actualites" element={<NewsAdmin />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/agent-dashboard" element={<AgentDashboard />} />
+          <Route path="/client-portal" element={<ClientPortal />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/training" element={<Training />} />
+          <Route path="/support" element={<Support />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
