@@ -2,40 +2,55 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { AppointmentForm } from "./AppointmentForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export const AppointmentScheduler = () => {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSchedule = () => {
-    toast({
-      title: "Demande envoyée !",
-      description: "Nous vous contacterons rapidement pour confirmer le rendez-vous.",
-    });
-    setIsOpen(false);
+  const handleSchedule = (data: any) => {
+    console.log("Nouveau rendez-vous:", data);
+    
+    // Simuler l'envoi à une API
+    setTimeout(() => {
+      toast({
+        title: "Rendez-vous confirmé !",
+        description: "Nous vous avons envoyé un email de confirmation.",
+      });
+      setIsOpen(false);
+    }, 1000);
   };
 
   return (
-    <div className="fixed bottom-24 right-4 z-40">
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="shadow-lg hover-lift"
-      >
-        <Calendar className="w-4 h-4 mr-2" />
-        Prendre RDV
-      </Button>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button className="fixed bottom-24 right-4 z-40 shadow-lg hover-lift">
+          <Calendar className="w-4 h-4 mr-2" />
+          Prendre RDV
+        </Button>
+      </DialogTrigger>
+      
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Prendre rendez-vous</DialogTitle>
+          <DialogDescription>
+            Choisissez une date et une heure qui vous conviennent.
+          </DialogDescription>
+        </DialogHeader>
 
-      {isOpen && (
-        <div className="absolute bottom-full right-0 mb-2 w-80 p-4 bg-white rounded-lg shadow-xl border animate-fade-in">
-          <h3 className="font-semibold mb-4">Prendre rendez-vous</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Choisissez une date et nous vous recontacterons pour confirmer.
-          </p>
-          <Button onClick={handleSchedule} className="w-full">
-            Demander un rendez-vous
-          </Button>
-        </div>
-      )}
-    </div>
+        <AppointmentForm 
+          onSubmit={handleSchedule}
+          onCancel={() => setIsOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 };
