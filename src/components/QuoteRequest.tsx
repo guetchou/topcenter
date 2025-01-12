@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Send, Loader2 } from "lucide-react";
+import { FileText, Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export const QuoteRequest = () => {
@@ -11,41 +11,25 @@ export const QuoteRequest = () => {
     email: "",
     phone: "",
     company: "",
+    service: "",
     message: "",
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      // Simulation d'envoi (à remplacer par l'appel API réel)
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Demande envoyée !",
-        description: "Nous vous contacterons dans les plus brefs délais.",
-      });
-
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        company: "",
-        message: "",
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'envoi du formulaire:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi du formulaire.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    toast({
+      title: "Demande envoyée !",
+      description: "Nous vous contacterons dans les plus brefs délais.",
+    });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      company: "",
+      service: "",
+      message: "",
+    });
   };
 
   return (
@@ -62,7 +46,6 @@ export const QuoteRequest = () => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
-            disabled={isSubmitting}
           />
           <Input
             type="email"
@@ -70,7 +53,6 @@ export const QuoteRequest = () => {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
-            disabled={isSubmitting}
           />
           <Input
             type="tel"
@@ -78,14 +60,26 @@ export const QuoteRequest = () => {
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             required
-            disabled={isSubmitting}
           />
           <Input
             placeholder="Entreprise"
             value={formData.company}
             onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            disabled={isSubmitting}
           />
+          <select
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            value={formData.service}
+            onChange={(e) => setFormData({ ...formData, service: e.target.value })}
+            required
+          >
+            <option value="">Sélectionnez un service</option>
+            <option value="call-center">Call Center</option>
+            <option value="vente-en-ligne">Vente en ligne</option>
+            <option value="standard">Standard téléphonique</option>
+            <option value="formation">Formation et coaching</option>
+            <option value="technique">Services techniques</option>
+            <option value="entreprise">Solutions entreprises</option>
+          </select>
         </div>
         <Textarea
           placeholder="Décrivez votre projet..."
@@ -93,24 +87,10 @@ export const QuoteRequest = () => {
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           required
           className="h-32"
-          disabled={isSubmitting}
         />
-        <Button 
-          type="submit" 
-          className="w-full"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Envoi en cours...
-            </>
-          ) : (
-            <>
-              <Send className="w-4 h-4 mr-2" />
-              Envoyer la demande
-            </>
-          )}
+        <Button type="submit" className="w-full">
+          <Send className="w-4 h-4 mr-2" />
+          Envoyer la demande
         </Button>
       </form>
     </div>

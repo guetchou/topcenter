@@ -4,19 +4,16 @@ import { TestimonialSection } from "@/components/TestimonialSection";
 import { Building2, Mail, FileText, Phone, MoveRight } from "lucide-react";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
+import { AboutSection } from "@/components/sections/AboutSection";
 import { ContactSection } from "@/components/sections/ContactSection";
 import { CallToActionSection } from "@/components/sections/CallToActionSection";
-import { NewsSearch } from "@/components/NewsSearch";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { ServiceViewer3D } from "@/components/ServiceViewer3D";
 import { QuoteRequest } from "@/components/QuoteRequest";
 import { Footer } from "@/components/Footer";
+import { AIAssistant } from "@/components/AIAssistant";
 
 const Index = () => {
-  const handleNewsSearch = (query: string) => {
-    console.log("Searching news:", query);
-  };
-
   return (
     <div className="min-h-screen">
       {/* Header/Navigation */}
@@ -24,7 +21,7 @@ const Index = () => {
         <div className="container flex items-center justify-between h-20">
           <div className="flex items-center gap-2">
             <img 
-              src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81" 
+              src="/logo.png"
               alt="Top Center Logo" 
               className="w-12 h-12 rounded-full object-cover"
             />
@@ -34,22 +31,24 @@ const Index = () => {
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#services" className="flex items-center gap-2 hover:text-primary transition-colors">
-              <Building2 className="w-4 h-4" />
-              Nos Services
-            </a>
-            <a href="#contact" className="flex items-center gap-2 hover:text-primary transition-colors">
-              <Mail className="w-4 h-4" />
-              Contactez-nous
-            </a>
+            <a href="#about" className="hover:text-primary transition-colors">À propos</a>
+            <a href="#services" className="hover:text-primary transition-colors">Services</a>
+            <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
           </nav>
 
           <div className="flex items-center gap-4">
-            <Button variant="outline" className="hidden md:flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              className="hidden md:flex items-center gap-2"
+              onClick={() => window.location.href = "tel:+24223456789"}
+            >
               <Phone className="w-4 h-4" />
               Appelez
             </Button>
-            <Button className="flex items-center gap-2">
+            <Button 
+              className="flex items-center gap-2"
+              onClick={() => document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' })}
+            >
               <FileText className="w-4 h-4" />
               Demandez devis
             </Button>
@@ -59,11 +58,11 @@ const Index = () => {
 
       <main>
         <HeroSection />
+        <AboutSection />
         <ServicesSection />
         <ServiceViewer3D />
         <CallToActionSection />
 
-        {/* Section Devis */}
         <section id="devis" className="py-20 bg-gradient-to-b from-secondary/5 to-transparent">
           <div className="container">
             <div className="text-center mb-12">
@@ -76,29 +75,16 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Actualités Section */}
-        <section className="py-20 bg-gradient-to-b from-secondary/5 to-transparent">
-          <div className="container">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-bold">Actualités</h2>
-              <Button variant="outline" className="group hover-lift">
-                Toutes les actualités 
-                <MoveRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </div>
-            <NewsSearch onSearch={handleNewsSearch} />
-            <NewsGrid />
-            <div className="mt-12">
-              <NewsletterSignup />
-            </div>
-          </div>
-        </section>
-
-        <ContactSection />
         <TestimonialSection />
+        <ContactSection />
       </main>
 
       <Footer />
+      
+      {/* Assistant IA flottant */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <AIAssistant />
+      </div>
     </div>
   );
 };
