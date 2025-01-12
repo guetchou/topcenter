@@ -14,6 +14,9 @@ import Reports from "./pages/Reports";
 import Settings from "./pages/Settings";
 import Training from "./pages/Training";
 import Support from "./pages/Support";
+import CallCenter from "./pages/services/CallCenter";
+import BlogIndex from "./pages/blog/Index";
+import Recruitment from "./pages/recruitment/Index";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +38,9 @@ const App = () => (
           <Route path="/settings" element={<Settings />} />
           <Route path="/training" element={<Training />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/services/call-center" element={<CallCenter />} />
+          <Route path="/blog" element={<BlogIndex />} />
+          <Route path="/recrutement" element={<Recruitment />} />
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
