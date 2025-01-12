@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FileText, Send } from "lucide-react";
+import { FileText, Send, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export const QuoteRequest = () => {
@@ -13,21 +13,39 @@ export const QuoteRequest = () => {
     company: "",
     message: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Demande envoyée !",
-      description: "Nous vous contacterons dans les plus brefs délais.",
-    });
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      company: "",
-      message: "",
-    });
+    setIsSubmitting(true);
+
+    try {
+      // Simulation d'envoi (à remplacer par l'appel API réel)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast({
+        title: "Demande envoyée !",
+        description: "Nous vous contacterons dans les plus brefs délais.",
+      });
+
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        company: "",
+        message: "",
+      });
+    } catch (error) {
+      console.error("Erreur lors de l'envoi du formulaire:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi du formulaire.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -44,6 +62,7 @@ export const QuoteRequest = () => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             required
+            disabled={isSubmitting}
           />
           <Input
             type="email"
@@ -51,6 +70,7 @@ export const QuoteRequest = () => {
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
+            disabled={isSubmitting}
           />
           <Input
             type="tel"
@@ -58,11 +78,13 @@ export const QuoteRequest = () => {
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
             required
+            disabled={isSubmitting}
           />
           <Input
             placeholder="Entreprise"
             value={formData.company}
             onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+            disabled={isSubmitting}
           />
         </div>
         <Textarea
@@ -71,10 +93,24 @@ export const QuoteRequest = () => {
           onChange={(e) => setFormData({ ...formData, message: e.target.value })}
           required
           className="h-32"
+          disabled={isSubmitting}
         />
-        <Button type="submit" className="w-full">
-          <Send className="w-4 h-4 mr-2" />
-          Envoyer la demande
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Envoi en cours...
+            </>
+          ) : (
+            <>
+              <Send className="w-4 h-4 mr-2" />
+              Envoyer la demande
+            </>
+          )}
         </Button>
       </form>
     </div>

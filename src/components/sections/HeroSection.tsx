@@ -1,7 +1,28 @@
 import { Button } from "@/components/ui/button";
-import { MoveRight, Phone } from "lucide-react";
+import { MoveRight, Phone, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export const HeroSection = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleCallNow = () => {
+    window.location.href = "tel:+24223456789";
+    toast({
+      title: "Appel en cours",
+      description: "Vous allez être mis en relation avec notre équipe.",
+    });
+  };
+
+  const handleQuoteRequest = () => {
+    navigate("/devis");
+    toast({
+      title: "Demande de devis",
+      description: "Remplissez le formulaire pour obtenir un devis personnalisé.",
+    });
+  };
+
   return (
     <section className="relative pt-32 pb-20 overflow-hidden bg-gradient-to-r from-[#403E43] to-[#1A1F2C]">
       <div className="container relative z-10">
@@ -13,13 +34,23 @@ export const HeroSection = () => {
             Une expertise complète en gestion de la relation client
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button size="lg" variant="secondary" className="animate-fade-in hover-lift group">
-              Nos services 
-              <MoveRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            <Button 
+              size="lg" 
+              variant="secondary" 
+              className="animate-fade-in hover-lift group"
+              onClick={handleCallNow}
+            >
+              Appelez maintenant
+              <Phone className="w-4 h-4 ml-2" />
             </Button>
-            <Button size="lg" variant="outline" className="animate-fade-in text-white hover:text-primary hover-lift">
-              Contactez-nous 
-              <Phone className="w-4 h-4" />
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="animate-fade-in text-white hover:text-primary hover-lift"
+              onClick={handleQuoteRequest}
+            >
+              Demandez un devis
+              <FileText className="w-4 h-4 ml-2" />
             </Button>
           </div>
         </div>
