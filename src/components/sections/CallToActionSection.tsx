@@ -1,41 +1,33 @@
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, Clock } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export const CallToActionSection = () => {
   return (
-    <section className="py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
+    <section className="py-20 bg-primary text-primary-foreground">
       <div className="container">
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="p-6 bg-white rounded-lg shadow-lg hover-lift">
-            <Phone className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Appelez-nous</h3>
-            <p className="text-muted-foreground mb-4">
-              Notre équipe est disponible 24/7 pour répondre à vos questions
-            </p>
-            <Button variant="secondary" className="w-full">
-              +242 06 000 0000
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            Prêt à améliorer votre service client ?
+          </h2>
+          <p className="mb-8 text-primary-foreground/90">
+            Rejoignez les entreprises qui font confiance à Top Center pour leur relation client
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button 
+              variant="secondary" 
+              size="lg"
+              onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              Contactez-nous
+              <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-lg hover-lift">
-            <Mail className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Écrivez-nous</h3>
-            <p className="text-muted-foreground mb-4">
-              Envoyez-nous un email, nous vous répondrons rapidement
-            </p>
-            <Button variant="secondary" className="w-full">
-              contact@topcenter.cg
-            </Button>
-          </div>
-
-          <div className="p-6 bg-white rounded-lg shadow-lg hover-lift">
-            <Clock className="w-12 h-12 text-primary mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Horaires</h3>
-            <p className="text-muted-foreground mb-4">
-              Service disponible 24h/24 et 7j/7
-            </p>
-            <Button variant="secondary" className="w-full">
-              24/7
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' })}
+              className="bg-transparent text-primary-foreground border-primary-foreground hover:bg-primary-foreground hover:text-primary"
+            >
+              Demander un devis
             </Button>
           </div>
         </div>

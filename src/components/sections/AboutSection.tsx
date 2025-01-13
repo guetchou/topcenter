@@ -1,40 +1,57 @@
-import { Building2, Target, Award } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Building2, Users, Award, TrendingUp } from "lucide-react";
 
 export const AboutSection = () => {
+  const stats = [
+    {
+      icon: Building2,
+      title: "Années d'expérience",
+      value: "10+",
+      description: "Dans la relation client"
+    },
+    {
+      icon: Users,
+      title: "Clients satisfaits",
+      value: "500+",
+      description: "À travers l'Afrique"
+    },
+    {
+      icon: Award,
+      title: "Taux de satisfaction",
+      value: "98%",
+      description: "Clients satisfaits"
+    },
+    {
+      icon: TrendingUp,
+      title: "Appels traités",
+      value: "1M+",
+      description: "Par an"
+    }
+  ];
+
   return (
-    <section id="about" className="py-20 bg-gradient-to-r from-primary/5 to-secondary/5">
+    <section id="about" className="py-20">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">À propos de nous</h2>
+          <h2 className="text-3xl font-bold mb-4">À propos de Top Center</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Leader dans les solutions de centre d'appels et de relation client au Congo
+            Leader dans la gestion de la relation client en Afrique centrale, 
+            nous offrons des solutions innovantes et personnalisées pour votre entreprise.
           </p>
         </div>
-        
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="text-center p-6">
-            <Building2 className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Notre Histoire</h3>
-            <p className="text-muted-foreground">
-              Des années d'expérience dans la relation client et les solutions d'entreprise
-            </p>
-          </div>
-          
-          <div className="text-center p-6">
-            <Target className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Notre Mission</h3>
-            <p className="text-muted-foreground">
-              Optimiser et moderniser la relation client des entreprises congolaises
-            </p>
-          </div>
-          
-          <div className="text-center p-6">
-            <Award className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">Nos Valeurs</h3>
-            <p className="text-muted-foreground">
-              Excellence, innovation et satisfaction client au cœur de nos services
-            </p>
-          </div>
+
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={index} className="p-6 text-center hover:shadow-lg transition-shadow">
+                <Icon className="w-12 h-12 mx-auto mb-4 text-primary" />
+                <h3 className="text-2xl font-bold mb-2">{stat.value}</h3>
+                <p className="font-semibold mb-2">{stat.title}</p>
+                <p className="text-sm text-muted-foreground">{stat.description}</p>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </section>

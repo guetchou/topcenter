@@ -1,9 +1,22 @@
 import { Button } from "@/components/ui/button";
-import { Phone, Mail, FileText } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/use-toast";
+import { Phone, Mail, MapPin } from "lucide-react";
 
 export const ContactSection = () => {
+  const { toast } = useToast();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Message envoyé",
+      description: "Nous vous répondrons dans les plus brefs délais.",
+    });
+  };
+
   return (
-    <section id="contact" className="py-20 bg-gradient-to-r from-primary/5 to-secondary/5">
+    <section id="contact" className="py-20 bg-secondary/5">
       <div className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Contactez-nous</h2>
@@ -11,41 +24,60 @@ export const ContactSection = () => {
             Notre équipe est à votre disposition pour répondre à toutes vos questions
           </p>
         </div>
+
         <div className="grid gap-8 md:grid-cols-2">
-          <div className="p-8 rounded-lg border bg-card">
-            <img 
-              src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158"
-              alt="Contact Support"
-              className="w-full h-48 object-cover rounded-lg mb-6"
-            />
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-primary" />
-                <span>+242 06 000 0000</span>
+          <div>
+            <h3 className="text-xl font-semibold mb-6">Nos coordonnées</h3>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <Phone className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="font-semibold">Téléphone</p>
+                  <p className="text-muted-foreground">+242 23 456 789</p>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-primary" />
-                <span>contact@topcenter.cg</span>
+              <div className="flex items-center gap-4">
+                <Mail className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="font-semibold">Email</p>
+                  <p className="text-muted-foreground">contact@topcenter.cg</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <MapPin className="w-6 h-6 text-primary" />
+                <div>
+                  <p className="font-semibold">Adresse</p>
+                  <p className="text-muted-foreground">
+                    123 Avenue de l'Indépendance, Brazzaville, Congo
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-          <div className="p-8 rounded-lg border bg-card">
-            <img 
-              src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d"
-              alt="Services Image"
-              className="w-full h-48 object-cover rounded-lg mb-6"
-            />
-            <div className="space-y-4">
-              <Button className="w-full" size="lg">
-                <FileText className="w-4 h-4 mr-2" />
-                Demander un devis
-              </Button>
-              <Button variant="outline" className="w-full" size="lg">
-                <Phone className="w-4 h-4 mr-2" />
-                Nous appeler
-              </Button>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Input placeholder="Nom complet" required />
+              </div>
+              <div>
+                <Input type="email" placeholder="Email" required />
+              </div>
             </div>
-          </div>
+            <div>
+              <Input placeholder="Sujet" required />
+            </div>
+            <div>
+              <Textarea 
+                placeholder="Votre message" 
+                className="min-h-[150px]" 
+                required 
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              Envoyer le message
+            </Button>
+          </form>
         </div>
       </div>
     </section>
