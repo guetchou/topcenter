@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { NewsGrid } from "@/components/NewsGrid";
 import { TestimonialSection } from "@/components/TestimonialSection";
-import { Building2, Mail, FileText, Phone, MoveRight } from "lucide-react";
+import { Building2, Mail, FileText, Phone, MoveRight, User } from "lucide-react";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { AboutSection } from "@/components/sections/AboutSection";
@@ -12,8 +12,28 @@ import { ServiceViewer3D } from "@/components/ServiceViewer3D";
 import { QuoteRequest } from "@/components/QuoteRequest";
 import { Footer } from "@/components/Footer";
 import { AIAssistant } from "@/components/AIAssistant";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* Header/Navigation */}
@@ -45,6 +65,23 @@ const Index = () => {
               <Phone className="w-4 h-4" />
               Appelez
             </Button>
+            {isAuthenticated ? (
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => navigate("/dashboard")}
+              >
+                <User className="w-4 h-4" />
+                Mon compte
+              </Button>
+            ) : (
+              <Button 
+                className="flex items-center gap-2"
+                onClick={() => navigate("/auth")}
+              >
+                <User className="w-4 h-4" />
+                Connexion
+              </Button>
+            )}
             <Button 
               className="flex items-center gap-2"
               onClick={() => document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' })}
