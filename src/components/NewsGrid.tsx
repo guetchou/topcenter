@@ -1,37 +1,50 @@
+import { useQuery } from "@tanstack/react-query";
 import { NewsCard } from "./NewsCard";
-
-const NEWS_DATA = [
-  {
-    id: 1,
-    title: "Top Center étend ses services en Afrique Centrale",
-    description: "Notre centre d'appels continue son expansion avec de nouveaux partenariats stratégiques dans la région...",
-    date: "2024-02-20",
-    category: "company" as const,
-    imageUrl: "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-  },
-  {
-    id: 2,
-    title: "L'évolution des centres d'appels en 2024",
-    description: "Les dernières tendances en matière de service client et de centres d'appels omnicanaux...",
-    date: "2024-02-18",
-    category: "industry" as const,
-    imageUrl: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7"
-  },
-  {
-    id: 3,
-    title: "Nouveau partenariat stratégique",
-    description: "Top Center signe un partenariat majeur pour améliorer ses services de support client...",
-    date: "2024-02-15",
-    category: "company" as const,
-    imageUrl: "https://images.unsplash.com/photo-1473091534298-04dcbce3278c"
-  }
-];
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const NewsGrid = () => {
+  const { data: news, isLoading } = useQuery({
+    queryKey: ['blog-posts'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('status', 'published')
+        .order('published_at', { ascending: false })
+        .limit(6);
+
+      if (error) {
+        console.error("Error fetching blog posts:", error);
+        throw error;
+      }
+
+      return data;
+    }
+  });
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-[400px] w-full" />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {NEWS_DATA.map((news) => (
-        <NewsCard key={news.id} {...news} />
+      {news?.map((post) => (
+        <NewsCard
+          key={post.id}
+          id={post.id}
+          title={post.title}
+          description={post.excerpt || post.content.substring(0, 150) + "..."}
+          date={new Date(post.published_at || post.created_at).toLocaleDateString()}
+          category={post.category}
+          imageUrl="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
+        />
       ))}
     </div>
   );
