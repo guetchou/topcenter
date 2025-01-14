@@ -4,7 +4,7 @@ import { CalendarIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface NewsCardProps {
-  id: number;
+  id: string;  // Changed from number to string to match UUID from Supabase
   title: string;
   description: string;
   date: string;

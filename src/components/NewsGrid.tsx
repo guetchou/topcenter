@@ -3,6 +3,11 @@ import { NewsCard } from "./NewsCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Helper function to map database category to component category
+const mapCategory = (dbCategory: string): "company" | "industry" => {
+  return dbCategory.toLowerCase() === "entreprise" ? "company" : "industry";
+};
+
 export const NewsGrid = () => {
   const { data: news, isLoading } = useQuery({
     queryKey: ['blog-posts'],
@@ -42,7 +47,7 @@ export const NewsGrid = () => {
           title={post.title}
           description={post.excerpt || post.content.substring(0, 150) + "..."}
           date={new Date(post.published_at || post.created_at).toLocaleDateString()}
-          category={post.category}
+          category={mapCategory(post.category)}
           imageUrl="https://images.unsplash.com/photo-1519389950473-47ba0277781c"
         />
       ))}
