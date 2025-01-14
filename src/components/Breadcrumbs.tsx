@@ -25,9 +25,9 @@ export const Breadcrumbs = () => {
     <Breadcrumb className="mb-4">
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink as={Link} to="/">
+          <Link to="/" className="text-sm font-medium">
             Accueil
-          </BreadcrumbLink>
+          </Link>
         </BreadcrumbItem>
         {pathnames.map((value, index) => {
           const last = index === pathnames.length - 1;
@@ -39,9 +39,9 @@ export const Breadcrumbs = () => {
               {last ? (
                 <BreadcrumbPage>{routeNames[value] || value}</BreadcrumbPage>
               ) : (
-                <BreadcrumbLink as={Link} to={to}>
+                <Link to={to} className="text-sm font-medium">
                   {routeNames[value] || value}
-                </BreadcrumbLink>
+                </Link>
               )}
             </BreadcrumbItem>
           );
