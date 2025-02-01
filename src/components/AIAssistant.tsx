@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bot, Send, Loader2, MinusCircle, PlusCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const AIAssistant = () => {
   const [message, setMessage] = useState("");
@@ -19,11 +20,17 @@ export const AIAssistant = () => {
     setConversation(prev => [...prev, userMessage]);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: { messages: [...conversation, userMessage] }
+      });
+
+      if (error) throw error;
+
       const aiResponse = {
         role: "assistant",
-        content: "Je suis l'assistant IA de Top Center. Comment puis-je vous aider aujourd'hui ?"
+        content: data.choices[0].message.content
       };
+      
       setConversation(prev => [...prev, aiResponse]);
       
       toast({
