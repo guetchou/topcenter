@@ -4,23 +4,30 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import type { AuthError } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setErrorMessage("Une erreur est survenue lors de la vérification de l'authentification");
+      } finally {
+        setIsLoading(false);
       }
     };
     checkUser();
 
-    // Écouter les changements d'état d'authentification
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       if (event === "SIGNED_IN" && session) {
@@ -31,24 +38,66 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="min-h-screen bg-background flex items-center justify-center p-4"
+    >
       <div className="w-full max-w-md space-y-4">
-        <div className="text-center mb-8">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-8"
+        >
           <h1 className="text-2xl font-bold">Bienvenue</h1>
           <p className="text-muted-foreground">Connectez-vous ou créez un compte</p>
-        </div>
+        </motion.div>
 
         {errorMessage && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          </motion.div>
         )}
 
-        <div className="bg-card p-6 rounded-lg shadow-lg">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="bg-card p-6 rounded-lg shadow-lg hover-lift"
+        >
           <SupabaseAuth 
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{ 
+              theme: ThemeSupa,
+              style: {
+                button: {
+                  transition: 'all 0.2s ease',
+                },
+                anchor: {
+                  transition: 'all 0.2s ease',
+                },
+                container: {
+                  transition: 'all 0.3s ease',
+                },
+              },
+            }}
             theme="light"
             providers={[]}
             localization={{
@@ -66,9 +115,9 @@ const Auth = () => {
               },
             }}
           />
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
