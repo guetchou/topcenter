@@ -9,6 +9,96 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      ai_analytics: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          metric_name: string
+          metric_value: number
+          model_version: string | null
+          prediction_date: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          metric_name: string
+          metric_value: number
+          model_version?: string | null
+          prediction_date?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          metric_name?: string
+          metric_value?: number
+          model_version?: string | null
+          prediction_date?: string | null
+        }
+        Relationships: []
+      }
+      ai_interactions: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          id: string
+          interaction_type: string
+          response: string | null
+          sentiment_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type: string
+          response?: string | null
+          sentiment_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          interaction_type?: string
+          response?: string | null
+          sentiment_score?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      ai_suggestions: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          implemented_at: string | null
+          status: string | null
+          suggestion: string
+          user_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          implemented_at?: string | null
+          status?: string | null
+          suggestion: string
+          user_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          implemented_at?: string | null
+          status?: string | null
+          suggestion?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       blog_comments: {
         Row: {
           author_id: string

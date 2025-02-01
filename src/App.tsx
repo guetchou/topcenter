@@ -1,33 +1,28 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Index from "./pages/Index";
-import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
-import News from "./pages/News";
-import NewsDetail from "./pages/NewsDetail";
-import BlogIndex from "./pages/blog/Index";
-import { MainNav } from "./components/MainNav";
+import { Toaster } from "@/components/ui/toaster";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import Dashboard from "@/pages/Dashboard";
+import BlogIndex from "@/pages/blog/Index";
+import Recruitment from "@/pages/recruitment/Index";
+import OnlineSales from "@/pages/services/OnlineSales";
+import TelephonySystem from "@/pages/services/TelephonySystem";
+import CallCenter from "@/pages/services/CallCenter";
 
-const queryClient = new QueryClient();
-
-function App() {
+const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <MainNav />
-        <div className="pt-20">
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/actualites" element={<News />} />
-            <Route path="/actualites/:id" element={<NewsDetail />} />
-            <Route path="/blog" element={<BlogIndex />} />
-          </Routes>
-        </div>
-      </Router>
-    </QueryClientProvider>
+    <Router>
+      <PerformanceMonitor />
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/blog" element={<BlogIndex />} />
+        <Route path="/recruitment" element={<Recruitment />} />
+        <Route path="/services/online-sales" element={<OnlineSales />} />
+        <Route path="/services/telephony-system" element={<TelephonySystem />} />
+        <Route path="/services/call-center" element={<CallCenter />} />
+      </Routes>
+      <Toaster />
+    </Router>
   );
-}
+};
 
 export default App;
