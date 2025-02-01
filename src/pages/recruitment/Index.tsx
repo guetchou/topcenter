@@ -6,11 +6,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type JobApplication = Database['public']['Tables']['job_applications']['Insert']
 
 const Recruitment = () => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    name: "",
+  const [formData, setFormData] = useState<Omit<JobApplication, 'id' | 'created_at' | 'status'>>({
+    full_name: "",
     email: "",
     phone: "",
     position: "",
@@ -26,12 +29,7 @@ const Recruitment = () => {
         .from('job_applications')
         .insert([
           {
-            full_name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            position: formData.position,
-            experience: formData.experience,
-            message: formData.message,
+            ...formData,
             status: 'pending'
           }
         ]);
@@ -44,7 +42,7 @@ const Recruitment = () => {
       });
 
       setFormData({
-        name: "",
+        full_name: "",
         email: "",
         phone: "",
         position: "",
@@ -112,8 +110,8 @@ const Recruitment = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               placeholder="Nom complet"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
+              value={formData.full_name}
+              onChange={(e) => setFormData({...formData, full_name: e.target.value})}
               required
             />
             <Input

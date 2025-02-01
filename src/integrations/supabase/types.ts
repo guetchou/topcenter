@@ -321,8 +321,44 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Relationships: []
+      }
+      job_applications: {
+        Row: {
+          id: string
+          full_name: string
+          email: string
+          phone: string
+          position: string
+          experience: string
+          message: string
+          status: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          full_name: string
+          email: string
+          phone: string
+          position: string
+          experience: string
+          message: string
+          status?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string
+          email?: string
+          phone?: string
+          position?: string
+          experience?: string
+          message?: string
+          status?: string | null
+          created_at?: string
         }
         Relationships: []
       }
@@ -351,7 +387,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
