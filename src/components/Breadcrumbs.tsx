@@ -12,9 +12,10 @@ const routeNames: { [key: string]: string } = {
   "services": "Services",
   "call-center": "Centre d'Appels",
   "online-sales": "Vente en Ligne",
-  "telephony": "Téléphonie",
-  "about": "À propos",
-  "contact": "Contact",
+  "telephony-system": "Téléphonie",
+  "blog": "Blog",
+  "recruitment": "Recrutement",
+  "contact": "Contact"
 };
 
 export const Breadcrumbs = () => {

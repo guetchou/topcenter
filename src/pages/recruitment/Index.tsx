@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { supabase } from "@/integrations/supabase/client";
 
 const Recruitment = () => {
   const { toast } = useToast();
@@ -16,21 +18,47 @@ const Recruitment = () => {
     message: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simuler l'envoi du formulaire
-    toast({
-      title: "Candidature envoyée",
-      description: "Nous vous contacterons bientôt pour la suite du processus.",
-    });
-    setFormData({
-      name: "",
-      email: "",
-      phone: "",
-      position: "",
-      experience: "",
-      message: ""
-    });
+    
+    try {
+      const { error } = await supabase
+        .from('job_applications')
+        .insert([
+          {
+            full_name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            position: formData.position,
+            experience: formData.experience,
+            message: formData.message,
+            status: 'pending'
+          }
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Candidature envoyée",
+        description: "Nous vous contacterons bientôt pour la suite du processus.",
+      });
+
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        position: "",
+        experience: "",
+        message: ""
+      });
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      toast({
+        variant: "destructive",
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'envoi de votre candidature. Veuillez réessayer.",
+      });
+    }
   };
 
   const positions = [
@@ -53,6 +81,7 @@ const Recruitment = () => {
 
   return (
     <div className="container py-8">
+      <Breadcrumbs />
       <h1 className="text-3xl font-bold mb-8">Rejoignez notre équipe</h1>
 
       <div className="grid gap-8 md:grid-cols-2">
@@ -60,7 +89,7 @@ const Recruitment = () => {
           <h2 className="text-2xl font-semibold mb-6">Postes disponibles</h2>
           <div className="space-y-4">
             {positions.map((position, index) => (
-              <Card key={index}>
+              <Card key={index} className="hover-lift">
                 <CardHeader>
                   <CardTitle>{position.title}</CardTitle>
                 </CardHeader>

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 export const MainNav = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -21,7 +22,6 @@ export const MainNav = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img 
               src="/logo.png" 
@@ -33,7 +33,6 @@ export const MainNav = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:block">
             <NavigationMenu>
               <NavigationMenuList>
@@ -45,7 +44,10 @@ export const MainNav = () => {
                         <NavigationMenuLink asChild>
                           <Link
                             to="/services/call-center"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                              location.pathname === "/services/call-center" && "bg-accent"
+                            )}
                           >
                             <div className="text-sm font-medium leading-none">Centre d'Appels</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -58,7 +60,10 @@ export const MainNav = () => {
                         <NavigationMenuLink asChild>
                           <Link
                             to="/services/online-sales"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                              location.pathname === "/services/online-sales" && "bg-accent"
+                            )}
                           >
                             <div className="text-sm font-medium leading-none">Vente en Ligne</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -70,8 +75,11 @@ export const MainNav = () => {
                       <li>
                         <NavigationMenuLink asChild>
                           <Link
-                            to="/services/telephony"
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            to="/services/telephony-system"
+                            className={cn(
+                              "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+                              location.pathname === "/services/telephony-system" && "bg-accent"
+                            )}
                           >
                             <div className="text-sm font-medium leading-none">Téléphonie</div>
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -84,12 +92,35 @@ export const MainNav = () => {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/about" className="px-4 py-2 hover:text-primary transition-colors">
-                    À propos
+                  <Link 
+                    to="/blog" 
+                    className={cn(
+                      "px-4 py-2 transition-colors",
+                      location.pathname === "/blog" ? "text-primary" : "hover:text-primary"
+                    )}
+                  >
+                    Blog
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link to="/contact" className="px-4 py-2 hover:text-primary transition-colors">
+                  <Link 
+                    to="/recruitment" 
+                    className={cn(
+                      "px-4 py-2 transition-colors",
+                      location.pathname === "/recruitment" ? "text-primary" : "hover:text-primary"
+                    )}
+                  >
+                    Recrutement
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link 
+                    to="/contact" 
+                    className={cn(
+                      "px-4 py-2 transition-colors",
+                      location.pathname === "/contact" ? "text-primary" : "hover:text-primary"
+                    )}
+                  >
                     Contact
                   </Link>
                 </NavigationMenuItem>
@@ -97,7 +128,6 @@ export const MainNav = () => {
             </NavigationMenu>
           </div>
 
-          {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             className="md:hidden"
@@ -108,7 +138,6 @@ export const MainNav = () => {
           </Button>
         </div>
 
-        {/* Mobile Navigation */}
         <div
           className={cn(
             "md:hidden",
@@ -118,31 +147,55 @@ export const MainNav = () => {
           <div className="px-2 pt-2 pb-3 space-y-1">
             <Link
               to="/services/call-center"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors"
+              className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                location.pathname === "/services/call-center" ? "text-primary" : "hover:text-primary"
+              )}
             >
               Centre d'Appels
             </Link>
             <Link
               to="/services/online-sales"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors"
+              className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                location.pathname === "/services/online-sales" ? "text-primary" : "hover:text-primary"
+              )}
             >
               Vente en Ligne
             </Link>
             <Link
-              to="/services/telephony"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors"
+              to="/services/telephony-system"
+              className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                location.pathname === "/services/telephony-system" ? "text-primary" : "hover:text-primary"
+              )}
             >
               Téléphonie
             </Link>
             <Link
-              to="/about"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors"
+              to="/blog"
+              className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                location.pathname === "/blog" ? "text-primary" : "hover:text-primary"
+              )}
             >
-              À propos
+              Blog
+            </Link>
+            <Link
+              to="/recruitment"
+              className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                location.pathname === "/recruitment" ? "text-primary" : "hover:text-primary"
+              )}
+            >
+              Recrutement
             </Link>
             <Link
               to="/contact"
-              className="block px-3 py-2 rounded-md text-base font-medium hover:text-primary transition-colors"
+              className={cn(
+                "block px-3 py-2 rounded-md text-base font-medium transition-colors",
+                location.pathname === "/contact" ? "text-primary" : "hover:text-primary"
+              )}
             >
               Contact
             </Link>
