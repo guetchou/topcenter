@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocation } from "react-router-dom";
 
 export const PerformanceMonitor = () => {
+  const location = useLocation();
   const [metrics, setMetrics] = useState<{
     loadTime: number;
     requestCount: number;
@@ -11,6 +13,11 @@ export const PerformanceMonitor = () => {
   });
 
   useEffect(() => {
+    // Skip performance tracking on auth page
+    if (location.pathname === "/auth") {
+      return;
+    }
+
     const startTime = performance.now();
 
     const trackPerformance = async () => {
@@ -42,7 +49,7 @@ export const PerformanceMonitor = () => {
     };
 
     trackPerformance();
-  }, []);
+  }, [location.pathname]); // Add location.pathname as dependency
 
-  return null; // Composant invisible qui ne fait que tracker les performances
+  return null;
 };
