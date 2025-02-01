@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShoppingCart, CreditCard, Truck } from "lucide-react";
+import { ArrowLeft, ShoppingCart, CreditCard, Truck, Globe, Shield, HeadsetMic } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 const OnlineSales = () => {
   const navigate = useNavigate();
@@ -16,53 +17,96 @@ const OnlineSales = () => {
         Retour aux services
       </Button>
 
+      <Breadcrumbs />
+
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6">Vente en ligne</h1>
+        <h1 className="text-4xl font-bold mb-6">Vente en Ligne</h1>
         
+        <div className="prose prose-lg max-w-none mb-8">
+          <p className="lead text-xl text-muted-foreground">
+            Des solutions e-commerce complètes pour développer votre activité en ligne
+            et maximiser vos ventes.
+          </p>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
+          <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
+            <Globe className="w-12 h-12 text-primary mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Présence En Ligne</h3>
+            <p className="text-muted-foreground">
+              Solutions e-commerce personnalisées
+            </p>
+          </div>
+          
+          <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
+            <Shield className="w-12 h-12 text-primary mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Paiement Sécurisé</h3>
+            <p className="text-muted-foreground">
+              Transactions sûres et fiables
+            </p>
+          </div>
+          
+          <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
+            <HeadsetMic className="w-12 h-12 text-primary mb-4" />
+            <h3 className="text-xl font-semibold mb-2">Support 24/7</h3>
+            <p className="text-muted-foreground">
+              Assistance client permanente
+            </p>
+          </div>
+        </div>
+
         <div className="space-y-8">
           <section>
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <ShoppingCart className="w-6 h-6 text-primary" />
-              Plateforme de courtage
-            </h2>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li>Vente de produits et services pour entreprises</li>
-              <li>Solutions pour artisans et commerçants</li>
-              <li>Interface intuitive et personnalisable</li>
-              <li>Gestion des catalogues produits</li>
-            </ul>
-          </section>
+            <h2 className="text-2xl font-semibold mb-4">Nos Solutions E-commerce</h2>
+            <div className="grid gap-4">
+              <div className="p-4 rounded-lg border bg-card">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5 text-primary" />
+                  Plateforme de vente
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Interface personnalisable</li>
+                  <li>Gestion des produits</li>
+                  <li>Statistiques de vente</li>
+                  <li>Intégration multicanal</li>
+                </ul>
+              </div>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <CreditCard className="w-6 h-6 text-primary" />
-              Gestion des paiements
-            </h2>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li>Paiements via application mobile</li>
-              <li>Réseau d'agents de paiement</li>
-              <li>Passerelles de paiement intégrées</li>
-              <li>Transactions sécurisées</li>
-            </ul>
-          </section>
+              <div className="p-4 rounded-lg border bg-card">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Solutions de paiement
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Paiement mobile</li>
+                  <li>Cartes bancaires</li>
+                  <li>Paiement à la livraison</li>
+                  <li>Transactions sécurisées</li>
+                </ul>
+              </div>
 
-          <section>
-            <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-              <Truck className="w-6 h-6 text-primary" />
-              Suivi et livraison
-            </h2>
-            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li>Suivi en temps réel des commandes</li>
-              <li>Gestion des livraisons</li>
-              <li>Notifications automatiques</li>
-              <li>Rapports détaillés</li>
-            </ul>
+              <div className="p-4 rounded-lg border bg-card">
+                <h3 className="font-semibold mb-2 flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-primary" />
+                  Logistique et livraison
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+                  <li>Suivi des commandes</li>
+                  <li>Gestion des stocks</li>
+                  <li>Livraison express</li>
+                  <li>Retours facilités</li>
+                </ul>
+              </div>
+            </div>
           </section>
         </div>
 
-        <div className="mt-12">
-          <Button size="lg" onClick={() => navigate("/contact")}>
-            Contactez-nous pour en savoir plus
+        <div className="mt-12 flex flex-col items-center">
+          <h2 className="text-2xl font-semibold mb-4 text-center">
+            Prêt à lancer votre boutique en ligne ?
+          </h2>
+          <Button size="lg" onClick={() => navigate("/contact")} className="min-w-[200px]">
+            Demander un devis
           </Button>
         </div>
       </div>
