@@ -12,6 +12,8 @@ import { ServiceViewer3D } from "@/components/ServiceViewer3D";
 import { QuoteRequest } from "@/components/QuoteRequest";
 import { Footer } from "@/components/Footer";
 import { AIAssistant } from "@/components/AIAssistant";
+import { ScrollToTop } from "@/components/ScrollToTop";
+import { SearchFilter } from "@/components/SearchFilter";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -19,6 +21,8 @@ import { useEffect, useState } from "react";
 const Index = () => {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -33,6 +37,16 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    console.log("Recherche:", query);
+  };
+
+  const handleFilter = (category: string) => {
+    setSelectedCategory(category);
+    console.log("Filtrer par catégorie:", category);
+  };
 
   return (
     <div className="min-h-screen">
@@ -96,6 +110,13 @@ const Index = () => {
       <main>
         <HeroSection />
         <AboutSection />
+        
+        <section className="py-20">
+          <div className="container">
+            <SearchFilter onSearch={handleSearch} onFilter={handleFilter} />
+          </div>
+        </section>
+        
         <ServicesSection />
         <ServiceViewer3D />
         <CallToActionSection />
@@ -122,6 +143,9 @@ const Index = () => {
       <div className="fixed bottom-4 right-4 z-50">
         <AIAssistant />
       </div>
+
+      {/* Bouton retour en haut */}
+      <ScrollToTop />
     </div>
   );
 };
