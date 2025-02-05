@@ -14,6 +14,7 @@ import { Footer } from "@/components/Footer";
 import { AIAssistant } from "@/components/AIAssistant";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { SearchFilter } from "@/components/SearchFilter";
+import { TeamSection } from "@/components/sections/TeamSection";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -55,13 +56,10 @@ const Index = () => {
         <div className="container flex items-center justify-between h-20">
           <div className="flex items-center gap-2">
             <img 
-              src="/logo.png"
+              src="/lovable-uploads/94200422-356e-4b69-8e4c-c385cc1eb543.png"
               alt="Top Center Logo" 
-              className="w-12 h-12 rounded-full object-cover"
+              className="h-12 object-contain"
             />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Top Center
-            </span>
           </div>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -110,6 +108,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <AboutSection />
+        <TeamSection />
         
         <section className="py-20">
           <div className="container">

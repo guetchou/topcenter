@@ -24,13 +24,10 @@ export const MainNav = () => {
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/logo.png" 
+              src="/lovable-uploads/94200422-356e-4b69-8e4c-c385cc1eb543.png"
               alt="Top Center Logo" 
-              className="w-12 h-12 rounded-full object-cover"
+              className="h-12 object-contain"
             />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Top Center
-            </span>
           </Link>
 
           <div className="hidden md:block">
