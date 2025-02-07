@@ -9,6 +9,86 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      agent_statistics: {
+        Row: {
+          agent_id: string | null
+          average_response_time: unknown | null
+          conversations_handled: number | null
+          created_at: string
+          date: string
+          id: string
+          online_duration: unknown | null
+          satisfaction_score: number | null
+        }
+        Insert: {
+          agent_id?: string | null
+          average_response_time?: unknown | null
+          conversations_handled?: number | null
+          created_at?: string
+          date: string
+          id?: string
+          online_duration?: unknown | null
+          satisfaction_score?: number | null
+        }
+        Update: {
+          agent_id?: string | null
+          average_response_time?: unknown | null
+          conversations_handled?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          online_duration?: unknown | null
+          satisfaction_score?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_statistics_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agents: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          languages: string[] | null
+          specialties: string[] | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          languages?: string[] | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          languages?: string[] | null
+          specialties?: string[] | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ai_analytics: {
         Row: {
           confidence_score: number | null
@@ -179,6 +259,36 @@ export type Database = {
         }
         Relationships: []
       }
+      communication_channels: {
+        Row: {
+          configuration: Json | null
+          created_at: string
+          id: string
+          name: string
+          status: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          configuration?: Json | null
+          created_at?: string
+          id?: string
+          name: string
+          status?: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          configuration?: Json | null
+          created_at?: string
+          id?: string
+          name?: string
+          status?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_requests: {
         Row: {
           created_at: string
@@ -208,6 +318,102 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      conversation_transfers: {
+        Row: {
+          completed_at: string | null
+          conversation_id: string | null
+          created_at: string
+          from_agent_id: string | null
+          id: string
+          reason: string
+          status: string
+          to_agent_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          from_agent_id?: string | null
+          id?: string
+          reason: string
+          status?: string
+          to_agent_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          from_agent_id?: string | null
+          id?: string
+          reason?: string
+          status?: string
+          to_agent_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_transfers_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_transfers_from_agent_id_fkey"
+            columns: ["from_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_transfers_to_agent_id_fkey"
+            columns: ["to_agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          channel_id: string | null
+          ended_at: string | null
+          id: string
+          metadata: Json | null
+          satisfaction_score: number | null
+          started_at: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          channel_id?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          satisfaction_score?: number | null
+          started_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          channel_id?: string | null
+          ended_at?: string | null
+          id?: string
+          metadata?: Json | null
+          satisfaction_score?: number | null
+          started_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "communication_channels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_applications: {
         Row: {
@@ -244,6 +450,44 @@ export type Database = {
           status?: string | null
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          conversation_id: string | null
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_type: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_type: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          conversation_id?: string | null
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
