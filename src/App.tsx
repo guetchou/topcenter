@@ -13,6 +13,9 @@ import Analytics from "@/pages/Analytics";
 import Training from "@/pages/Training";
 import Settings from "@/pages/Settings";
 import Reports from "@/pages/Reports";
+import About from "@/pages/About";
+import Contact from "@/pages/Contact";
+import Services from "@/pages/Services";
 
 const App = () => {
   return (
@@ -20,6 +23,9 @@ const App = () => {
       <PerformanceMonitor />
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/services" element={<Services />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/training" element={<Training />} />

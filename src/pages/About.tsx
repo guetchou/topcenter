@@ -1,22 +1,39 @@
-import { AboutSection } from "@/components/sections/AboutSection";
-import { DynamicFAQ } from "@/components/DynamicFAQ";
+
+import { usePageContent } from "@/hooks/usePageContent";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const About = () => {
-  return (
-    <div className="space-y-20">
-      <AboutSection />
-      
-      <section className="py-20 bg-secondary/5">
-        <div className="container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Questions Fréquentes</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Trouvez rapidement les réponses à vos questions sur nos services
-            </p>
-          </div>
-          <DynamicFAQ />
+  const { data: pageContent, isLoading } = usePageContent('about');
+
+  if (isLoading) {
+    return (
+      <div className="container py-8">
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-      </section>
+      </div>
+    );
+  }
+
+  if (!pageContent) return null;
+
+  return (
+    <div className="container py-8">
+      <h1 className="text-3xl font-bold mb-4">{pageContent.title}</h1>
+      <p className="text-muted-foreground mb-8">{pageContent.description}</p>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {pageContent.content.sections.map((section: any, index: number) => (
+          <Card key={index}>
+            <CardHeader>
+              <CardTitle>{section.title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{section.content}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
