@@ -9,19 +9,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays, Users, BookOpen } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface TrainingSession {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   start_date: string;
   end_date: string;
-  max_participants: number;
+  max_participants: number | null;
   status: string;
-  materials_url: string[];
+  materials_url: string[] | null;
   trainer: {
     full_name: string;
-    avatar_url: string;
+    avatar_url: string | null;
   };
   _count: {
     enrollments: number;
@@ -30,6 +31,7 @@ interface TrainingSession {
 
 const Training = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [userEnrollments, setUserEnrollments] = useState<Set<string>>(new Set());
 
   const { data: sessions, isLoading } = useQuery({
@@ -40,7 +42,7 @@ const Training = () => {
         .select(`
           *,
           trainer:agents(full_name, avatar_url),
-          _count { enrollments: training_enrollments(count) }
+          _count { enrollments:training_enrollments(count) }
         `)
         .eq('status', 'scheduled')
         .order('start_date', { ascending: true });
@@ -90,7 +92,11 @@ const Training = () => {
       .single();
 
     if (!agent) {
-      console.error("Agent non trouvé");
+      toast({
+        title: "Erreur",
+        description: "Agent non trouvé",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -103,6 +109,16 @@ const Training = () => {
 
     if (!error) {
       setUserEnrollments(prev => new Set([...prev, sessionId]));
+      toast({
+        title: "Succès",
+        description: "Inscription à la formation réussie",
+      });
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Impossible de s'inscrire à la formation",
+        variant: "destructive"
+      });
     }
   };
 

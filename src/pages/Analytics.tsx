@@ -14,18 +14,29 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { Download, BarChart2, Clock, ThumbsUp } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface AnalyticsReport {
   id: string;
   title: string;
-  description: string;
+  description: string | null;
   report_type: string;
-  data: any;
+  data: Array<{
+    name: string;
+    value: number;
+  }>;
   created_at: string;
   status: string;
 }
 
+interface AgentStatistics {
+  conversations_handled: number;
+  average_response_time: string;
+  satisfaction_score: number;
+}
+
 const Analytics = () => {
+  const { toast } = useToast();
   const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('week');
 
   const { data: reports } = useQuery({
@@ -52,7 +63,7 @@ const Analytics = () => {
         .limit(1);
 
       if (error) throw error;
-      return data[0];
+      return data[0] as AgentStatistics;
     }
   });
 
@@ -60,16 +71,29 @@ const Analytics = () => {
     const report = reports?.find(r => r.id === reportId);
     if (!report) return;
 
-    const jsonString = JSON.stringify(report.data, null, 2);
-    const blob = new Blob([jsonString], { type: 'application/json' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `report-${report.title}-${new Date().toISOString()}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
+    try {
+      const jsonString = JSON.stringify(report.data, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report-${report.title}-${new Date().toISOString()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Téléchargement réussi",
+        description: "Le rapport a été téléchargé avec succès",
+      });
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le rapport",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
