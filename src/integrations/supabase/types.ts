@@ -179,6 +179,42 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_reports: {
+        Row: {
+          author_id: string | null
+          created_at: string
+          data: Json
+          description: string | null
+          id: string
+          report_type: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author_id?: string | null
+          created_at?: string
+          data: Json
+          description?: string | null
+          id?: string
+          report_type: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author_id?: string | null
+          created_at?: string
+          data?: Json
+          description?: string | null
+          id?: string
+          report_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       blog_comments: {
         Row: {
           author_id: string
@@ -552,6 +588,45 @@ export type Database = {
         }
         Relationships: []
       }
+      response_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          language: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          language?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       testimonials: {
         Row: {
           avatar_url: string | null
@@ -582,6 +657,137 @@ export type Database = {
           name?: string
           rating?: number | null
           role?: string | null
+        }
+        Relationships: []
+      }
+      training_enrollments: {
+        Row: {
+          agent_id: string | null
+          completed_at: string | null
+          enrolled_at: string
+          feedback: string | null
+          id: string
+          rating: number | null
+          session_id: string | null
+          status: string
+        }
+        Insert: {
+          agent_id?: string | null
+          completed_at?: string | null
+          enrolled_at?: string
+          feedback?: string | null
+          id?: string
+          rating?: number | null
+          session_id?: string | null
+          status?: string
+        }
+        Update: {
+          agent_id?: string | null
+          completed_at?: string | null
+          enrolled_at?: string
+          feedback?: string | null
+          id?: string
+          rating?: number | null
+          session_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_enrollments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_enrollments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_sessions: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          materials_url: string[] | null
+          max_participants: number | null
+          start_date: string
+          status: string
+          title: string
+          trainer_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          materials_url?: string[] | null
+          max_participants?: number | null
+          start_date: string
+          status?: string
+          title: string
+          trainer_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          materials_url?: string[] | null
+          max_participants?: number | null
+          start_date?: string
+          status?: string
+          title?: string
+          trainer_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_sessions_trainer_id_fkey"
+            columns: ["trainer_id"]
+            isOneToOne: false
+            referencedRelation: "agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_preferences: {
+        Row: {
+          auto_translate: boolean | null
+          created_at: string
+          id: string
+          language: string
+          notifications_enabled: boolean | null
+          theme: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          auto_translate?: boolean | null
+          created_at?: string
+          id?: string
+          language?: string
+          notifications_enabled?: boolean | null
+          theme?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          auto_translate?: boolean | null
+          created_at?: string
+          id?: string
+          language?: string
+          notifications_enabled?: boolean | null
+          theme?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }
