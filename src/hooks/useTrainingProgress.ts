@@ -10,7 +10,8 @@ export const useTrainingProgress = (enrollmentId: string) => {
       const { data, error } = await supabase
         .from('training_progress')
         .select('*')
-        .eq('enrollment_id', enrollmentId);
+        .eq('enrollment_id', enrollmentId)
+        .returns<TrainingProgress[]>();
 
       if (error) throw error;
       return data;

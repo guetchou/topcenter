@@ -1,25 +1,14 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Users, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { MaterialCard } from "@/components/training/MaterialCard";
-import { useTrainingMaterials } from "@/hooks/useTrainingMaterials";
-import { useTrainingProgress } from "@/hooks/useTrainingProgress";
+import { SessionCard } from "@/components/training/SessionCard";
 import type { TrainingSession } from "@/types/training";
 
 const Training = () => {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [userEnrollments, setUserEnrollments] = useState<Set<string>>(new Set());
-  const [expandedSession, setExpandedSession] = useState<string | null>(null);
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ['training-sessions'],
@@ -45,8 +34,6 @@ const Training = () => {
       return data as TrainingSession[];
     }
   });
-
-  const { data: materials } = useTrainingMaterials(expandedSession || '');
 
   useEffect(() => {
     const fetchUserEnrollments = async () => {
@@ -74,52 +61,7 @@ const Training = () => {
     fetchUserEnrollments();
   }, []);
 
-  const handleEnroll = async (sessionId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-
-    const { data: agent } = await supabase
-      .from('agents')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
-
-    if (!agent) {
-      toast({
-        title: "Erreur",
-        description: "Agent non trouvé",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('training_enrollments')
-      .insert({
-        session_id: sessionId,
-        agent_id: agent.id
-      });
-
-    if (!error) {
-      setUserEnrollments(prev => new Set([...prev, sessionId]));
-      toast({
-        title: "Succès",
-        description: "Inscription à la formation réussie",
-      });
-    } else {
-      toast({
-        title: "Erreur",
-        description: "Impossible de s'inscrire à la formation",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleStartMaterial = async (materialId: string) => {
-    // Implementation for starting/continuing a training material
     toast({
       title: "Contenu en cours de chargement",
       description: "Vous allez être redirigé vers le contenu de formation",
@@ -142,86 +84,15 @@ const Training = () => {
       
       <div className="grid gap-6">
         {sessions?.map((session) => (
-          <Card key={session.id} className="flex flex-col">
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-xl">{session.title}</CardTitle>
-                <Badge variant={session.status === 'scheduled' ? 'default' : 'secondary'}>
-                  {session.status === 'scheduled' ? 'Programmée' : 'Terminée'}
-                </Badge>
-              </div>
-              <CardDescription>{session.description}</CardDescription>
-            </CardHeader>
-            
-            <CardContent className="flex-grow">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5 text-muted-foreground" />
-                  <span>
-                    {format(new Date(session.start_date), "d MMMM yyyy 'à' HH'h'mm", { locale: fr })}
-                  </span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <span>
-                    {session._count.enrollments}/{session.max_participants || '∞'} participants
-                  </span>
-                </div>
-
-                {session.materials_url && session.materials_url.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-muted-foreground" />
-                    <span>{session.materials_url.length} ressources disponibles</span>
-                  </div>
-                )}
-              </div>
-
-              {expandedSession === session.id && materials && (
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  {materials.map((material) => (
-                    <MaterialCard
-                      key={material.id}
-                      material={material}
-                      onStart={() => handleStartMaterial(material.id)}
-                    />
-                  ))}
-                </div>
-              )}
-            </CardContent>
-
-            <CardFooter className="flex flex-col gap-4 pt-4">
-              {userEnrollments.has(session.id) && (
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => setExpandedSession(
-                    expandedSession === session.id ? null : session.id
-                  )}
-                >
-                  {expandedSession === session.id ? (
-                    <>
-                      <ChevronUp className="w-4 h-4 mr-2" />
-                      Masquer le contenu
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="w-4 h-4 mr-2" />
-                      Voir le contenu
-                    </>
-                  )}
-                </Button>
-              )}
-              <Button 
-                className="w-full"
-                variant={userEnrollments.has(session.id) ? "secondary" : "default"}
-                disabled={userEnrollments.has(session.id)}
-                onClick={() => handleEnroll(session.id)}
-              >
-                {userEnrollments.has(session.id) ? 'Déjà inscrit' : "S'inscrire"}
-              </Button>
-            </CardFooter>
-          </Card>
+          <SessionCard
+            key={session.id}
+            session={session}
+            isEnrolled={userEnrollments.has(session.id)}
+            onEnrollmentSuccess={(sessionId) => {
+              setUserEnrollments(prev => new Set([...prev, sessionId]));
+            }}
+            onStartMaterial={handleStartMaterial}
+          />
         ))}
       </div>
     </div>
