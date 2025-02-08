@@ -40,15 +40,29 @@ const Training = () => {
       const { data, error } = await supabase
         .from('training_sessions')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          start_date,
+          end_date,
+          max_participants,
+          status,
+          materials_url,
           trainer:agents(full_name, avatar_url),
-          _count { enrollments:training_enrollments(count) }
+          _count { enrollments:training_enrollments_count }
         `)
         .eq('status', 'scheduled')
         .order('start_date', { ascending: true });
 
       if (error) throw error;
-      return data as TrainingSession[];
+
+      // Transform the data to match the expected type
+      return (data as any[]).map(session => ({
+        ...session,
+        _count: {
+          enrollments: session._count?.enrollments || 0
+        }
+      })) as TrainingSession[];
     }
   });
 

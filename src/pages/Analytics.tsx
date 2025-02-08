@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +48,12 @@ const Analytics = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as AnalyticsReport[];
+      
+      // Cast the Json data to the correct type
+      return (data as any[]).map(report => ({
+        ...report,
+        data: report.data as Array<{ name: string; value: number }>
+      })) as AnalyticsReport[];
     }
   });
 

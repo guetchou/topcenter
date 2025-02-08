@@ -26,7 +26,13 @@ export const usePageContent = (pageKey: string) => {
         .single();
 
       if (error) throw error;
-      return data;
+      
+      // Cast the Json type to Record<string, any>
+      return data ? {
+        ...data,
+        content: data.content as Record<string, any>,
+        meta_tags: data.meta_tags as PageContent['meta_tags']
+      } : null;
     }
   });
 };
