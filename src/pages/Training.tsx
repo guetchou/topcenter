@@ -8,31 +8,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays, Users, BookOpen } from "lucide-react";
+import { CalendarDays, Users, BookOpen, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface TrainingSession {
-  id: string;
-  title: string;
-  description: string | null;
-  start_date: string;
-  end_date: string;
-  max_participants: number | null;
-  status: string;
-  materials_url: string[] | null;
-  trainer: {
-    full_name: string;
-    avatar_url: string | null;
-  };
-  _count: {
-    enrollments: number;
-  };
-}
+import { MaterialCard } from "@/components/training/MaterialCard";
+import { useTrainingMaterials } from "@/hooks/useTrainingMaterials";
+import { useTrainingProgress } from "@/hooks/useTrainingProgress";
+import type { TrainingSession } from "@/types/training";
 
 const Training = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [userEnrollments, setUserEnrollments] = useState<Set<string>>(new Set());
+  const [expandedSession, setExpandedSession] = useState<string | null>(null);
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ['training-sessions'],
@@ -55,16 +42,11 @@ const Training = () => {
         .order('start_date', { ascending: true });
 
       if (error) throw error;
-
-      // Transform the data to match the expected type
-      return (data as any[]).map(session => ({
-        ...session,
-        _count: {
-          enrollments: session._count?.enrollments || 0
-        }
-      })) as TrainingSession[];
+      return data as TrainingSession[];
     }
   });
+
+  const { data: materials } = useTrainingMaterials(expandedSession || '');
 
   useEffect(() => {
     const fetchUserEnrollments = async () => {
@@ -136,6 +118,14 @@ const Training = () => {
     }
   };
 
+  const handleStartMaterial = async (materialId: string) => {
+    // Implementation for starting/continuing a training material
+    toast({
+      title: "Contenu en cours de chargement",
+      description: "Vous allez être redirigé vers le contenu de formation",
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="container py-8">
@@ -150,7 +140,7 @@ const Training = () => {
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-8">Formation</h1>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6">
         {sessions?.map((session) => (
           <Card key={session.id} className="flex flex-col">
             <CardHeader>
@@ -186,9 +176,42 @@ const Training = () => {
                   </div>
                 )}
               </div>
+
+              {expandedSession === session.id && materials && (
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  {materials.map((material) => (
+                    <MaterialCard
+                      key={material.id}
+                      material={material}
+                      onStart={() => handleStartMaterial(material.id)}
+                    />
+                  ))}
+                </div>
+              )}
             </CardContent>
 
-            <CardFooter className="pt-4">
+            <CardFooter className="flex flex-col gap-4 pt-4">
+              {userEnrollments.has(session.id) && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setExpandedSession(
+                    expandedSession === session.id ? null : session.id
+                  )}
+                >
+                  {expandedSession === session.id ? (
+                    <>
+                      <ChevronUp className="w-4 h-4 mr-2" />
+                      Masquer le contenu
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="w-4 h-4 mr-2" />
+                      Voir le contenu
+                    </>
+                  )}
+                </Button>
+              )}
               <Button 
                 className="w-full"
                 variant={userEnrollments.has(session.id) ? "secondary" : "default"}

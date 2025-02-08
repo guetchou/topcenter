@@ -669,30 +669,42 @@ export type Database = {
           company: string | null
           content: string
           created_at: string
+          featured: boolean | null
           id: string
           name: string
           rating: number | null
+          response: string | null
+          response_date: string | null
           role: string | null
+          verified: boolean | null
         }
         Insert: {
           avatar_url?: string | null
           company?: string | null
           content: string
           created_at?: string
+          featured?: boolean | null
           id?: string
           name: string
           rating?: number | null
+          response?: string | null
+          response_date?: string | null
           role?: string | null
+          verified?: boolean | null
         }
         Update: {
           avatar_url?: string | null
           company?: string | null
           content?: string
           created_at?: string
+          featured?: boolean | null
           id?: string
           name?: string
           rating?: number | null
+          response?: string | null
+          response_date?: string | null
           role?: string | null
+          verified?: boolean | null
         }
         Relationships: []
       }
@@ -740,6 +752,98 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_materials: {
+        Row: {
+          content_type: string
+          content_url: string
+          created_at: string
+          description: string | null
+          id: string
+          order_index: number
+          session_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content_type: string
+          content_url: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          session_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string
+          content_url?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          order_index?: number
+          session_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_materials_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_progress: {
+        Row: {
+          completed_at: string | null
+          completion_status: string
+          created_at: string
+          enrollment_id: string | null
+          id: string
+          last_accessed_at: string | null
+          material_id: string | null
+          notes: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          material_id?: string | null
+          notes?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completion_status?: string
+          created_at?: string
+          enrollment_id?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          material_id?: string | null
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_progress_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "training_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_progress_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "training_materials"
             referencedColumns: ["id"]
           },
         ]
