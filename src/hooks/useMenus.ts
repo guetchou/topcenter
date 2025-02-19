@@ -30,7 +30,7 @@ export const useMenus = (location: string) => {
     },
     // Optimisations de performance avec React Query
     staleTime: 1000 * 60 * 5, // Cache valide pendant 5 minutes
-    cacheTime: 1000 * 60 * 30, // Garde en cache pendant 30 minutes
+    gcTime: 1000 * 60 * 30, // Garde en cache pendant 30 minutes (nouveau nom pour cacheTime)
     refetchOnWindowFocus: false // Évite les re-fetch inutiles
   });
 };
