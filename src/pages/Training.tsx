@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,6 +67,46 @@ const Training = () => {
           enrollments: session.enrollments?.length || 0
         }
       })) as TrainingSession[];
+    }
+  });
+
+  const { data: statistics } = useQuery({
+    queryKey: ['training-statistics'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!agent) throw new Error("Agent non trouvé");
+
+      const { data, error } = await supabase
+        .from('training_enrollments')
+        .select(`
+          *,
+          session:training_sessions!inner(*),
+          progress:training_progress(*)
+        `)
+        .eq('agent_id', agent.id);
+
+      if (error) throw error;
+
+      const stats: TrainingStatistics = {
+        totalSessions: data?.length || 0,
+        completedSessions: data?.filter(e => e.status === 'completed').length || 0,
+        averageProgress: data?.reduce((acc, curr) => {
+          const completed = curr.progress?.filter(p => p.completion_status === 'completed').length || 0;
+          const total = curr.progress?.length || 1;
+          return acc + (completed / total * 100);
+        }, 0) / (data.length || 1) || 0,
+        totalEnrollments: data?.length || 0
+      };
+
+      return stats;
     }
   });
 
