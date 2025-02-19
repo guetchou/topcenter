@@ -25,13 +25,16 @@ const Training = () => {
           status,
           materials_url,
           trainer:agents(full_name, avatar_url),
-          _count { enrollments:training_enrollments_count }
+          _count {
+            enrollments: training_enrollments(count)
+          }
         `)
         .eq('status', 'scheduled')
-        .order('start_date', { ascending: true });
+        .order('start_date', { ascending: true })
+        .returns<TrainingSession[]>();
 
       if (error) throw error;
-      return data as TrainingSession[];
+      return data;
     }
   });
 
