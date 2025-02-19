@@ -29,13 +29,24 @@ export interface TrainingSession {
   start_date: string;
   end_date: string;
   max_participants: number | null;
-  status: string;
+  status: 'scheduled' | 'completed' | 'cancelled';
   materials_url: string[] | null;
   trainer_id: string;
+  trainer?: {
+    full_name: string;
+    avatar_url: string | null;
+  };
   training_materials?: TrainingMaterial[];
   _count: {
     enrollments: number;
   };
   created_at: string;
   updated_at: string;
+}
+
+export interface TrainingStatistics {
+  totalSessions: number;
+  completedSessions: number;
+  averageProgress: number;
+  totalEnrollments: number;
 }

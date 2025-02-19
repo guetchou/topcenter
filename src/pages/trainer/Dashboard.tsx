@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ const TrainerDashboard = () => {
     endDate: "",
     maxParticipants: ""
   });
+  const [editingSession, setEditingSession] = useState<TrainingSession | null>(null);
 
   const { data: sessions, isLoading, refetch } = useQuery({
     queryKey: ['trainer-sessions'],
@@ -217,6 +218,74 @@ const TrainerDashboard = () => {
     }
   };
 
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      if (!editingSession) return;
+
+      const { error } = await supabase
+        .from('training_sessions')
+        .update({
+          title: newSession.title,
+          description: newSession.description,
+          start_date: newSession.startDate,
+          end_date: newSession.endDate,
+          max_participants: parseInt(newSession.maxParticipants)
+        })
+        .eq('id', editingSession.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Session modifiée",
+        description: "La session de formation a été modifiée avec succès"
+      });
+
+      setEditingSession(null);
+      setNewSession({
+        title: "",
+        description: "",
+        startDate: "",
+        endDate: "",
+        maxParticipants: ""
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier la session",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCancelSession = async (sessionId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir annuler cette session ?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('training_sessions')
+        .update({ status: 'cancelled' })
+        .eq('id', sessionId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Session annulée",
+        description: "La session a été annulée avec succès"
+      });
+
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'annuler la session",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container py-8">
@@ -303,7 +372,7 @@ const TrainerDashboard = () => {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {sessions?.map((session) => (
-          <Card key={session.id} className="hover:shadow-md transition-shadow">
+          <Card key={session.id}>
             <CardHeader>
               <CardTitle>{session.title}</CardTitle>
             </CardHeader>
@@ -489,6 +558,34 @@ const TrainerDashboard = () => {
                 )}
               </div>
             </CardContent>
+            <CardFooter>
+              <div className="flex gap-2 w-full">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setEditingSession(session);
+                    setNewSession({
+                      title: session.title,
+                      description: session.description || "",
+                      startDate: session.start_date,
+                      endDate: session.end_date,
+                      maxParticipants: session.max_participants?.toString() || ""
+                    });
+                  }}
+                >
+                  <Pencil className="w-4 h-4 mr-2" />
+                  Modifier
+                </Button>
+                {session.status === 'scheduled' && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleCancelSession(session.id)}
+                  >
+                    Annuler la session
+                  </Button>
+                )}
+              </div>
+            </CardFooter>
           </Card>
         ))}
       </div>
