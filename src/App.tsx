@@ -1,56 +1,59 @@
+import { BrowserRouter as Router } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AppProviders } from "./providers/AppProviders";
+import { LanguageSelector } from "./components/LanguageSelector";
+import { ThemeToggle } from "./components/ThemeToggle";
+import { useIntl } from "react-intl";
+import { DynamicNav } from "./components/nav/DynamicNav";
+import { HeroSection } from "./components/sections/HeroSection";
+import { FeaturesSection } from "./components/sections/FeaturesSection";
+import { CallToActionSection } from "./components/sections/CallToActionSection";
+import { PartnersSection } from "./components/sections/PartnersSection";
+import { TeamSection } from "./components/sections/TeamSection";
+import { TestimonialsSection } from "./components/sections/TestimonialsSection";
+import { BlogSection } from "./components/sections/BlogSection";
+import { ContactSection } from "./components/sections/ContactSection";
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { AdminRoute } from "@/components/auth/AdminRoute";
-import { CMSLayout } from "@/pages/admin/CMSLayout";
-import { DynamicNav } from "@/components/nav/DynamicNav";
-import AdminDashboard from "@/pages/admin/Dashboard";
-import MediasPage from "@/pages/admin/medias/MediasPage";
-import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
-import ArticlesPage from "@/pages/admin/articles/ArticlesPage";
-import ArticleEditor from "@/pages/admin/articles/ArticleEditor";
-import MenusPage from "@/pages/admin/menus/MenusPage";
-import SettingsPage from "@/pages/admin/settings/SettingsPage";
-import Auth from "@/pages/Auth";
-import Index from "./pages/Index";
-import Contact from "./pages/Contact";
-import Services from "./pages/Services";
-import BlogIndex from "./pages/blog/Index";
-import BlogPost from "./pages/blog/[id]";
+const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
+  const intl = useIntl();
+
   return (
-    <AuthProvider>
-      <Router>
-        <DynamicNav />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/blog" element={<BlogIndex />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/auth" element={<Auth />} />
-
-          {/* Routes CMS protégées */}
-          <Route path="/admin" element={
-            <AdminRoute>
-              <CMSLayout />
-            </AdminRoute>
-          }>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="medias" element={<MediasPage />} />
-            <Route path="categories" element={<CategoriesPage />} />
-            <Route path="articles" element={<ArticlesPage />} />
-            <Route path="articles/:id" element={<ArticleEditor />} />
-            <Route path="menus" element={<MenusPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-          </Route>
-        </Routes>
-        <Toaster />
-      </Router>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-background text-foreground">
+        <header className="sticky top-0 z-50" role="banner">
+          <div className="container flex items-center justify-between py-4">
+            <DynamicNav />
+            <div className="flex items-center gap-4">
+              <LanguageSelector
+                onLanguageChange={(locale) => {
+                  // Handle language change
+                }}
+                currentLocale={intl.locale}
+              />
+              <ThemeToggle />
+            </div>
+          </div>
+        </header>
+        <main role="main" className="flex-1">
+          <HeroSection />
+          <FeaturesSection />
+          <CallToActionSection />
+          <PartnersSection />
+          <TeamSection />
+          <TestimonialsSection />
+          <BlogSection />
+          <ContactSection />
+        </main>
+        <footer role="contentinfo" className="bg-muted py-8">
+          <div className="container text-center text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} TopCenter. Tous droits réservés.</p>
+          </div>
+        </footer>
+      </div>
+    </QueryClientProvider>
   );
-};
+}
 
 export default App;

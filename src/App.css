@@ -1,4 +1,3 @@
-
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -80,5 +79,59 @@
   }
   100% {
     background-position: 0 50%;
+  }
+}
+
+/* Accessibilité */
+:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary);
+  color: white;
+  padding: 8px;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Support du mode sombre */
+:root[class="dark"] {
+  color-scheme: dark;
+}
+
+/* Amélioration du contraste */
+@media (prefers-contrast: more) {
+  :root {
+    --primary: hsl(var(--primary-hsl) / 1);
+    --secondary: hsl(var(--secondary-hsl) / 1);
   }
 }
