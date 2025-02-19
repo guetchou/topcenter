@@ -7,6 +7,7 @@ import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
 import { BlogSection } from "@/components/sections/BlogSection";
 import { TeamSection } from "@/components/sections/TeamSection";
 import { PartnersSection } from "@/components/sections/PartnersSection";
+import { SocialMediaSection } from "@/components/sections/SocialMediaSection";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock, Shield, Globe, Zap, Award, BarChart2, CheckCircle } from "lucide-react";
 
@@ -227,6 +228,8 @@ const Index = () => {
       <BlogSection />
 
       <PartnersSection />
+
+      <SocialMediaSection />
 
       {/* Section Nouvelle : Technologies */}
       <section className="py-16">
