@@ -3,8 +3,8 @@ export interface MenuItem {
   id: string;
   label: string;
   url: string;
-  order: number;
-  [key: string]: string | number; // Pour satisfaire l'index signature
+  parent_id?: string | null;
+  order?: number;
 }
 
 export interface Menu {
