@@ -46,7 +46,10 @@ export const MenusPage = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data as Menu[];
+      return (data as any[]).map(menu => ({
+        ...menu,
+        items: menu.items || []
+      })) as Menu[];
     }
   });
 

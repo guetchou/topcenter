@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -50,14 +49,15 @@ export const SettingsPage = () => {
         .single();
 
       if (error) throw error;
-      return data?.content as SiteSettings;
-    },
-    onSuccess: (data) => {
-      if (data) {
-        setSettings(data);
-      }
+      return data?.content as unknown as SiteSettings;
     }
   });
+
+  useEffect(() => {
+    if (existingSettings) {
+      setSettings(existingSettings);
+    }
+  }, [existingSettings]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +68,7 @@ export const SettingsPage = () => {
         .upsert({
           page_key: 'site_settings',
           title: 'Site Settings',
-          content: settings,
+          content: settings as unknown as Json,
         });
 
       if (error) throw error;
