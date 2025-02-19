@@ -1,11 +1,10 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { CallToActionSection } from "@/components/sections/CallToActionSection";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock } from "lucide-react";
+import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock, Shield, Globe, Zap, Award, BarChart2, CheckCircle } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -13,6 +12,36 @@ const Index = () => {
   return (
     <div>
       <HeroSection />
+
+      {/* Section Nouvelle : Notre Impact */}
+      <section className="py-16 bg-primary/5">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Notre Impact en Chiffres</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Des résultats concrets qui démontrent notre expertise dans la gestion de centres d'appels
+            </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-4">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">+5000</div>
+              <p className="text-sm text-muted-foreground">Agents formés</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">+2M</div>
+              <p className="text-sm text-muted-foreground">Appels traités/mois</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">+500</div>
+              <p className="text-sm text-muted-foreground">Entreprises clientes</p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl font-bold text-primary mb-2">97%</div>
+              <p className="text-sm text-muted-foreground">Taux de résolution</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Section des caractéristiques principales */}
       <section className="py-16 bg-muted/50">
@@ -144,7 +173,98 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Section Nouvelle : Certifications */}
+      <section className="py-16 bg-gradient-to-r from-primary/5 to-secondary/5">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Certifications & Accréditations</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Nos certifications garantissent la qualité et la sécurité de nos services
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card className="text-center hover-lift">
+              <CardHeader>
+                <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
+                <CardTitle>ISO 27001</CardTitle>
+                <CardDescription>
+                  Sécurité de l'information
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="text-center hover-lift">
+              <CardHeader>
+                <Award className="w-12 h-12 text-primary mx-auto mb-4" />
+                <CardTitle>ISO 9001</CardTitle>
+                <CardDescription>
+                  Management de la qualité
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="text-center hover-lift">
+              <CardHeader>
+                <CheckCircle className="w-12 h-12 text-primary mx-auto mb-4" />
+                <CardTitle>PCI DSS</CardTitle>
+                <CardDescription>
+                  Sécurité des données bancaires
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       <ServicesSection />
+
+      {/* Section Nouvelle : Technologies */}
+      <section className="py-16">
+        <div className="container">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Technologies de Pointe</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Des solutions innovantes pour optimiser votre service client
+            </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-4">
+            <Card className="hover-lift">
+              <CardHeader>
+                <Zap className="w-8 h-8 text-primary mb-4" />
+                <CardTitle>IA Conversationnelle</CardTitle>
+                <CardDescription>
+                  Réponses intelligentes et contextuelles
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover-lift">
+              <CardHeader>
+                <Globe className="w-8 h-8 text-primary mb-4" />
+                <CardTitle>Omnicanal</CardTitle>
+                <CardDescription>
+                  Intégration multiplateforme seamless
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover-lift">
+              <CardHeader>
+                <BarChart2 className="w-8 h-8 text-primary mb-4" />
+                <CardTitle>Analytics Avancé</CardTitle>
+                <CardDescription>
+                  Insights et prédictions en temps réel
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card className="hover-lift">
+              <CardHeader>
+                <Bot className="w-8 h-8 text-primary mb-4" />
+                <CardTitle>Automatisation</CardTitle>
+                <CardDescription>
+                  Processus optimisés et efficaces
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
 
       {/* Section des avantages */}
       <section className="py-16 bg-muted/50">
