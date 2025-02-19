@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
@@ -17,7 +18,36 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          navigate("/dashboard");
+          // Récupérer le rôle de l'utilisateur
+          const { data: roleData, error: roleError } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', session.user.id)
+            .single();
+
+          if (roleError) {
+            console.error("Erreur lors de la récupération du rôle:", roleError);
+            navigate("/dashboard"); // Redirection par défaut
+            return;
+          }
+
+          // Redirection selon le rôle
+          switch (roleData?.role) {
+            case 'admin':
+              navigate("/admin/dashboard");
+              break;
+            case 'agent':
+              navigate("/agent/dashboard");
+              break;
+            case 'trainer':
+              navigate("/trainer/dashboard");
+              break;
+            case 'manager':
+              navigate("/manager/dashboard");
+              break;
+            default:
+              navigate("/dashboard"); // Utilisateur standard
+          }
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -31,7 +61,36 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
       if (event === "SIGNED_IN" && session) {
-        navigate("/dashboard");
+        // Récupérer le rôle de l'utilisateur après la connexion
+        const { data: roleData, error: roleError } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (roleError) {
+          console.error("Erreur lors de la récupération du rôle:", roleError);
+          navigate("/dashboard"); // Redirection par défaut
+          return;
+        }
+
+        // Redirection selon le rôle
+        switch (roleData?.role) {
+          case 'admin':
+            navigate("/admin/dashboard");
+            break;
+          case 'agent':
+            navigate("/agent/dashboard");
+            break;
+          case 'trainer':
+            navigate("/trainer/dashboard");
+            break;
+          case 'manager':
+            navigate("/manager/dashboard");
+            break;
+          default:
+            navigate("/dashboard"); // Utilisateur standard
+        }
       }
     });
 
