@@ -31,7 +31,7 @@ export const ArticleEditor = () => {
     excerpt: "",
     category: "",
     featured_image_url: "",
-    status: "draft"
+    status: "draft" as "draft" | "published"
   });
 
   const { data: article } = useQuery({

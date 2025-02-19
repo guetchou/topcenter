@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,22 +10,8 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
-interface MenuItem {
-  id: string;
-  label: string;
-  url: string;
-  order: number;
-}
-
-interface Menu {
-  id: string;
-  name: string;
-  location: string;
-  items: MenuItem[];
-  created_at: string;
-  updated_at: string;
-}
+import { MenuItem, Menu } from "@/types/menu";
+import { Json } from "@/integrations/supabase/types";
 
 export const MenusPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,7 +33,11 @@ export const MenusPage = () => {
       if (error) throw error;
       return (data as any[]).map(menu => ({
         ...menu,
-        items: menu.items || []
+        items: (menu.items as Json[] || []).map(item => ({
+          ...item,
+          id: item.id || crypto.randomUUID(),
+          order: item.order || 0
+        }))
       })) as Menu[];
     }
   });
@@ -63,7 +52,7 @@ export const MenusPage = () => {
           .update({
             name: formData.name,
             location: formData.location,
-            items: formData.items
+            items: formData.items as unknown as Json
           })
           .eq('id', editingMenu.id);
 
@@ -75,7 +64,7 @@ export const MenusPage = () => {
           .insert({
             name: formData.name,
             location: formData.location,
-            items: formData.items
+            items: formData.items as unknown as Json
           });
 
         if (error) throw error;
