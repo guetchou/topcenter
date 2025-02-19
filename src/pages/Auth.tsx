@@ -1,180 +1,113 @@
 
-import { useEffect, useState } from "react";
-import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
-import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
 
-type AppRole = "admin" | "moderator" | "user";
-
-const Auth = () => {
+export const Auth = () => {
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
+  const { signIn, signUp } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+  });
 
-  useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session) {
-          // Récupérer le rôle de l'utilisateur
-          const { data: roleData, error: roleError } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', session.user.id)
-            .single();
+  const from = (location.state as any)?.from?.pathname || '/admin/dashboard';
 
-          if (roleError) {
-            console.error("Erreur lors de la récupération du rôle:", roleError);
-            navigate("/dashboard"); // Redirection par défaut
-            return;
-          }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-          // Redirection selon le rôle
-          const role = roleData?.role as AppRole;
-          switch (role) {
-            case "admin":
-              navigate("/admin/dashboard");
-              break;
-            case "moderator":
-              navigate("/moderator/dashboard");
-              break;
-            case "user":
-              navigate("/dashboard");
-              break;
-            default:
-              navigate("/dashboard"); // Utilisateur standard
-          }
-        }
-      } catch (error) {
-        console.error("Auth check error:", error);
-        setErrorMessage("Une erreur est survenue lors de la vérification de l'authentification");
-      } finally {
-        setIsLoading(false);
+    try {
+      if (isLogin) {
+        await signIn(formData.email, formData.password);
+      } else {
+        await signUp(formData.email, formData.password, formData.fullName);
+        toast.success("Compte créé avec succès ! Vous pouvez maintenant vous connecter.");
+        setIsLogin(true);
+        return;
       }
-    };
-    checkUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event);
-      if (event === "SIGNED_IN" && session) {
-        // Récupérer le rôle de l'utilisateur après la connexion
-        const { data: roleData, error: roleError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (roleError) {
-          console.error("Erreur lors de la récupération du rôle:", roleError);
-          navigate("/dashboard"); // Redirection par défaut
-          return;
-        }
-
-        // Redirection selon le rôle
-        const role = roleData?.role as AppRole;
-        switch (role) {
-          case "admin":
-            navigate("/admin/dashboard");
-            break;
-          case "moderator":
-            navigate("/moderator/dashboard");
-            break;
-          case "user":
-            navigate("/dashboard");
-            break;
-          default:
-            navigate("/dashboard"); // Utilisateur standard
-        }
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      toast.error(error.message || "Une erreur est survenue");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="min-h-screen bg-background flex items-center justify-center p-4"
-    >
-      <div className="w-full max-w-md space-y-4">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-center mb-8"
-        >
-          <h1 className="text-2xl font-bold">Bienvenue</h1>
-          <p className="text-muted-foreground">Connectez-vous ou créez un compte</p>
-        </motion.div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>{isLogin ? "Connexion" : "Création de compte"}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Nom complet</Label>
+                <Input
+                  id="fullName"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    fullName: e.target.value
+                  }))}
+                  required={!isLogin}
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  email: e.target.value
+                }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Mot de passe</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  password: e.target.value
+                }))}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Chargement..." : (isLogin ? "Se connecter" : "Créer un compte")}
+            </Button>
+          </form>
 
-        {errorMessage && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.2 }}
-          >
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-card p-6 rounded-lg shadow-lg hover-lift"
-        >
-          <SupabaseAuth 
-            supabaseClient={supabase}
-            appearance={{ 
-              theme: ThemeSupa,
-              style: {
-                button: {
-                  transition: 'all 0.2s ease',
-                },
-                anchor: {
-                  transition: 'all 0.2s ease',
-                },
-                container: {
-                  transition: 'all 0.3s ease',
-                },
-              },
-            }}
-            theme="light"
-            providers={[]}
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: "Email",
-                  password_label: "Mot de passe",
-                  button_label: "Se connecter",
-                },
-                sign_up: {
-                  email_label: "Email",
-                  password_label: "Mot de passe",
-                  button_label: "S'inscrire",
-                },
-              },
-            }}
-          />
-        </motion.div>
-      </div>
-    </motion.div>
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              className="text-sm text-primary hover:underline"
+            >
+              {isLogin ? "Créer un compte" : "Déjà un compte ? Se connecter"}
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
