@@ -1,13 +1,14 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { SessionCard } from "@/components/training/SessionCard";
 import type { TrainingSession } from "@/types/training";
+import { useNavigate } from "react-router-dom";
 
 const Training = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [userEnrollments, setUserEnrollments] = useState<Set<string>>(new Set());
 
   const { data: sessions, isLoading } = useQuery({
@@ -69,6 +70,7 @@ const Training = () => {
       title: "Contenu en cours de chargement",
       description: "Vous allez être redirigé vers le contenu de formation",
     });
+    navigate(`/training/content/${materialId}`);
   };
 
   if (isLoading) {

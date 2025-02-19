@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
@@ -16,6 +15,7 @@ import Reports from "@/pages/Reports";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Services from "@/pages/Services";
+import TrainingContent from "@/pages/TrainingContent";
 
 const App = () => {
   return (
@@ -29,6 +29,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/training" element={<Training />} />
+        <Route path="/training/content/:materialId" element={<TrainingContent />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/blog" element={<BlogIndex />} />
