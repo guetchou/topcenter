@@ -1,9 +1,8 @@
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EnrollButtonProps {
   sessionId: string;
@@ -11,62 +10,58 @@ interface EnrollButtonProps {
   onEnrollmentSuccess: (sessionId: string) => void;
 }
 
-export const EnrollButton = ({ sessionId, isEnrolled, onEnrollmentSuccess }: EnrollButtonProps) => {
-  const navigate = useNavigate();
+export const EnrollButton = ({ 
+  sessionId, 
+  isEnrolled, 
+  onEnrollmentSuccess 
+}: EnrollButtonProps) => {
   const { toast } = useToast();
 
-  const handleEnroll = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
+  const handleEnroll = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
 
-    const { data: agent } = await supabase
-      .from('agents')
-      .select('id')
-      .eq('user_id', user.id)
-      .single();
+      const { data: agent } = await supabase
+        .from('agents')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
 
-    if (!agent) {
+      if (!agent) throw new Error("Agent non trouvé");
+
+      const { error } = await supabase
+        .from('training_enrollments')
+        .insert({
+          session_id: sessionId,
+          agent_id: agent.id
+        });
+
+      if (error) throw error;
+
       toast({
-        title: "Erreur",
-        description: "Agent non trouvé",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from('training_enrollments')
-      .insert({
-        session_id: sessionId,
-        agent_id: agent.id
+        title: "Inscription réussie",
+        description: "Vous êtes maintenant inscrit à cette session"
       });
 
-    if (!error) {
       onEnrollmentSuccess(sessionId);
-      toast({
-        title: "Succès",
-        description: "Inscription à la formation réussie",
-      });
-    } else {
+    } catch (error) {
       toast({
         title: "Erreur",
-        description: "Impossible de s'inscrire à la formation",
+        description: "Impossible de s'inscrire à la session",
         variant: "destructive"
       });
     }
-  };
+  }, [sessionId, toast, onEnrollmentSuccess]);
 
   return (
     <Button 
+      variant={isEnrolled ? "outline" : "default"}
       className="w-full"
-      variant={isEnrolled ? "secondary" : "default"}
-      disabled={isEnrolled}
       onClick={handleEnroll}
+      disabled={isEnrolled}
     >
-      {isEnrolled ? 'Déjà inscrit' : "S'inscrire"}
+      {isEnrolled ? "Déjà inscrit" : "S'inscrire"}
     </Button>
   );
 };

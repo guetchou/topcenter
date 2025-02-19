@@ -1,51 +1,50 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Clock, CheckCircle, PlayCircle } from "lucide-react";
-import type { TrainingMaterial, TrainingProgress } from "@/types/training";
+import { BookOpen, Video, FileText } from "lucide-react";
+import type { TrainingMaterial } from "@/types/training";
 
 interface MaterialCardProps {
   material: TrainingMaterial;
-  progress?: TrainingProgress;
   onStart: () => void;
 }
 
-export const MaterialCard = ({ material, progress, onStart }: MaterialCardProps) => {
-  const isCompleted = progress?.completion_status === 'completed';
-  const isInProgress = progress?.completion_status === 'in_progress';
+export const MaterialCard = ({ material, onStart }: MaterialCardProps) => {
+  const getIcon = () => {
+    switch (material.content_type) {
+      case 'video':
+        return <Video className="w-4 h-4" />;
+      case 'document':
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <BookOpen className="w-4 h-4" />;
+    }
+  };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span>{material.title}</span>
-          {isCompleted && <CheckCircle className="text-green-500 w-5 h-5" />}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground mb-4">
-          {material.description}
-        </p>
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-muted-foreground" />
-            <span className="text-sm">
-              {progress?.last_accessed_at ? new Date(progress.last_accessed_at).toLocaleDateString() : 'Non commencé'}
-            </span>
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-start gap-3">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            {getIcon()}
           </div>
-          {(isInProgress || isCompleted) && (
-            <Progress value={isCompleted ? 100 : 50} className="w-full" />
-          )}
-          <Button 
-            className="w-full"
-            variant={isCompleted ? "secondary" : "default"}
-            onClick={onStart}
-          >
-            <PlayCircle className="w-4 h-4 mr-2" />
-            {isCompleted ? 'Revoir' : isInProgress ? 'Continuer' : 'Commencer'}
-          </Button>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-medium truncate">{material.title}</h3>
+            {material.description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {material.description}
+              </p>
+            )}
+          </div>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full mt-4"
+          onClick={onStart}
+        >
+          Commencer
+        </Button>
       </CardContent>
     </Card>
   );
