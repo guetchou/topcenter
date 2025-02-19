@@ -1,4 +1,5 @@
-import { Phone, Globe, Shield, Headphones, Users, Server, BookOpen } from "lucide-react";
+
+import { Phone, Globe, Shield, Headphones, Users, Server, BookOpen, Network, Briefcase, MessageSquare, Database, Home } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const ServicesSection = () => {
@@ -16,24 +17,68 @@ export const ServicesSection = () => {
     },
     {
       icon: Globe,
-      title: "Vente en ligne",
-      description: "Plateforme de courtage et gestion des paiements",
+      title: "Téléphonie d'entreprise",
+      description: "Solutions de téléphonie professionnelle avancées",
       features: [
-        "Plateforme de courtage",
-        "Gestion des paiements",
-        "Suivi des commandes",
-        "Livraisons"
+        "Standards téléphoniques IP",
+        "Téléphonie cloud",
+        "Intégration VoIP",
+        "Communications unifiées"
       ]
     },
     {
       icon: Headphones,
-      title: "Standard téléphonique",
-      description: "Solutions de téléphonie d'entreprise complètes",
+      title: "Métiers du Call Center",
+      description: "Expertise dans tous les métiers des centres d'appels",
       features: [
-        "Gestion des standards",
-        "Numéros courts",
-        "Téléphonie interne",
-        "Support technique"
+        "Téléopérateurs qualifiés",
+        "Superviseurs expérimentés",
+        "Formateurs spécialisés",
+        "Quality managers"
+      ]
+    },
+    {
+      icon: Database,
+      title: "Solution CRM",
+      description: "Gestion complète de la relation client",
+      features: [
+        "Suivi client personnalisé",
+        "Historique des interactions",
+        "Analyses prédictives",
+        "Automatisation des tâches"
+      ]
+    },
+    {
+      icon: MessageSquare,
+      title: "Gestion Réseaux Sociaux",
+      description: "Gestion professionnelle de votre présence sociale",
+      features: [
+        "Community management",
+        "Modération de contenus",
+        "Veille stratégique",
+        "Social listening"
+      ]
+    },
+    {
+      icon: Network,
+      title: "Interconnexion d'Entreprise",
+      description: "Solutions de connexion inter-entreprises sécurisées",
+      features: [
+        "VPN d'entreprise",
+        "Réseaux privés",
+        "Intégration systèmes",
+        "Sécurité avancée"
+      ]
+    },
+    {
+      icon: Home,
+      title: "Solution de Télétravail",
+      description: "Outils et solutions pour le travail à distance",
+      features: [
+        "Postes virtuels",
+        "Collaboration à distance",
+        "Sécurité des accès",
+        "Support dédié"
       ]
     },
     {
