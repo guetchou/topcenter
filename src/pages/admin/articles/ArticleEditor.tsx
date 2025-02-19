@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import { RichTextEditor } from "@/components/RichTextEditor";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ArticleFormData {
   title: string;
@@ -53,6 +56,19 @@ export const ArticleEditor = () => {
     enabled: !isNew
   });
 
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('content_categories')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
   useEffect(() => {
     if (article) {
       setFormData({
@@ -80,7 +96,7 @@ export const ArticleEditor = () => {
     
     try {
       const slug = generateSlug(formData.title);
-      const author_id = "system"; // Valeur temporaire pour corriger l'erreur
+      const author_id = "system";
       
       if (isNew) {
         const { error } = await supabase
@@ -161,14 +177,25 @@ export const ArticleEditor = () => {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="content">Contenu</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-                  rows={10}
-                  required
-                />
+                <Label>Contenu</Label>
+                <Tabs defaultValue="edit">
+                  <TabsList>
+                    <TabsTrigger value="edit">Éditer</TabsTrigger>
+                    <TabsTrigger value="preview">Prévisualiser</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="edit">
+                    <RichTextEditor
+                      content={formData.content}
+                      onChange={(content) => setFormData(prev => ({ ...prev, content }))}
+                    />
+                  </TabsContent>
+                  <TabsContent value="preview">
+                    <div 
+                      className="prose max-w-none p-4 border rounded-md"
+                      dangerouslySetInnerHTML={{ __html: formData.content }}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
 
               <div className="grid gap-2">
