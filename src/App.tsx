@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { CMSLayout } from "@/pages/admin/CMSLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import MediasPage from "@/pages/admin/medias/MediasPage";
+import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
 import Index from "./pages/Index";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/admin" element={<CMSLayout />}>
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="medias" element={<MediasPage />} />
+          <Route path="categories" element={<CategoriesPage />} />
         </Route>
       </Routes>
       <Toaster />
