@@ -1,9 +1,12 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { CallToActionSection } from "@/components/sections/CallToActionSection";
+import { TestimonialsSection } from "@/components/sections/TestimonialsSection";
+import { BlogSection } from "@/components/sections/BlogSection";
+import { TeamSection } from "@/components/sections/TeamSection";
+import { PartnersSection } from "@/components/sections/PartnersSection";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock, Shield, Globe, Zap, Award, BarChart2, CheckCircle } from "lucide-react";
 
@@ -216,6 +219,14 @@ const Index = () => {
       </section>
 
       <ServicesSection />
+
+      <TestimonialsSection />
+
+      <TeamSection />
+
+      <BlogSection />
+
+      <PartnersSection />
 
       {/* Section Nouvelle : Technologies */}
       <section className="py-16">
