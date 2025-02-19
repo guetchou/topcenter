@@ -1,7 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { NewsGrid } from "@/components/NewsGrid";
 import { TestimonialSection } from "@/components/TestimonialSection";
-import { Building2, Mail, FileText, Phone, MoveRight, User } from "lucide-react";
+import { Building2, Mail, FileText, Phone, MoveRight, User, GraduationCap } from "lucide-react";
 import { HeroSection } from "@/components/sections/HeroSection";
 import { ServicesSection } from "@/components/sections/ServicesSection";
 import { AboutSection } from "@/components/sections/AboutSection";
@@ -18,6 +19,7 @@ import { TeamSection } from "@/components/sections/TeamSection";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -57,7 +59,7 @@ const Index = () => {
           <div className="flex items-center gap-2">
             <img 
               src="/lovable-uploads/94200422-356e-4b69-8e4c-c385cc1eb543.png"
-              alt="Top Center Logo" 
+              alt="Logo" 
               className="h-12 object-contain"
             />
           </div>
@@ -66,6 +68,7 @@ const Index = () => {
             <a href="#about" className="hover:text-primary transition-colors">À propos</a>
             <a href="#services" className="hover:text-primary transition-colors">Services</a>
             <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
+            <a href="/training" className="hover:text-primary transition-colors">Formation</a>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -110,6 +113,92 @@ const Index = () => {
         <AboutSection />
         <TeamSection />
         
+        {/* Section Formation */}
+        <section className="py-20 bg-gradient-to-b from-secondary/5 to-transparent">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-4">Formation Professionnelle</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Développez vos compétences avec nos formations spécialisées
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-primary" />
+                    Formations en direct
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Participez à nos sessions de formation en direct avec nos experts
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => navigate("/training")}
+                  >
+                    Voir les sessions
+                    <MoveRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-primary" />
+                    Ressources
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Accédez à notre bibliothèque de ressources pédagogiques
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => navigate("/training")}
+                  >
+                    Explorer
+                    <MoveRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardFooter>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-primary" />
+                    Certification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Obtenez des certifications reconnues dans votre domaine
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full"
+                    onClick={() => navigate("/training")}
+                  >
+                    En savoir plus
+                    <MoveRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </div>
+        </section>
+        
         <section className="py-20">
           <div className="container">
             <SearchFilter onSearch={handleSearch} onFilter={handleFilter} />
@@ -138,12 +227,10 @@ const Index = () => {
 
       <Footer />
       
-      {/* Assistant IA flottant */}
       <div className="fixed bottom-4 right-4 z-50">
         <AIAssistant />
       </div>
 
-      {/* Bouton retour en haut */}
       <ScrollToTop />
     </div>
   );
