@@ -46,23 +46,39 @@ const TrainerDashboard = () => {
       const { data, error } = await supabase
         .from('training_sessions')
         .select(`
-          *,
-          training_materials (
+          id,
+          title,
+          description,
+          start_date,
+          end_date,
+          max_participants,
+          status,
+          materials_url,
+          trainer_id,
+          created_at,
+          updated_at,
+          training_materials!left(
             id,
+            session_id,
             title,
+            description,
             content_type,
-            content_url
+            content_url,
+            order_index,
+            created_at,
+            updated_at
           ),
-          enrollments:training_enrollments(count)
+          enrollments:training_enrollments(id)
         `)
         .eq('trainer_id', agent.id)
         .order('start_date', { ascending: false });
 
       if (error) throw error;
-      return data.map(session => ({
+
+      return (data as any[]).map(session => ({
         ...session,
         _count: {
-          enrollments: session.enrollments?.count || 0
+          enrollments: session.enrollments?.length || 0
         }
       })) as TrainingSession[];
     }

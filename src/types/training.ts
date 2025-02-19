@@ -37,7 +37,7 @@ export interface TrainingSession {
     avatar_url: string | null;
   };
   training_materials?: TrainingMaterial[];
-  _count: {
+  _count?: {
     enrollments: number;
   };
   created_at: string;

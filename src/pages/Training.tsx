@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import type { TrainingSession, TrainingStatistics } from "@/types/training";
 import { useNavigate } from "react-router-dom";
 
@@ -22,15 +20,26 @@ const Training = () => {
   const [dateFilter, setDateFilter] = useState<string>("all");
 
   const { data: sessions, isLoading } = useQuery({
-    queryKey: ['training-sessions'],
+    queryKey: ['training-sessions', statusFilter],
     queryFn: async () => {
-      const query = supabase
+      const baseQuery = supabase
         .from('training_sessions')
         .select(`
-          *,
+          id,
+          title,
+          description,
+          start_date,
+          end_date,
+          max_participants,
+          status,
+          materials_url,
+          trainer_id,
+          created_at,
+          updated_at,
           trainer:agents(full_name, avatar_url),
-          training_materials (
+          training_materials!left(
             id,
+            session_id,
             title,
             description,
             content_type,
@@ -39,59 +48,24 @@ const Training = () => {
             created_at,
             updated_at
           ),
-          _count {
-            enrollments: training_enrollments(count)
-          }
+          enrollments:training_enrollments(id)
         `)
         .order('start_date', { ascending: true });
 
       if (statusFilter !== "all") {
-        query.eq('status', statusFilter);
+        baseQuery.eq('status', statusFilter);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as TrainingSession[];
-    }
-  });
-
-  const { data: statistics } = useQuery({
-    queryKey: ['training-statistics'],
-    queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Non authentifié");
-
-      const { data: agent } = await supabase
-        .from('agents')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!agent) throw new Error("Agent non trouvé");
-
-      const { data, error } = await supabase
-        .from('training_enrollments')
-        .select(`
-          *,
-          session:training_sessions!inner(*),
-          progress:training_progress(*)
-        `)
-        .eq('agent_id', agent.id);
+      const { data, error } = await baseQuery;
 
       if (error) throw error;
 
-      const stats: TrainingStatistics = {
-        totalSessions: data.length,
-        completedSessions: data.filter(e => e.status === 'completed').length,
-        averageProgress: data.reduce((acc, curr) => {
-          const completed = curr.progress?.filter(p => p.completion_status === 'completed').length || 0;
-          const total = curr.progress?.length || 1;
-          return acc + (completed / total);
-        }, 0) / (data.length || 1) * 100,
-        totalEnrollments: data.length
-      };
-
-      return stats;
+      return (data as any[]).map(session => ({
+        ...session,
+        _count: {
+          enrollments: session.enrollments?.length || 0
+        }
+      })) as TrainingSession[];
     }
   });
 
