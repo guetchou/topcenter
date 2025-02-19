@@ -8,6 +8,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
+type AppRole = "admin" | "moderator" | "user";
+
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
@@ -32,18 +34,16 @@ const Auth = () => {
           }
 
           // Redirection selon le rôle
-          switch (roleData?.role) {
-            case 'admin':
+          const role = roleData?.role as AppRole;
+          switch (role) {
+            case "admin":
               navigate("/admin/dashboard");
               break;
-            case 'agent':
-              navigate("/agent/dashboard");
+            case "moderator":
+              navigate("/moderator/dashboard");
               break;
-            case 'trainer':
-              navigate("/trainer/dashboard");
-              break;
-            case 'manager':
-              navigate("/manager/dashboard");
+            case "user":
+              navigate("/dashboard");
               break;
             default:
               navigate("/dashboard"); // Utilisateur standard
@@ -75,18 +75,16 @@ const Auth = () => {
         }
 
         // Redirection selon le rôle
-        switch (roleData?.role) {
-          case 'admin':
+        const role = roleData?.role as AppRole;
+        switch (role) {
+          case "admin":
             navigate("/admin/dashboard");
             break;
-          case 'agent':
-            navigate("/agent/dashboard");
+          case "moderator":
+            navigate("/moderator/dashboard");
             break;
-          case 'trainer':
-            navigate("/trainer/dashboard");
-            break;
-          case 'manager':
-            navigate("/manager/dashboard");
+          case "user":
+            navigate("/dashboard");
             break;
           default:
             navigate("/dashboard"); // Utilisateur standard
