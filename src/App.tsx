@@ -8,6 +8,7 @@ import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
 import ArticlesPage from "@/pages/admin/articles/ArticlesPage";
 import ArticleEditor from "@/pages/admin/articles/ArticleEditor";
 import MenusPage from "@/pages/admin/menus/MenusPage";
+import SettingsPage from "@/pages/admin/settings/SettingsPage";
 import Index from "./pages/Index";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
@@ -32,6 +33,7 @@ const App = () => {
           <Route path="articles" element={<ArticlesPage />} />
           <Route path="articles/:id" element={<ArticleEditor />} />
           <Route path="menus" element={<MenusPage />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>
       <Toaster />
