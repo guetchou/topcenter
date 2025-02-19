@@ -7,12 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Calendar, BookOpen, PlusCircle } from "lucide-react";
+import { Users, Calendar, BookOpen, PlusCircle, Upload } from "lucide-react";
 import type { TrainingSession } from "@/types/training";
 
 const TrainerDashboard = () => {
   const { toast } = useToast();
   const [showNewSession, setShowNewSession] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [newMaterial, setNewMaterial] = useState({
+    title: "",
+    description: "",
+    contentType: "document",
+    contentUrl: ""
+  });
   const [newSession, setNewSession] = useState({
     title: "",
     description: "",
@@ -39,15 +46,24 @@ const TrainerDashboard = () => {
         .from('training_sessions')
         .select(`
           *,
-          _count {
-            enrollments: training_enrollments(count)
-          }
+          training_materials (
+            id,
+            title,
+            content_type,
+            content_url
+          ),
+          enrollments:training_enrollments(count)
         `)
         .eq('trainer_id', agent.id)
         .order('start_date', { ascending: false });
 
       if (error) throw error;
-      return data as TrainingSession[];
+      return data.map(session => ({
+        ...session,
+        _count: {
+          enrollments: session.enrollments?.count || 0
+        }
+      })) as TrainingSession[];
     }
   });
 
@@ -98,6 +114,43 @@ const TrainerDashboard = () => {
       toast({
         title: "Erreur",
         description: "Impossible de créer la session",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAddMaterial = async (sessionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('training_materials')
+        .insert({
+          session_id: sessionId,
+          title: newMaterial.title,
+          description: newMaterial.description,
+          content_type: newMaterial.contentType,
+          content_url: newMaterial.contentUrl,
+          order_index: 0
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Support ajouté",
+        description: "Le support de cours a été ajouté avec succès"
+      });
+
+      setSelectedSession(null);
+      setNewMaterial({
+        title: "",
+        description: "",
+        contentType: "document",
+        contentUrl: ""
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le support",
         variant: "destructive"
       });
     }
@@ -214,13 +267,91 @@ const TrainerDashboard = () => {
                   <div className="flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-muted-foreground" />
                     <span className="text-sm">
-                      {session.materials_url?.length || 0} supports de cours
+                      {session.training_materials?.length || 0} supports de cours
                     </span>
                   </div>
                 </div>
-                <Button variant="outline" className="w-full">
-                  Gérer la session
-                </Button>
+                
+                {selectedSession === session.id ? (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="materialTitle">Titre du support</Label>
+                      <Input
+                        id="materialTitle"
+                        value={newMaterial.title}
+                        onChange={e => setNewMaterial(prev => ({ ...prev, title: e.target.value }))}
+                        placeholder="Ex: Introduction à la formation"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="materialDescription">Description</Label>
+                      <Input
+                        id="materialDescription"
+                        value={newMaterial.description}
+                        onChange={e => setNewMaterial(prev => ({ ...prev, description: e.target.value }))}
+                        placeholder="Description du contenu"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contentUrl">URL du contenu</Label>
+                      <Input
+                        id="contentUrl"
+                        value={newMaterial.contentUrl}
+                        onChange={e => setNewMaterial(prev => ({ ...prev, contentUrl: e.target.value }))}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleAddMaterial(session.id)}
+                        className="flex-1"
+                      >
+                        Ajouter
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setSelectedSession(null)}
+                        className="flex-1"
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      className="flex-1"
+                      onClick={() => setSelectedSession(session.id)}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Ajouter un support
+                    </Button>
+                  </div>
+                )}
+
+                {session.training_materials && session.training_materials.length > 0 && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-2">Supports de cours</h3>
+                    <div className="space-y-2">
+                      {session.training_materials.map((material) => (
+                        <div 
+                          key={material.id}
+                          className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                        >
+                          <span>{material.title}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => window.open(material.content_url, '_blank')}
+                          >
+                            Voir
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
