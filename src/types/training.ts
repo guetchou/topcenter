@@ -31,13 +31,11 @@ export interface TrainingSession {
   max_participants: number | null;
   status: string;
   materials_url: string[] | null;
-  trainer: {
-    full_name: string;
-    avatar_url: string | null;
-  };
+  trainer_id: string;
+  training_materials?: TrainingMaterial[];
   _count: {
     enrollments: number;
   };
-  materials?: TrainingMaterial[];
-  progress?: TrainingProgress[];
+  created_at: string;
+  updated_at: string;
 }

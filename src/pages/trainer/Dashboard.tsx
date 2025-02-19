@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,13 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Calendar, BookOpen, PlusCircle, Upload } from "lucide-react";
-import type { TrainingSession } from "@/types/training";
+import { Users, Calendar, BookOpen, PlusCircle, Upload, Pencil, Trash2 } from "lucide-react";
+import type { TrainingSession, TrainingMaterial } from "@/types/training";
 
 const TrainerDashboard = () => {
   const { toast } = useToast();
   const [showNewSession, setShowNewSession] = useState(false);
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
+  const [editingMaterial, setEditingMaterial] = useState<TrainingMaterial | null>(null);
   const [newMaterial, setNewMaterial] = useState({
     title: "",
     description: "",
@@ -156,6 +156,67 @@ const TrainerDashboard = () => {
     }
   };
 
+  const handleUpdateMaterial = async (material: TrainingMaterial) => {
+    try {
+      const { error } = await supabase
+        .from('training_materials')
+        .update({
+          title: newMaterial.title,
+          description: newMaterial.description,
+          content_url: newMaterial.contentUrl
+        })
+        .eq('id', material.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Support modifié",
+        description: "Le support de cours a été modifié avec succès"
+      });
+
+      setEditingMaterial(null);
+      setNewMaterial({
+        title: "",
+        description: "",
+        contentType: "document",
+        contentUrl: ""
+      });
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le support",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce support de cours ?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('training_materials')
+        .delete()
+        .eq('id', materialId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Support supprimé",
+        description: "Le support de cours a été supprimé avec succès"
+      });
+
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le support",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="container py-8">
@@ -272,7 +333,7 @@ const TrainerDashboard = () => {
                   </div>
                 </div>
                 
-                {selectedSession === session.id ? (
+                {selectedSession === session.id && !editingMaterial ? (
                   <div className="space-y-4 border-t pt-4">
                     <div className="space-y-2">
                       <Label htmlFor="materialTitle">Titre du support</Label>
@@ -317,6 +378,56 @@ const TrainerDashboard = () => {
                       </Button>
                     </div>
                   </div>
+                ) : editingMaterial ? (
+                  <div className="space-y-4 border-t pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="editMaterialTitle">Titre du support</Label>
+                      <Input
+                        id="editMaterialTitle"
+                        value={newMaterial.title}
+                        onChange={e => setNewMaterial(prev => ({ ...prev, title: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editMaterialDescription">Description</Label>
+                      <Input
+                        id="editMaterialDescription"
+                        value={newMaterial.description}
+                        onChange={e => setNewMaterial(prev => ({ ...prev, description: e.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="editContentUrl">URL du contenu</Label>
+                      <Input
+                        id="editContentUrl"
+                        value={newMaterial.contentUrl}
+                        onChange={e => setNewMaterial(prev => ({ ...prev, contentUrl: e.target.value }))}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => handleUpdateMaterial(editingMaterial)}
+                        className="flex-1"
+                      >
+                        Enregistrer
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setEditingMaterial(null);
+                          setNewMaterial({
+                            title: "",
+                            description: "",
+                            contentType: "document",
+                            contentUrl: ""
+                          });
+                        }}
+                        className="flex-1"
+                      >
+                        Annuler
+                      </Button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex gap-2">
                     <Button 
@@ -340,13 +451,37 @@ const TrainerDashboard = () => {
                           className="flex items-center justify-between p-2 bg-muted rounded-lg"
                         >
                           <span>{material.title}</span>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => window.open(material.content_url, '_blank')}
-                          >
-                            Voir
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setEditingMaterial(material);
+                                setNewMaterial({
+                                  title: material.title,
+                                  description: material.description || "",
+                                  contentType: material.content_type,
+                                  contentUrl: material.content_url
+                                });
+                              }}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => handleDeleteMaterial(material.id)}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => window.open(material.content_url, '_blank')}
+                            >
+                              Voir
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
