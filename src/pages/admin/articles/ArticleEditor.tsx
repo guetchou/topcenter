@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -12,18 +11,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 
+interface ArticleFormData {
+  title: string;
+  content: string;
+  excerpt: string;
+  category: string;
+  featured_image_url: string;
+  status: "draft" | "published";
+}
+
 export const ArticleEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const isNew = id === "new";
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ArticleFormData>({
     title: "",
     content: "",
     excerpt: "",
     category: "",
     featured_image_url: "",
-    status: "draft" as "draft" | "published"
+    status: "draft"
   });
 
   const { data: article } = useQuery({
@@ -82,6 +90,7 @@ export const ArticleEditor = () => {
     
     try {
       const slug = generateSlug(formData.title);
+      const author_id = "system"; // Valeur temporaire pour corriger l'erreur
       
       if (isNew) {
         const { error } = await supabase
@@ -89,6 +98,7 @@ export const ArticleEditor = () => {
           .insert({
             ...formData,
             slug,
+            author_id,
           });
 
         if (error) throw error;
@@ -99,6 +109,7 @@ export const ArticleEditor = () => {
           .update({
             ...formData,
             slug,
+            author_id,
           })
           .eq('id', id);
 

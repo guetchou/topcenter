@@ -7,6 +7,7 @@ import MediasPage from "@/pages/admin/medias/MediasPage";
 import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
 import ArticlesPage from "@/pages/admin/articles/ArticlesPage";
 import ArticleEditor from "@/pages/admin/articles/ArticleEditor";
+import MenusPage from "@/pages/admin/menus/MenusPage";
 import Index from "./pages/Index";
 import Contact from "./pages/Contact";
 import Services from "./pages/Services";
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="articles" element={<ArticlesPage />} />
           <Route path="articles/:id" element={<ArticleEditor />} />
+          <Route path="menus" element={<MenusPage />} />
         </Route>
       </Routes>
       <Toaster />
