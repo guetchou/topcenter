@@ -31,7 +31,7 @@ export const ArticleEditor = () => {
     excerpt: "",
     category: "",
     featured_image_url: "",
-    status: "draft" as "draft" | "published"
+    status: "draft"
   });
 
   const { data: article } = useQuery({
@@ -45,22 +45,12 @@ export const ArticleEditor = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return {
+        ...data,
+        status: data.status as "draft" | "published"
+      };
     },
     enabled: !isNew
-  });
-
-  const { data: categories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('content_categories')
-        .select('*')
-        .order('name');
-
-      if (error) throw error;
-      return data;
-    }
   });
 
   useEffect(() => {
@@ -71,7 +61,7 @@ export const ArticleEditor = () => {
         excerpt: article.excerpt || "",
         category: article.category,
         featured_image_url: article.featured_image_url || "",
-        status: article.status
+        status: article.status as "draft" | "published"
       });
     }
   }, [article]);

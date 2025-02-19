@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,14 +32,19 @@ export const MenusPage = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return (data as any[]).map(menu => ({
-        ...menu,
-        items: (menu.items as Json[] || []).map(item => ({
-          ...item,
-          id: item.id || crypto.randomUUID(),
-          order: item.order || 0
-        }))
-      })) as Menu[];
+      
+      return (data || []).map(menu => {
+        const items = Array.isArray(menu.items) ? menu.items : [];
+        return {
+          ...menu,
+          items: items.map((item: any) => ({
+            id: item.id || crypto.randomUUID(),
+            label: item.label || "",
+            url: item.url || "",
+            order: item.order || 0
+          }))
+        };
+      }) as Menu[];
     }
   });
 
@@ -46,14 +52,21 @@ export const MenusPage = () => {
     e.preventDefault();
     
     try {
+      const menuData = {
+        name: formData.name,
+        location: formData.location,
+        items: formData.items.map(item => ({
+          id: item.id,
+          label: item.label,
+          url: item.url,
+          order: item.order
+        }))
+      };
+
       if (editingMenu) {
         const { error } = await supabase
           .from('menus')
-          .update({
-            name: formData.name,
-            location: formData.location,
-            items: formData.items as unknown as Json
-          })
+          .update(menuData)
           .eq('id', editingMenu.id);
 
         if (error) throw error;
@@ -61,11 +74,7 @@ export const MenusPage = () => {
       } else {
         const { error } = await supabase
           .from('menus')
-          .insert({
-            name: formData.name,
-            location: formData.location,
-            items: formData.items as unknown as Json
-          });
+          .insert(menuData);
 
         if (error) throw error;
         toast.success("Menu créé avec succès");
