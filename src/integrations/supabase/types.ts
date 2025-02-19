@@ -260,7 +260,9 @@ export type Database = {
           content: string
           created_at: string
           excerpt: string | null
+          featured_image_url: string | null
           id: string
+          media_gallery: Json | null
           published_at: string | null
           slug: string
           status: string
@@ -273,7 +275,9 @@ export type Database = {
           content: string
           created_at?: string
           excerpt?: string | null
+          featured_image_url?: string | null
           id?: string
+          media_gallery?: Json | null
           published_at?: string | null
           slug: string
           status?: string
@@ -286,7 +290,9 @@ export type Database = {
           content?: string
           created_at?: string
           excerpt?: string | null
+          featured_image_url?: string | null
           id?: string
+          media_gallery?: Json | null
           published_at?: string | null
           slug?: string
           status?: string
@@ -354,6 +360,44 @@ export type Database = {
           subject?: string
         }
         Relationships: []
+      }
+      content_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "content_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_transfers: {
         Row: {
@@ -484,6 +528,72 @@ export type Database = {
           phone?: string
           position?: string
           status?: string | null
+        }
+        Relationships: []
+      }
+      media_library: {
+        Row: {
+          alt_text: string | null
+          created_at: string
+          description: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          id: string
+          updated_at: string
+          uploaded_by: string | null
+          url: string
+        }
+        Insert: {
+          alt_text?: string | null
+          created_at?: string
+          description?: string | null
+          file_name: string
+          file_size: number
+          file_type: string
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          url: string
+        }
+        Update: {
+          alt_text?: string | null
+          created_at?: string
+          description?: string | null
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
+      menus: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json | null
+          location: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json | null
+          location: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json | null
+          location?: string
+          name?: string
+          updated_at?: string
         }
         Relationships: []
       }
