@@ -1,7 +1,9 @@
+
 import { Button } from "@/components/ui/button";
-import { MoveRight, Phone, FileText } from "lucide-react";
+import { MoveRight, Phone, FileText, Star, ShieldCheck, Globe2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
@@ -24,45 +26,103 @@ export const HeroSection = () => {
   };
 
   return (
-    <section className="relative pt-32 pb-20 overflow-hidden bg-gradient-to-r from-[#403E43] to-[#1A1F2C]">
-      <div className="container relative z-10">
-        <div className="max-w-3xl mx-auto text-center text-white">
-          <h1 className="mb-6 text-5xl font-bold animate-slide-up">
-            Centre d'Appels Omnicanal au Congo
-          </h1>
-          <p className="mb-8 text-xl opacity-90 animate-fade-in">
-            Une expertise complète en gestion de la relation client
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button 
-              size="lg" 
-              variant="secondary" 
-              className="animate-fade-in hover-lift group"
-              onClick={handleCallNow}
-            >
-              Appelez maintenant
-              <Phone className="w-4 h-4 ml-2" />
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="animate-fade-in text-white hover:text-primary hover-lift"
-              onClick={handleQuoteRequest}
-            >
-              Demandez un devis
-              <FileText className="w-4 h-4 ml-2" />
-            </Button>
-          </div>
-        </div>
-      </div>
+    <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-r from-[#1A1F2C] to-[#2C3345]">
       <div 
         className="absolute inset-0 opacity-10"
         style={{
-          backgroundImage: `url(https://images.unsplash.com/photo-1469474968028-56623f02e42e)`,
+          backgroundImage: `url(https://images.unsplash.com/photo-1519389950473-47ba0277781c)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
       />
+      
+      <div className="container relative z-10 py-20">
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="text-white space-y-8">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-fade-in">
+              <Star className="w-4 h-4 mr-2" />
+              Leader du marché au Congo
+            </div>
+            
+            <h1 className="text-5xl lg:text-6xl font-bold leading-tight animate-slide-up">
+              Centre d'Appels <br />
+              <span className="text-primary">Nouvelle Génération</span>
+            </h1>
+            
+            <p className="text-xl opacity-90 max-w-xl animate-fade-in">
+              Optimisez votre relation client grâce à notre technologie omnicanale alimentée par l'IA. Performance, innovation et excellence au service de votre entreprise.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                size="lg" 
+                variant="default"
+                className="animate-fade-in hover-lift group"
+                onClick={handleCallNow}
+              >
+                Démarrer maintenant
+                <MoveRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="animate-fade-in text-white hover:text-primary hover-lift"
+                onClick={handleQuoteRequest}
+              >
+                Demander un devis
+                <FileText className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-8 pt-8 border-t border-white/10">
+              <div className="flex items-center gap-2">
+                <Globe2 className="w-5 h-5 text-primary" />
+                <span>Couverture nationale</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-primary" />
+                <span>ISO 27001 Certifié</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden lg:block">
+            <div className="relative">
+              <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
+              <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary/20 rounded-full blur-3xl"></div>
+              <div className="relative grid gap-6">
+                <Card className="bg-white/5 backdrop-blur border-white/10 hover-lift">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Phone className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">Support 24/7</h3>
+                        <p className="text-white/70">Assistance technique en continu</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-white/5 backdrop-blur border-white/10 hover-lift">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+                        <Star className="w-6 h-6 text-secondary" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-white">95% Satisfaction</h3>
+                        <p className="text-white/70">Clients satisfaits</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 };
