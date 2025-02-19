@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AdminRoute } from "@/components/auth/AdminRoute";
 import { CMSLayout } from "@/pages/admin/CMSLayout";
+import { DynamicNav } from "@/components/nav/DynamicNav";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import MediasPage from "@/pages/admin/medias/MediasPage";
 import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
@@ -22,6 +23,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router>
+        <DynamicNav />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/contact" element={<Contact />} />
