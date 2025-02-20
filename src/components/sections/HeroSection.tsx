@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { MoveRight, Phone, FileText, Star, ShieldCheck, Globe2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { Card, CardContent } from "@/components/ui/card";
 import { Avatar3DCreator } from "@/components/Avatar3D";
 
 export const HeroSection = () => {
@@ -40,17 +39,17 @@ export const HeroSection = () => {
       <div className="container relative z-10 py-20">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="text-white space-y-8">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-fade-in">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
               <Star className="w-4 h-4 mr-2" />
               Leader du marché au Congo
             </div>
             
-            <h1 className="text-5xl lg:text-6xl font-bold leading-tight animate-slide-up">
+            <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
               Centre d'Appels <br />
               <span className="text-primary">Nouvelle Génération</span>
             </h1>
             
-            <p className="text-xl opacity-90 max-w-xl animate-fade-in">
+            <p className="text-xl opacity-90 max-w-xl">
               Optimisez votre relation client grâce à notre technologie omnicanale alimentée par l'IA. Performance, innovation et excellence au service de votre entreprise.
             </p>
             
@@ -58,7 +57,7 @@ export const HeroSection = () => {
               <Button 
                 size="lg" 
                 variant="default"
-                className="animate-fade-in hover-lift group"
+                className="group"
                 onClick={handleCallNow}
               >
                 Démarrer maintenant
@@ -67,7 +66,7 @@ export const HeroSection = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="animate-fade-in text-white hover:text-primary hover-lift"
+                className="text-white hover:text-primary"
                 onClick={handleQuoteRequest}
               >
                 Demander un devis
