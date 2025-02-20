@@ -3,11 +3,11 @@ import { renderHook } from '@testing-library/react';
 import { useMenus } from '../useMenus';
 import { describe, it, expect } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 const queryClient = new QueryClient();
 
-const wrapper = ({ children }: PropsWithChildren) => (
+const Wrapper = ({ children }: PropsWithChildren) => (
   <QueryClientProvider client={queryClient}>
     {children}
   </QueryClientProvider>
@@ -15,17 +15,17 @@ const wrapper = ({ children }: PropsWithChildren) => (
 
 describe('useMenus', () => {
   it('should return menus data', async () => {
-    const { result } = renderHook(() => useMenus('header'), { wrapper });
+    const { result } = renderHook(() => useMenus('header'), { wrapper: Wrapper });
     expect(result.current.data).toBeDefined();
   });
 
   it('should handle loading state', () => {
-    const { result } = renderHook(() => useMenus('header'), { wrapper });
+    const { result } = renderHook(() => useMenus('header'), { wrapper: Wrapper });
     expect(result.current.isLoading).toBeDefined();
   });
 
   it('should handle error state', () => {
-    const { result } = renderHook(() => useMenus('header'), { wrapper });
+    const { result } = renderHook(() => useMenus('header'), { wrapper: Wrapper });
     expect(result.current.error).toBeDefined();
   });
 });

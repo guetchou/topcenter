@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { createClient } from "@supabase/supabase-js";
 
 export const AIChatBubble = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,24 +15,38 @@ export const AIChatBubble = () => {
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
-    setMessages(prev => [...prev, { text: message, isUser: true }]);
+    const newMessage = { text: message, isUser: true };
+    setMessages(prev => [...prev, newMessage]);
     setIsLoading(true);
     
     try {
-      // Exemple de réponse pour montrer l'interface
-      setTimeout(() => {
-        setMessages(prev => [...prev, { 
-          text: "Je suis l'assistant IA de TopCenter. Comment puis-je vous aider aujourd'hui ?", 
-          isUser: false 
-        }]);
-        setIsLoading(false);
-      }, 1000);
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL,
+        import.meta.env.VITE_SUPABASE_ANON_KEY
+      );
+
+      const { data, error } = await supabase.functions.invoke('ai-chat', {
+        body: { message }
+      });
+
+      if (error) throw error;
+
+      const botResponse = { 
+        text: data.choices[0].message.content, 
+        isUser: false 
+      };
+      
+      setMessages(prev => [...prev, botResponse]);
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
+      setMessages(prev => [...prev, { 
+        text: "Désolé, une erreur est survenue. Veuillez réessayer.", 
+        isUser: false 
+      }]);
+    } finally {
       setIsLoading(false);
+      setMessage("");
     }
-
-    setMessage("");
   };
 
   return (
@@ -53,6 +68,11 @@ export const AIChatBubble = () => {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {messages.length === 0 && (
+              <div className="text-center text-muted-foreground">
+                Comment puis-je vous aider aujourd'hui ?
+              </div>
+            )}
             {messages.map((msg, index) => (
               <div
                 key={index}
@@ -97,7 +117,7 @@ export const AIChatBubble = () => {
                 placeholder="Écrivez votre message..."
                 className="flex-1"
               />
-              <Button type="submit" size="icon">
+              <Button type="submit" size="icon" disabled={isLoading}>
                 <MessageSquareText className="w-4 h-4" />
               </Button>
             </form>
