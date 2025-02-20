@@ -4,6 +4,7 @@ import { MoveRight, Phone, FileText, Star, ShieldCheck, Globe2 } from "lucide-re
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
+import { Avatar3DCreator } from "@/components/Avatar3D";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
@@ -90,7 +91,12 @@ export const HeroSection = () => {
             <div className="relative">
               <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
               <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary/20 rounded-full blur-3xl"></div>
-              <div className="relative grid gap-6">
+              
+              <div className="relative">
+                <Avatar3DCreator />
+              </div>
+
+              <div className="relative grid gap-6 mt-8">
                 <Card className="bg-white/5 backdrop-blur border-white/10 hover-lift">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
