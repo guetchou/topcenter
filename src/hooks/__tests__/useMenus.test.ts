@@ -7,7 +7,11 @@ import React from 'react';
 
 const queryClient = new QueryClient();
 
-const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+type WrapperProps = {
+  children: React.ReactNode;
+};
+
+const Wrapper = ({ children }: WrapperProps) => (
   <QueryClientProvider client={queryClient}>
     {children}
   </QueryClientProvider>

@@ -5,12 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { Select } from "@/components/ui/select";
+
+type AIModel = "perplexity" | "llama2" | "mistral" | "bloom";
 
 export const AIChatBubble = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<AIModel>("perplexity");
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -20,14 +24,22 @@ export const AIChatBubble = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('ai-chat', {
-        body: { message }
-      });
+      let response;
+      
+      if (selectedModel === "perplexity") {
+        response = await supabase.functions.invoke('ai-chat', {
+          body: { message }
+        });
+      } else {
+        response = await supabase.functions.invoke('local-ai', {
+          body: { message, model: selectedModel }
+        });
+      }
 
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       const botResponse = { 
-        text: data.choices[0].message.content, 
+        text: response.data.choices[0].message.content, 
         isUser: false 
       };
       
@@ -56,6 +68,16 @@ export const AIChatBubble = () => {
               </div>
               <span className="font-medium">Assistant TopCenter</span>
             </div>
+            <Select
+              value={selectedModel}
+              onValueChange={(value) => setSelectedModel(value as AIModel)}
+              className="w-32"
+            >
+              <option value="perplexity">Perplexity</option>
+              <option value="llama2">Llama 2</option>
+              <option value="mistral">Mistral 7B</option>
+              <option value="bloom">BLOOM</option>
+            </Select>
             <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
               <X className="w-4 h-4" />
             </Button>
