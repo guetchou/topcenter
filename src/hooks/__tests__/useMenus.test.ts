@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useMenus } from '../useMenus';
 import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
+import type { FC, ReactNode } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,7 +13,11 @@ const queryClient = new QueryClient({
   },
 });
 
-const Wrapper = ({ children }: { children: ReactNode }) => (
+type WrapperProps = {
+  children: ReactNode;
+};
+
+const Wrapper: FC<WrapperProps> = ({ children }) => (
   <QueryClientProvider client={queryClient}>
     {children}
   </QueryClientProvider>
