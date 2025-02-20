@@ -8,18 +8,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { User } from 'lucide-react';
 
 const Avatar = ({ modelUrl }: { modelUrl: string }) => {
-  const group = useRef();
+  const group = useRef<any>();
   const { scene, animations } = useGLTF(modelUrl);
   const { actions, names } = useAnimations(animations, group);
 
   useEffect(() => {
-    // Jouer l'animation de base (idle)
     if (names.includes('Idle')) {
       actions['Idle'].reset().fadeIn(0.5).play();
     }
     
     return () => {
-      // Nettoyer les animations
       Object.values(actions).forEach(action => action.stop());
     };
   }, [actions, names]);
