@@ -1,7 +1,7 @@
 
 import { ThemeProvider } from "next-themes";
 import { IntlProvider } from "react-intl";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import frMessages from "../i18n/fr.json";
 import enMessages from "../i18n/en.json";
 
@@ -11,7 +11,13 @@ const messages = {
 };
 
 export const AppProviders = ({ children }: { children: React.ReactNode }) => {
-  const [locale, setLocale] = useState(navigator.language.split(/[-_]/)[0]);
+  const [locale, setLocale] = useState('fr');
+
+  useEffect(() => {
+    // Set initial locale based on browser language
+    const browserLocale = navigator.language.split(/[-_]/)[0];
+    setLocale(browserLocale in messages ? browserLocale : 'fr');
+  }, []);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
