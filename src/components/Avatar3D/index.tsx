@@ -1,14 +1,15 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei';
 import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { User } from 'lucide-react';
+import * as THREE from 'three';
 
 const Avatar = ({ modelUrl }: { modelUrl: string }) => {
-  const group = useRef<any>();
+  const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(modelUrl);
   const { actions, names } = useAnimations(animations, group);
 
@@ -71,14 +72,16 @@ export const Avatar3DCreator = () => {
             camera={{ position: [0, 0, 5], fov: 50 }}
             style={{ width: '100%', height: '100%' }}
           >
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[10, 10, 5]} intensity={1} />
-            <Avatar modelUrl={avatarUrl} />
-            <OrbitControls 
-              enableZoom={false}
-              minPolarAngle={Math.PI / 4}
-              maxPolarAngle={Math.PI / 2}
-            />
+            <Suspense fallback={null}>
+              <ambientLight intensity={0.5} />
+              <directionalLight position={[10, 10, 5]} intensity={1} />
+              <Avatar modelUrl={avatarUrl} />
+              <OrbitControls 
+                enableZoom={false}
+                minPolarAngle={Math.PI / 4}
+                maxPolarAngle={Math.PI / 2}
+              />
+            </Suspense>
           </Canvas>
         </div>
       )}
