@@ -7,11 +7,13 @@ import type { PropsWithChildren } from 'react';
 
 const queryClient = new QueryClient();
 
-const Wrapper = ({ children }: PropsWithChildren) => (
-  <QueryClientProvider client={queryClient}>
-    {children}
-  </QueryClientProvider>
-);
+const Wrapper = ({ children }: PropsWithChildren) => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
 
 describe('useMenus', () => {
   it('should return menus data', async () => {
