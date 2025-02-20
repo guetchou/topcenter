@@ -1,13 +1,23 @@
 
 import { renderHook } from '@testing-library/react';
 import { useMenus } from '../useMenus';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+    },
+  },
+});
 
-const Wrapper = ({ children }: { children: React.ReactNode }) => (
+type WrapperProps = {
+  children: React.ReactNode;
+};
+
+const Wrapper = ({ children }: WrapperProps) => (
   <QueryClientProvider client={queryClient}>
     {children}
   </QueryClientProvider>
