@@ -3,9 +3,11 @@ import { renderHook } from '@testing-library/react';
 import { useMenus } from '../useMenus';
 import { describe, it, expect } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PropsWithChildren } from 'react';
 
 const queryClient = new QueryClient();
-const wrapper = ({ children }: { children: React.ReactNode }) => (
+
+const wrapper = ({ children }: PropsWithChildren) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
 
