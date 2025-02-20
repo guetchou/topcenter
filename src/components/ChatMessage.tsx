@@ -1,7 +1,5 @@
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { UserRound } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { cn } from "@/lib/utils";
 
 interface ChatMessageProps {
   content: string;
@@ -11,36 +9,24 @@ interface ChatMessageProps {
 
 export const ChatMessage = ({ content, sender, timestamp }: ChatMessageProps) => {
   return (
-    <div className={`flex ${sender === "user" ? "justify-end" : "justify-start"}`}>
-      <div className="flex gap-2">
-        {sender === "agent" && (
-          <Avatar className="w-8 h-8">
-            <AvatarImage src="/agent-avatar.png" alt="Agent" />
-            <AvatarFallback>
-              <UserRound className="w-4 h-4" />
-            </AvatarFallback>
-          </Avatar>
+    <div
+      className={cn(
+        "flex w-full max-w-md",
+        sender === "user" ? "ml-auto justify-end" : "mr-auto justify-start"
+      )}
+    >
+      <div
+        className={cn(
+          "rounded-lg px-4 py-2",
+          sender === "user"
+            ? "bg-primary text-primary-foreground"
+            : "bg-secondary text-secondary-foreground"
         )}
-        <div
-          className={`max-w-[80%] rounded-lg p-3 ${
-            sender === "user"
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted"
-          }`}
-        >
-          <p>{content}</p>
-          <span className="text-xs opacity-70 mt-1 block">
-            {format(timestamp, 'HH:mm', { locale: fr })}
-          </span>
-        </div>
-        {sender === "user" && (
-          <Avatar className="w-8 h-8">
-            <AvatarImage src="/user-avatar.png" alt="User" />
-            <AvatarFallback>
-              <UserRound className="w-4 h-4" />
-            </AvatarFallback>
-          </Avatar>
-        )}
+      >
+        <p className="text-sm">{content}</p>
+        <time className="text-xs opacity-70">
+          {timestamp.toLocaleTimeString()}
+        </time>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+
 import { Bot } from "lucide-react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatToolbar } from "@/components/ChatToolbar";
