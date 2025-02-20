@@ -14,21 +14,48 @@ const Avatar = ({ modelUrl }: { modelUrl: string }) => {
   const { actions, names } = useAnimations(animations, group);
 
   useEffect(() => {
+    // On s'assure que la scène est bien chargée
+    if (!scene || !animations.length) return;
+
+    // Configuration de base de la scène
+    scene.traverse((object) => {
+      if (object instanceof THREE.Mesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+
+    // Démarrage de l'animation Idle si disponible
     if (names.includes('Idle')) {
-      actions['Idle'].reset().fadeIn(0.5).play();
+      const idleAction = actions['Idle'];
+      idleAction?.reset().fadeIn(0.5).play();
     }
-    
+
     return () => {
-      Object.values(actions).forEach(action => action.stop());
+      // Nettoyage des animations
+      Object.values(actions).forEach(action => action?.stop());
     };
-  }, [actions, names]);
+  }, [scene, animations, actions, names]);
 
   return (
     <group ref={group}>
-      <primitive object={scene} scale={2} position={[0, -2, 0]} />
+      <primitive 
+        object={scene} 
+        scale={2} 
+        position={[0, -2, 0]}
+        castShadow
+        receiveShadow 
+      />
     </group>
   );
 };
+
+const LoadingSpinner = () => (
+  <mesh>
+    <sphereGeometry args={[0.5, 32, 32]} />
+    <meshStandardMaterial color="white" wireframe />
+  </mesh>
+);
 
 export const Avatar3DCreator = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('');
@@ -69,18 +96,48 @@ export const Avatar3DCreator = () => {
       {avatarUrl && (
         <div className="w-full h-[400px] rounded-lg overflow-hidden border bg-background/50 backdrop-blur-sm">
           <Canvas
-            camera={{ position: [0, 0, 5], fov: 50 }}
+            shadows
+            camera={{ 
+              position: [0, 1, 5], 
+              fov: 50,
+              near: 0.1,
+              far: 1000
+            }}
             style={{ width: '100%', height: '100%' }}
           >
-            <Suspense fallback={null}>
+            <Suspense fallback={<LoadingSpinner />}>
+              <color attach="background" args={['#1a1a1a']} />
+              <fog attach="fog" args={['#1a1a1a', 10, 20]} />
+              
+              {/* Éclairage */}
               <ambientLight intensity={0.5} />
-              <directionalLight position={[10, 10, 5]} intensity={1} />
+              <directionalLight 
+                position={[10, 10, 5]} 
+                intensity={1}
+                castShadow
+                shadow-mapSize={[1024, 1024]}
+              />
+              <pointLight position={[-10, -10, -5]} intensity={0.5} />
+
+              {/* Avatar */}
               <Avatar modelUrl={avatarUrl} />
+
+              {/* Contrôles de caméra */}
               <OrbitControls 
-                enableZoom={false}
+                enableZoom={true}
+                maxDistance={10}
+                minDistance={2}
                 minPolarAngle={Math.PI / 4}
                 maxPolarAngle={Math.PI / 2}
+                enableDamping
+                dampingFactor={0.05}
               />
+
+              {/* Sol */}
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
+                <planeGeometry args={[100, 100]} />
+                <shadowMaterial transparent opacity={0.4} />
+              </mesh>
             </Suspense>
           </Canvas>
         </div>
