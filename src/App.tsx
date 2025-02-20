@@ -13,6 +13,7 @@ import { TeamSection } from "./components/sections/TeamSection";
 import { TestimonialsSection } from "./components/sections/TestimonialsSection";
 import { BlogSection } from "./components/sections/BlogSection";
 import { ContactSection } from "./components/sections/ContactSection";
+import { AIChatBubble } from "./components/ChatBubble";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,7 @@ function App() {
           </div>
         </footer>
       </div>
+      <AIChatBubble />
     </QueryClientProvider>
   );
 }
