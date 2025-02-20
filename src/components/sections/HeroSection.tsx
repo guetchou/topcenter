@@ -87,45 +87,10 @@ export const HeroSection = () => {
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <div className="relative">
-              <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
-              <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary/20 rounded-full blur-3xl"></div>
-              
-              <div className="relative">
-                <Avatar3DCreator />
-              </div>
-
-              <div className="relative grid gap-6 mt-8">
-                <Card className="bg-white/5 backdrop-blur border-white/10 hover-lift">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Phone className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">Support 24/7</h3>
-                        <p className="text-white/70">Assistance technique en continu</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-white/5 backdrop-blur border-white/10 hover-lift">
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
-                        <Star className="w-6 h-6 text-secondary" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-white">95% Satisfaction</h3>
-                        <p className="text-white/70">Clients satisfaits</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+          <div className="relative">
+            <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-secondary/20 rounded-full blur-3xl"></div>
+            <Avatar3DCreator />
           </div>
         </div>
       </div>

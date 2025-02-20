@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppProviders } from "./providers/AppProviders";
@@ -23,20 +24,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-50" role="banner">
-          <div className="container flex items-center justify-between py-4">
-            <DynamicNav />
-            <div className="flex items-center gap-4">
-              <LanguageSelector
-                onLanguageChange={(locale) => {
-                  // Handle language change
-                }}
-                currentLocale={intl.locale}
-              />
-              <ThemeToggle />
-            </div>
-          </div>
-        </header>
+        <DynamicNav />
         <main role="main" className="flex-1">
           <HeroSection />
           <FeaturesSection />
