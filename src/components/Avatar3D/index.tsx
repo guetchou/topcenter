@@ -1,7 +1,7 @@
 
-import { useState, useRef, useEffect, Suspense } from 'react';
+import { useState, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, useAnimations, SpotLight, Environment } from '@react-three/drei';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -10,23 +10,7 @@ import * as THREE from 'three';
 
 const Avatar = ({ modelUrl }: { modelUrl: string }) => {
   const group = useRef<THREE.Group>(null);
-  const { scene, animations } = useGLTF(modelUrl);
-  const { actions } = useAnimations(animations, group);
-
-  useEffect(() => {
-    if (scene) {
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.castShadow = true;
-          object.receiveShadow = true;
-          if (object.material) {
-            object.material.roughness = 0.5;
-            object.material.metalness = 0.5;
-          }
-        }
-      });
-    }
-  }, [scene]);
+  const { scene } = useGLTF(modelUrl);
 
   return (
     <group ref={group}>
@@ -54,19 +38,8 @@ export const Avatar3DCreator = () => {
     quickStart: false,
     language: 'fr',
     avatarConfig: {
-      outfitVersion: 2,
-      pose: 'A',
-      textureAtlas: true,
-      quality: 'high',
-      morphTargets: true,
-      useHands: true,
-      useDefaultStylePreset: true,
-      stylePreset: 'business',
-      faceExpression: 'neutral',
-      lighting: {
-        environment: 'office',
-        intensity: 1.2
-      }
+      style: 'realistic',
+      outfit: 'business'
     }
   };
 
@@ -102,33 +75,12 @@ export const Avatar3DCreator = () => {
         <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800">
           <Canvas
             camera={{ position: [0, 0, 4], fov: 45 }}
-            shadows
           >
-            <color attach="background" args={['#1a1a1a']} />
-            <fog attach="fog" args={['#1a1a1a', 5, 15]} />
-            
-            <ambientLight intensity={0.4} />
-            <SpotLight
-              position={[0, 5, 5]}
-              angle={0.5}
-              penumbra={0.5}
-              intensity={1}
-              castShadow
-            />
-            <SpotLight
-              position={[-5, 2, 0]}
-              angle={0.5}
-              penumbra={0.5}
-              intensity={0.8}
-              castShadow
-            />
-            
+            <ambientLight intensity={0.5} />
+            <directionalLight position={[5, 5, 5]} intensity={1} />
             <Suspense fallback={null}>
               <Avatar modelUrl={avatarUrl} />
-              <Environment preset="city" />
-              <OrbitControls
-                minPolarAngle={Math.PI / 4}
-                maxPolarAngle={Math.PI / 2}
+              <OrbitControls 
                 enableZoom={true}
                 enablePan={false}
               />
