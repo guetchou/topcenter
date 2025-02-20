@@ -215,6 +215,45 @@ export type Database = {
         }
         Relationships: []
       }
+      appointments: {
+        Row: {
+          created_at: string
+          date: string
+          email: string
+          id: string
+          message: string | null
+          name: string
+          phone: string
+          status: string
+          time: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          email: string
+          id?: string
+          message?: string | null
+          name: string
+          phone: string
+          status?: string
+          time: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          email?: string
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string
+          status?: string
+          time?: string
+          type?: string
+        }
+        Relationships: []
+      }
       blog_comments: {
         Row: {
           author_id: string

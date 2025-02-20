@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,7 +18,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 type AppointmentType = 'consultation' | 'support' | 'commercial' | 'technique';
 
-export const AppointmentForm = () => {
+interface AppointmentFormProps {
+  onSuccess?: () => void;
+}
+
+export const AppointmentForm = ({ onSuccess }: AppointmentFormProps) => {
   const { toast } = useToast();
   const [date, setDate] = useState<Date>();
   const [type, setType] = useState<AppointmentType>('consultation');
@@ -38,20 +42,20 @@ export const AppointmentForm = () => {
         throw new Error("Veuillez remplir tous les champs obligatoires");
       }
 
-      const appointmentData = {
-        date: date.toISOString(),
-        time,
-        type,
-        name,
-        email,
-        phone,
-        message,
-        status: 'pending'
-      };
-
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('appointments')
-        .insert([appointmentData]);
+        .insert([{
+          date: date.toISOString(),
+          time,
+          type,
+          name,
+          email,
+          phone,
+          message,
+          status: 'pending'
+        }])
+        .select()
+        .single();
 
       if (error) throw error;
 
@@ -68,7 +72,8 @@ export const AppointmentForm = () => {
       setPhone('');
       setMessage('');
       
-    } catch (error) {
+      onSuccess?.();
+    } catch (error: any) {
       toast({
         title: "Erreur",
         description: error.message || "Une erreur est survenue",
