@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react';
 import { useMenus } from '../useMenus';
 import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import type { FC, ReactNode } from 'react';
+import { ReactNode } from 'react';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,7 +13,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const wrapper: FC<{ children: ReactNode }> = ({ children }) => (
+const Wrapper = ({ children }: { children: ReactNode }) => (
   <QueryClientProvider client={queryClient}>
     {children}
   </QueryClientProvider>
@@ -22,7 +22,7 @@ const wrapper: FC<{ children: ReactNode }> = ({ children }) => (
 describe('useMenus hook', () => {
   it('should handle loading state', () => {
     const { result } = renderHook(() => useMenus('header'), {
-      wrapper,
+      wrapper: Wrapper
     });
     expect(result.current.isLoading).toBeDefined();
   });

@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei';
+import { OrbitControls, useGLTF, useAnimations, SpotLight, Environment } from '@react-three/drei';
 import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,6 +19,10 @@ const Avatar = ({ modelUrl }: { modelUrl: string }) => {
         if (object instanceof THREE.Mesh) {
           object.castShadow = true;
           object.receiveShadow = true;
+          if (object.material) {
+            object.material.roughness = 0.5;
+            object.material.metalness = 0.5;
+          }
         }
       });
     }
@@ -44,6 +48,28 @@ export const Avatar3DCreator = () => {
     setIsCreating(false);
   };
 
+  const professionalConfig = {
+    clearConfig: true,
+    bodyType: 'fullbody',
+    quickStart: false,
+    language: 'fr',
+    avatarConfig: {
+      outfitVersion: 2,
+      pose: 'A',
+      textureAtlas: true,
+      quality: 'high',
+      morphTargets: true,
+      useHands: true,
+      useDefaultStylePreset: true,
+      stylePreset: 'business',
+      faceExpression: 'neutral',
+      lighting: {
+        environment: 'office',
+        intensity: 1.2
+      }
+    }
+  };
+
   return (
     <div className="relative w-full h-[500px]">
       <Dialog>
@@ -54,16 +80,17 @@ export const Avatar3DCreator = () => {
             onClick={() => setIsCreating(true)}
           >
             <User className="w-4 h-4 mr-2" />
-            {avatarUrl ? 'Modifier l\'avatar' : 'Créer un avatar'}
+            {avatarUrl ? 'Modifier l\'avatar professionnel' : 'Créer un avatar professionnel'}
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[900px] h-[80vh]">
           <DialogHeader>
-            <DialogTitle>Personnalisez votre avatar</DialogTitle>
+            <DialogTitle>Créez votre avatar professionnel</DialogTitle>
           </DialogHeader>
           {isCreating && (
             <AvatarCreator
               subdomain="topcenter"
+              config={professionalConfig}
               onAvatarExported={handleAvatarCreated}
               className="w-full h-full"
             />
@@ -72,27 +99,46 @@ export const Avatar3DCreator = () => {
       </Dialog>
 
       {avatarUrl ? (
-        <div className="w-full h-full rounded-lg overflow-hidden bg-background/50 backdrop-blur-sm">
+        <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800">
           <Canvas
-            camera={{ position: [0, 1, 5], fov: 50 }}
+            camera={{ position: [0, 0, 4], fov: 45 }}
             shadows
           >
-            <ambientLight intensity={0.5} />
-            <directionalLight 
-              position={[10, 10, 5]} 
+            <color attach="background" args={['#1a1a1a']} />
+            <fog attach="fog" args={['#1a1a1a', 5, 15]} />
+            
+            <ambientLight intensity={0.4} />
+            <SpotLight
+              position={[0, 5, 5]}
+              angle={0.5}
+              penumbra={0.5}
               intensity={1}
-              castShadow 
+              castShadow
             />
+            <SpotLight
+              position={[-5, 2, 0]}
+              angle={0.5}
+              penumbra={0.5}
+              intensity={0.8}
+              castShadow
+            />
+            
             <Suspense fallback={null}>
               <Avatar modelUrl={avatarUrl} />
-              <OrbitControls />
+              <Environment preset="city" />
+              <OrbitControls
+                minPolarAngle={Math.PI / 4}
+                maxPolarAngle={Math.PI / 2}
+                enableZoom={true}
+                enablePan={false}
+              />
             </Suspense>
           </Canvas>
         </div>
       ) : (
-        <div className="w-full h-full flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-lg">
-          <p className="text-muted-foreground">
-            Créez votre avatar pour le voir apparaître ici
+        <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 rounded-lg">
+          <p className="text-white text-lg">
+            Créez votre avatar professionnel pour le visualiser ici
           </p>
         </div>
       )}
