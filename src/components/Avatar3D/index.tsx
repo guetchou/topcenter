@@ -2,7 +2,7 @@
 import { useState, useRef, Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
-import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
+import { AvatarCreator, type AvatarExportedEvent } from '@readyplayerme/react-avatar-creator';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { User } from 'lucide-react';
@@ -27,19 +27,19 @@ export const Avatar3DCreator = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('');
   const [isCreating, setIsCreating] = useState(false);
 
-  const handleAvatarCreated = (url: string) => {
-    setAvatarUrl(url);
+  const handleAvatarCreated = (event: AvatarExportedEvent) => {
+    setAvatarUrl(event.url);
     setIsCreating(false);
   };
 
   const professionalConfig = {
     clearConfig: true,
-    bodyType: 'fullbody',
+    bodyType: "fullbody" as const,
     quickStart: false,
-    language: 'fr',
+    language: "fr",
     avatarConfig: {
-      style: 'realistic',
-      outfit: 'business'
+      style: "realistic",
+      outfit: "business"
     }
   };
 

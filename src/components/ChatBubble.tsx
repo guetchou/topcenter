@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type AIModel = "perplexity" | "llama2" | "mistral" | "bloom";
 
@@ -60,7 +60,6 @@ export const AIChatBubble = () => {
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
         <div className="bg-background border rounded-lg shadow-lg w-[350px] max-h-[500px] flex flex-col animate-in slide-in-from-bottom-5">
-          {/* Header */}
           <div className="p-4 border-b flex items-center justify-between bg-primary/5 rounded-t-lg">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
@@ -68,22 +67,22 @@ export const AIChatBubble = () => {
               </div>
               <span className="font-medium">Assistant TopCenter</span>
             </div>
-            <Select
-              value={selectedModel}
-              onValueChange={(value) => setSelectedModel(value as AIModel)}
-              className="w-32"
-            >
-              <option value="perplexity">Perplexity</option>
-              <option value="llama2">Llama 2</option>
-              <option value="mistral">Mistral 7B</option>
-              <option value="bloom">BLOOM</option>
+            <Select defaultValue={selectedModel} onValueChange={(value) => setSelectedModel(value as AIModel)}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Modèle" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="perplexity">Perplexity</SelectItem>
+                <SelectItem value="llama2">Llama 2</SelectItem>
+                <SelectItem value="mistral">Mistral 7B</SelectItem>
+                <SelectItem value="bloom">BLOOM</SelectItem>
+              </SelectContent>
             </Select>
             <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
               <X className="w-4 h-4" />
             </Button>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground">
@@ -119,7 +118,6 @@ export const AIChatBubble = () => {
             )}
           </div>
 
-          {/* Input */}
           <div className="p-4 border-t">
             <form
               onSubmit={(e) => {
