@@ -11,31 +11,18 @@ import * as THREE from 'three';
 const Avatar = ({ modelUrl }: { modelUrl: string }) => {
   const group = useRef<THREE.Group>(null);
   const { scene, animations } = useGLTF(modelUrl);
-  const { actions, names } = useAnimations(animations, group);
+  const { actions } = useAnimations(animations, group);
 
   useEffect(() => {
-    // On s'assure que la scène est bien chargée
-    if (!scene || !animations.length) return;
-
-    // Configuration de base de la scène
-    scene.traverse((object) => {
-      if (object instanceof THREE.Mesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
-      }
-    });
-
-    // Démarrage de l'animation Idle si disponible
-    if (names.includes('Idle')) {
-      const idleAction = actions['Idle'];
-      idleAction?.reset().fadeIn(0.5).play();
+    if (scene) {
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          object.castShadow = true;
+          object.receiveShadow = true;
+        }
+      });
     }
-
-    return () => {
-      // Nettoyage des animations
-      Object.values(actions).forEach(action => action?.stop());
-    };
-  }, [scene, animations, actions, names]);
+  }, [scene]);
 
   return (
     <group ref={group}>
@@ -43,19 +30,10 @@ const Avatar = ({ modelUrl }: { modelUrl: string }) => {
         object={scene} 
         scale={2} 
         position={[0, -2, 0]}
-        castShadow
-        receiveShadow 
       />
     </group>
   );
 };
-
-const LoadingSpinner = () => (
-  <mesh>
-    <sphereGeometry args={[0.5, 32, 32]} />
-    <meshStandardMaterial color="white" wireframe />
-  </mesh>
-);
 
 export const Avatar3DCreator = () => {
   const [avatarUrl, setAvatarUrl] = useState<string>('');
@@ -67,15 +45,15 @@ export const Avatar3DCreator = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-[500px]">
       <Dialog>
         <DialogTrigger asChild>
           <Button 
             variant="outline" 
-            className="flex items-center gap-2"
+            className="absolute top-4 right-4 z-10"
             onClick={() => setIsCreating(true)}
           >
-            <User className="w-4 h-4" />
+            <User className="w-4 h-4 mr-2" />
             {avatarUrl ? 'Modifier l\'avatar' : 'Créer un avatar'}
           </Button>
         </DialogTrigger>
@@ -83,63 +61,39 @@ export const Avatar3DCreator = () => {
           <DialogHeader>
             <DialogTitle>Personnalisez votre avatar</DialogTitle>
           </DialogHeader>
-          {isCreating ? (
+          {isCreating && (
             <AvatarCreator
               subdomain="topcenter"
               onAvatarExported={handleAvatarCreated}
               className="w-full h-full"
             />
-          ) : null}
+          )}
         </DialogContent>
       </Dialog>
 
-      {avatarUrl && (
-        <div className="w-full h-[400px] rounded-lg overflow-hidden border bg-background/50 backdrop-blur-sm">
+      {avatarUrl ? (
+        <div className="w-full h-full rounded-lg overflow-hidden bg-background/50 backdrop-blur-sm">
           <Canvas
+            camera={{ position: [0, 1, 5], fov: 50 }}
             shadows
-            camera={{ 
-              position: [0, 1, 5], 
-              fov: 50,
-              near: 0.1,
-              far: 1000
-            }}
-            style={{ width: '100%', height: '100%' }}
           >
-            <Suspense fallback={<LoadingSpinner />}>
-              <color attach="background" args={['#1a1a1a']} />
-              <fog attach="fog" args={['#1a1a1a', 10, 20]} />
-              
-              {/* Éclairage */}
-              <ambientLight intensity={0.5} />
-              <directionalLight 
-                position={[10, 10, 5]} 
-                intensity={1}
-                castShadow
-                shadow-mapSize={[1024, 1024]}
-              />
-              <pointLight position={[-10, -10, -5]} intensity={0.5} />
-
-              {/* Avatar */}
+            <ambientLight intensity={0.5} />
+            <directionalLight 
+              position={[10, 10, 5]} 
+              intensity={1}
+              castShadow 
+            />
+            <Suspense fallback={null}>
               <Avatar modelUrl={avatarUrl} />
-
-              {/* Contrôles de caméra */}
-              <OrbitControls 
-                enableZoom={true}
-                maxDistance={10}
-                minDistance={2}
-                minPolarAngle={Math.PI / 4}
-                maxPolarAngle={Math.PI / 2}
-                enableDamping
-                dampingFactor={0.05}
-              />
-
-              {/* Sol */}
-              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2, 0]} receiveShadow>
-                <planeGeometry args={[100, 100]} />
-                <shadowMaterial transparent opacity={0.4} />
-              </mesh>
+              <OrbitControls />
             </Suspense>
           </Canvas>
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-lg">
+          <p className="text-muted-foreground">
+            Créez votre avatar pour le voir apparaître ici
+          </p>
         </div>
       )}
     </div>
