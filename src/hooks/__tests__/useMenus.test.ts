@@ -8,7 +8,9 @@ import { PropsWithChildren } from 'react';
 const queryClient = new QueryClient();
 
 const wrapper = ({ children }: PropsWithChildren) => (
-  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  <QueryClientProvider client={queryClient}>
+    {children}
+  </QueryClientProvider>
 );
 
 describe('useMenus', () => {

@@ -43,9 +43,9 @@ export const DynamicNav = () => {
 
         {/* Navigation Desktop */}
         <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
-          {headerMenus.map((menu) => (
+          {headerMenus?.map((menu) => (
             <div key={menu.id} className="flex items-center space-x-6">
-              {menu.items.map((item) => (
+              {menu.items?.map((item) => (
                 <Link
                   key={item.id}
                   to={item.url}
@@ -94,9 +94,9 @@ export const DynamicNav = () => {
             </SheetTrigger>
             <SheetContent side="right" className="w-[300px] sm:w-[400px]">
               <div className="flex flex-col space-y-6 mt-8">
-                {headerMenus.map((menu) => (
+                {headerMenus?.map((menu) => (
                   <div key={menu.id} className="flex flex-col space-y-4">
-                    {menu.items.map((item) => (
+                    {menu.items?.map((item) => (
                       <Link
                         key={item.id}
                         to={item.url}
