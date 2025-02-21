@@ -15,6 +15,19 @@ export const AIChatBubble = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("perplexity");
 
+  const systemContext = `Vous êtes l'assistant virtuel de TopCenter, une entreprise spécialisée dans la relation client et les centres d'appels.
+
+Voici les informations clés sur TopCenter :
+- Services principaux : Centre d'appel, service client 24/7, prise de rendez-vous, chat en direct, support multilingue
+- Points forts : Technologies avancées (IA, analyses en temps réel), équipe professionnelle, disponibilité 24/7
+- Valeurs : Excellence du service client, innovation technologique, satisfaction client
+- Contact : Formulaire sur le site, chat en direct, téléphone
+- Localisation : France
+
+Si on vous pose des questions sur les prix, indiquez qu'ils varient selon les besoins spécifiques et recommandez de contacter l'équipe commerciale via le formulaire de contact.
+
+Répondez de manière professionnelle, courtoise et engageante.`;
+
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
@@ -27,11 +40,20 @@ export const AIChatBubble = () => {
       
       if (selectedModel === "perplexity") {
         response = await supabase.functions.invoke('ai-chat', {
-          body: { message }
+          body: { 
+            message,
+            context: systemContext,
+            previousMessages: messages
+          }
         });
       } else {
         response = await supabase.functions.invoke('local-ai', {
-          body: { message, model: selectedModel }
+          body: { 
+            message,
+            context: systemContext,
+            model: selectedModel,
+            previousMessages: messages
+          }
         });
       }
 
@@ -85,7 +107,7 @@ export const AIChatBubble = () => {
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground">
-                Comment puis-je vous aider aujourd'hui ?
+                Bonjour ! Je suis l'assistant virtuel de TopCenter. Comment puis-je vous aider aujourd'hui ?
               </div>
             )}
             {messages.map((msg, index) => (
