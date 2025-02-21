@@ -8,30 +8,44 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { User } from 'lucide-react';
 import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
 
+// Préchargement du modèle pour éviter les erreurs de chargement
+useGLTF.preload('/model.glb');
+
 const AvatarModel = ({ url }) => {
   const group = useRef();
   const { scene, animations } = useGLTF(url);
-  const { actions, names } = useAnimations(animations, scene);
+  const { actions, names } = useAnimations(animations, group);
   
   useEffect(() => {
+    if (scene) {
+      scene.scale.set(1.5, 1.5, 1.5);
+      scene.position.set(0, -1.5, 0);
+      scene.rotation.set(0, 0.5, 0);
+    }
+
     // Jouer l'animation d'idle si elle existe
-    if (names.includes('idle')) {
+    if (names.includes('idle') && actions) {
       actions['idle'].reset().fadeIn(0.5).play();
     }
     
-    scene.scale.set(1.5, 1.5, 1.5);
-    scene.position.set(0, -1.5, 0);
-    scene.rotation.set(0, 0.5, 0);
+    return () => {
+      // Nettoyer les animations lors du démontage
+      if (actions) {
+        Object.values(actions).forEach(action => action?.stop());
+      }
+    };
   }, [scene, actions, names]);
 
   // Animation douce de rotation
   useFrame((state) => {
     if (group.current) {
-      group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
+      group.current.rotation.y += 0.005;
     }
   });
 
-  return <primitive ref={group} object={scene} />;
+  if (!scene) return null;
+
+  return <primitive ref={group} object={scene} dispose={null} />;
 };
 
 export const Avatar3DCreator = () => {
@@ -89,6 +103,7 @@ export const Avatar3DCreator = () => {
           <Canvas
             camera={{ position: [0, 0, 3], fov: 50 }}
             style={{ width: '100%', height: '100%' }}
+            gl={{ preserveDrawingBuffer: true }}
           >
             <ambientLight intensity={0.5} />
             <directionalLight 
@@ -103,8 +118,8 @@ export const Avatar3DCreator = () => {
                 enableZoom={true}
                 minPolarAngle={Math.PI/3}
                 maxPolarAngle={Math.PI/1.5}
-                autoRotate={false}
-                autoRotateSpeed={1}
+                maxDistance={4}
+                minDistance={2}
               />
             </Suspense>
           </Canvas>
