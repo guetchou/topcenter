@@ -1,8 +1,8 @@
 
 // @ts-nocheck
-import { useState, useRef, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
+import { useState, useRef, Suspense, useEffect } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF, useAnimations } from '@react-three/drei';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { User } from 'lucide-react';
@@ -11,13 +11,27 @@ import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
 const AvatarModel = ({ url }) => {
   const group = useRef();
   const { scene, animations } = useGLTF(url);
+  const { actions, names } = useAnimations(animations, scene);
   
-  // Adapter l'échelle et la position de l'avatar
-  scene.scale.set(1.5, 1.5, 1.5);
-  scene.position.set(0, -1.5, 0);
-  scene.rotation.set(0, 0.5, 0);
+  useEffect(() => {
+    // Jouer l'animation d'idle si elle existe
+    if (names.includes('idle')) {
+      actions['idle'].reset().fadeIn(0.5).play();
+    }
+    
+    scene.scale.set(1.5, 1.5, 1.5);
+    scene.position.set(0, -1.5, 0);
+    scene.rotation.set(0, 0.5, 0);
+  }, [scene, actions, names]);
 
-  return <primitive object={scene} />;
+  // Animation douce de rotation
+  useFrame((state) => {
+    if (group.current) {
+      group.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2;
+    }
+  });
+
+  return <primitive ref={group} object={scene} />;
 };
 
 export const Avatar3DCreator = () => {
@@ -25,7 +39,6 @@ export const Avatar3DCreator = () => {
   const [isCreating, setIsCreating] = useState(false);
 
   const handleAvatarCreated = (event) => {
-    // Convertir l'URL pour obtenir le modèle GLB au lieu du viewer
     const glbUrl = event.url.replace('/avatar', '/model.glb');
     setAvatarUrl(glbUrl);
     setIsCreating(false);
@@ -38,7 +51,8 @@ export const Avatar3DCreator = () => {
     language: "fr",
     avatarConfig: {
       style: "realistic",
-      outfit: "business"
+      outfit: "business",
+      pose: "idle"
     }
   };
 
@@ -89,6 +103,8 @@ export const Avatar3DCreator = () => {
                 enableZoom={true}
                 minPolarAngle={Math.PI/3}
                 maxPolarAngle={Math.PI/1.5}
+                autoRotate={false}
+                autoRotateSpeed={1}
               />
             </Suspense>
           </Canvas>

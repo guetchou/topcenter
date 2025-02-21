@@ -1,20 +1,21 @@
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send } from "lucide-react";
 
 interface ChatToolbarProps {
   newMessage: string;
-  setNewMessage: (message: string) => void;
+  setNewMessage: React.Dispatch<React.SetStateAction<string>>;
   handleSendMessage: () => void;
-  isLoading: boolean;
+  handleAttachFile: () => void;
+  handleVoiceMessage: () => void;
 }
 
 export const ChatToolbar = ({
   newMessage,
   setNewMessage,
   handleSendMessage,
-  isLoading
+  handleAttachFile,
+  handleVoiceMessage
 }: ChatToolbarProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,9 +29,8 @@ export const ChatToolbar = ({
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
           placeholder="Tapez votre message..."
-          disabled={isLoading}
         />
-        <Button type="submit" size="icon" disabled={isLoading || !newMessage.trim()}>
+        <Button type="submit" size="icon" disabled={newMessage.trim() === ""}>
           <Send className="h-4 w-4" />
         </Button>
       </div>
