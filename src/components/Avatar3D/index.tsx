@@ -1,28 +1,10 @@
 
 // @ts-nocheck
-import { useState, useRef, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF } from '@react-three/drei';
-import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { User } from 'lucide-react';
-import * as THREE from 'three';
-
-const Avatar = ({ modelUrl }) => {
-  const group = useRef();
-  const { scene } = useGLTF(modelUrl);
-
-  return (
-    <group ref={group}>
-      <primitive 
-        object={scene} 
-        scale={2} 
-        position={[0, -2, 0]}
-      />
-    </group>
-  );
-};
+import { AvatarCreator } from '@readyplayerme/react-avatar-creator';
 
 export const Avatar3DCreator = () => {
   const [avatarUrl, setAvatarUrl] = useState('');
@@ -74,19 +56,11 @@ export const Avatar3DCreator = () => {
 
       {avatarUrl ? (
         <div className="w-full h-full rounded-lg overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800">
-          <Canvas
-            camera={{ position: [0, 0, 4], fov: 45 }}
-          >
-            <ambientLight intensity={0.5} />
-            <directionalLight position={[5, 5, 5]} intensity={1} />
-            <Suspense fallback={null}>
-              <Avatar modelUrl={avatarUrl} />
-              <OrbitControls 
-                enableZoom={true}
-                enablePan={false}
-              />
-            </Suspense>
-          </Canvas>
+          <iframe 
+            src={avatarUrl}
+            className="w-full h-full border-0"
+            title="Avatar 3D"
+          />
         </div>
       ) : (
         <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 rounded-lg">
