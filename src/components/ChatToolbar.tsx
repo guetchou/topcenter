@@ -1,5 +1,14 @@
+
 // @ts-nocheck
 import React from 'react';
+
+interface ChatToolbarProps {
+  newMessage: string;
+  setNewMessage: (message: string) => void;
+  handleSendMessage: () => void;
+  handleAttachFile: () => void;
+  handleVoiceMessage: () => void;
+}
 
 export const ChatToolbar = ({
   newMessage,
@@ -7,7 +16,7 @@ export const ChatToolbar = ({
   handleSendMessage,
   handleAttachFile,
   handleVoiceMessage
-}) => {
+}: ChatToolbarProps) => {
   return (
     <div>
       <input

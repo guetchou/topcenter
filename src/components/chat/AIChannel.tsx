@@ -18,6 +18,14 @@ export const AIChannel = ({
   handleSendMessage,
   isLoading
 }: AIChannelProps) => {
+  const handleAttachFile = () => {
+    console.log("Attach file functionality not implemented");
+  };
+
+  const handleVoiceMessage = () => {
+    console.log("Voice message functionality not implemented");
+  };
+
   return (
     <div className="flex-1 flex flex-col">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -34,7 +42,8 @@ export const AIChannel = ({
         newMessage={message}
         setNewMessage={setMessage}
         handleSendMessage={handleSendMessage}
-        isLoading={isLoading}
+        handleAttachFile={handleAttachFile}
+        handleVoiceMessage={handleVoiceMessage}
       />
     </div>
   );
