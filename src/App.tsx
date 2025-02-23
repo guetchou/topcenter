@@ -11,6 +11,7 @@ import { TeamSection } from "./components/sections/TeamSection";
 import { TestimonialsSection } from "./components/sections/TestimonialsSection";
 import { BlogSection } from "./components/sections/BlogSection";
 import { ContactSection } from "./components/sections/ContactSection";
+import { AboutSection } from "./components/sections/AboutSection";
 import { AIChatBubble } from "./components/ChatBubble";
 import { queryClient } from "./lib/react-query";
 
@@ -19,6 +20,7 @@ function HomePage() {
     <>
       <main role="main" className="flex-1">
         <HeroSection />
+        <AboutSection />
         <FeaturesSection />
         <CallToActionSection />
         <PartnersSection />
@@ -40,6 +42,7 @@ function App() {
         <DynamicNav />
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutSection />} />
           <Route path="/devis" element={<ContactSection />} />
           <Route path="/services" element={<FeaturesSection />} />
           <Route path="/contact" element={<ContactSection />} />

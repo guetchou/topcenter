@@ -3,8 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   Building2, Users, Award, TrendingUp, CheckCircle2, Rocket, Shield, 
   Users2, Smartphone, Globe, Bot, MessageSquare, Bell, BarChart3,
-  Phone, Network, Lock, Cloud, GraduationCap, BuildingBank, ShoppingCart,
-  Heart, Radio, Truck, Building, PlaneLanding, Scale, Diamond, MapPin
+  Phone, Network, Lock, Cloud, GraduationCap, Building, ShoppingCart,
+  Heart, Radio, Truck, PlaneLanding, Scale, Diamond, MapPin
 } from "lucide-react";
 
 export const AboutSection = () => {
@@ -118,12 +118,12 @@ export const AboutSection = () => {
   ];
 
   const sectors = [
-    { icon: BuildingBank, title: "Banques & Assurances" },
+    { icon: Building, title: "Banques & Assurances" },
     { icon: ShoppingCart, title: "Commerce & Distribution" },
     { icon: Heart, title: "Santé & Pharmacie" },
     { icon: Radio, title: "Télécommunications & IT" },
     { icon: Truck, title: "Transport & Logistique" },
-    { icon: Building, title: "Secteur Public & Administrations" },
+    { icon: Building2, title: "Secteur Public & Administrations" },
     { icon: PlaneLanding, title: "Tourisme & Hôtellerie" },
     { icon: Scale, title: "Cabinets juridiques & professions libérales" }
   ];
