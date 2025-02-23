@@ -1,5 +1,7 @@
-
 import { Card, CardContent } from "@/components/ui/card";
+import { useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { 
   Building2, Users, Award, TrendingUp, CheckCircle2, Rocket, Shield, 
   Users2, Smartphone, Globe, Bot, MessageSquare, Bell, BarChart3,
@@ -8,6 +10,30 @@ import {
 } from "lucide-react";
 
 export const AboutSection = () => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+
+  useEffect(() => {
+    if (!mapContainer.current) return;
+
+    mapboxgl.accessToken = 'VOTRE_CLE_MAPBOX_ICI';
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v11',
+      center: [15.2837, -4.2634], // Coordonnées de Brazzaville
+      zoom: 13
+    });
+
+    const marker = new mapboxgl.Marker()
+      .setLngLat([15.2837, -4.2634])
+      .addTo(map.current);
+
+    return () => {
+      map.current?.remove();
+    };
+  }, []);
+
   const stats = [
     {
       icon: Building2,
@@ -363,12 +389,13 @@ export const AboutSection = () => {
         </div>
 
         {/* Localisation */}
-        <div className="text-center">
+        <div className="text-center space-y-6">
           <h3 className="text-2xl font-bold mb-4">Localisation & Contact</h3>
-          <div className="flex items-center justify-center gap-2 text-lg">
+          <div className="flex items-center justify-center gap-2 text-lg mb-6">
             <MapPin className="text-primary" />
             <p>P7GG+QX, Brazzaville, République du Congo</p>
           </div>
+          <div ref={mapContainer} className="w-full h-[400px] rounded-lg shadow-lg" />
         </div>
       </div>
     </section>
