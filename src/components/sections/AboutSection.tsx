@@ -1,6 +1,8 @@
-
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Users, Award, TrendingUp, CheckCircle2, Rocket, Shield, Users2, Smartphone, Globe } from "lucide-react";
+import { 
+  Building2, Users, Award, TrendingUp, CheckCircle2, Rocket, Shield, 
+  Users2, Smartphone, Globe, Bot, BarChart3, MessageSquare, Bell 
+} from "lucide-react";
 
 export const AboutSection = () => {
   const stats = [
@@ -63,6 +65,49 @@ export const AboutSection = () => {
     }
   ];
 
+  const digitalSolutions = [
+    {
+      icon: Bot,
+      title: "Chatbots & Assistance Virtuelle",
+      description: "Automatisation intelligente du support client 24/7 avec IA pour des réponses instantanées",
+      features: [
+        "Réponses automatisées multilingues",
+        "Apprentissage continu",
+        "Transfert intelligent vers les agents"
+      ]
+    },
+    {
+      icon: MessageSquare,
+      title: "CRM & Gestion Client",
+      description: "Solutions intégrées pour une gestion optimale de la relation client",
+      features: [
+        "Historique client centralisé",
+        "Suivi des interactions",
+        "Tableaux de bord personnalisés"
+      ]
+    },
+    {
+      icon: Bell,
+      title: "Notifications Automatisées",
+      description: "Système multicanal pour une communication proactive",
+      features: [
+        "SMS transactionnels",
+        "Emails personnalisés",
+        "Messages WhatsApp automatisés"
+      ]
+    },
+    {
+      icon: BarChart3,
+      title: "Analyse & Reporting",
+      description: "Outils avancés d'analyse pour une prise de décision éclairée",
+      features: [
+        "Tableaux de bord en temps réel",
+        "Analyse prédictive",
+        "Rapports personnalisables"
+      ]
+    }
+  ];
+
   return (
     <section id="about" className="py-20 bg-gradient-to-b from-background to-secondary/5">
       <div className="container">
@@ -90,6 +135,39 @@ export const AboutSection = () => {
               </Card>
             );
           })}
+        </div>
+
+        {/* Solutions Digitales Avancées */}
+        <div className="mt-16 mb-16">
+          <h3 className="text-2xl font-bold text-center mb-8">Solutions Digitales Avancées</h3>
+          <div className="grid gap-8 md:grid-cols-2">
+            {digitalSolutions.map((solution, index) => {
+              const Icon = solution.icon;
+              return (
+                <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-primary/10 p-3 rounded-lg">
+                        <Icon className="w-6 h-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-xl font-semibold mb-2">{solution.title}</h4>
+                        <p className="text-muted-foreground mb-4">{solution.description}</p>
+                        <ul className="space-y-2">
+                          {solution.features.map((feature, idx) => (
+                            <li key={idx} className="flex items-center gap-2">
+                              <CheckCircle2 className="w-4 h-4 text-primary" />
+                              <span className="text-sm">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </div>
 
         {/* Notre mission */}
