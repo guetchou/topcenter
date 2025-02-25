@@ -13,6 +13,7 @@ import { BlogSection } from "./components/sections/BlogSection";
 import { ContactSection } from "./components/sections/ContactSection";
 import { NewsletterSection } from "./components/sections/NewsletterSection";
 import { LoyaltySection } from "./components/sections/LoyaltySection";
+import { SocialMediaSection } from "./components/sections/SocialMediaSection";
 import { WebPushNotification } from "./components/notifications/WebPushNotification";
 import { AIChatBubble } from "./components/ChatBubble";
 import { queryClient } from "./lib/react-query";
@@ -32,6 +33,7 @@ function HomePage() {
         <TeamSection />
         <TestimonialsSection />
         <BlogSection />
+        <SocialMediaSection />
         <NewsletterSection />
         <LoyaltySection />
         <ContactSection />
