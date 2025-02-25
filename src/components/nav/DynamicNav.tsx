@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMenus } from "@/hooks/useMenus";
 import { Button } from "@/components/ui/button";
 import { 
@@ -9,23 +9,72 @@ import {
   User,
   Bell,
   Sun,
-  Moon
+  Moon,
+  Settings,
+  LayoutDashboard,
+  Users,
+  Building2,
+  ChevronDown
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { useTheme } from "next-themes";
+import { cn } from "@/lib/utils";
 
 export const DynamicNav = () => {
   const { data: headerMenus, isLoading } = useMenus("header");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
+
+  const adminMenuItems = [
+    { 
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      href: "/admin"
+    },
+    { 
+      label: "Gestion des actualités",
+      icon: Building2,
+      href: "/admin/news"
+    },
+    { 
+      label: "Paramètres",
+      icon: Settings,
+      href: "/settings"
+    }
+  ];
+
+  const userMenuItems = [
+    { 
+      label: "Portail Client",
+      icon: Users,
+      href: "/client"
+    },
+    { 
+      label: "Paramètres",
+      icon: Settings,
+      href: "/settings"
+    }
+  ];
 
   if (isLoading || !headerMenus) {
     return <div className="h-20 animate-pulse bg-muted"></div>;
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-20 items-center justify-between">
         {/* Logo et Marque */}
         <div className="flex items-center gap-4">
@@ -49,7 +98,10 @@ export const DynamicNav = () => {
                 <Link
                   key={item.id}
                   to={item.url}
-                  className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary relative group"
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-primary relative group",
+                    isActive(item.url) ? "text-primary" : "text-muted-foreground"
+                  )}
                 >
                   {item.label}
                   <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
@@ -60,24 +112,74 @@ export const DynamicNav = () => {
         </div>
 
         {/* Actions Desktop */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-2">
           <Button variant="ghost" size="icon" className="relative">
             <Bell className="h-5 w-5" />
             <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full text-[10px] flex items-center justify-center text-primary-foreground">
               3
             </span>
           </Button>
+
+          {/* Admin Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Building2 className="h-5 w-5" />
+                <span className="hidden sm:inline-block">Admin</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Administration</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {adminMenuItems.map((item) => (
+                <DropdownMenuItem
+                  key={item.href}
+                  onClick={() => navigate(item.href)}
+                  className="cursor-pointer"
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* User Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <User className="h-5 w-5" />
+                <span className="hidden sm:inline-block">Mon compte</span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>Mon espace</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {userMenuItems.map((item) => (
+                <DropdownMenuItem
+                  key={item.href}
+                  onClick={() => navigate(item.href)}
+                  className="cursor-pointer"
+                >
+                  <item.icon className="mr-2 h-4 w-4" />
+                  {item.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+          
           <Button variant="ghost" size="icon">
             <Search className="h-5 w-5" />
           </Button>
+          
           <Button variant="ghost" size="icon">
             <Globe className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon">
-            <User className="h-5 w-5" />
           </Button>
         </div>
 
@@ -109,18 +211,45 @@ export const DynamicNav = () => {
                   </div>
                 ))}
                 <div className="pt-6 border-t space-y-4">
-                  <Button variant="outline" className="w-full justify-start" size="lg">
-                    <Bell className="mr-2 h-5 w-5" />
-                    Notifications
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="lg">
-                    <User className="mr-2 h-5 w-5" />
-                    Mon compte
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start" size="lg">
-                    <Globe className="mr-2 h-5 w-5" />
-                    Langue
-                  </Button>
+                  {/* Admin Section Mobile */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold mb-2">Administration</h3>
+                    {adminMenuItems.map((item) => (
+                      <Button
+                        key={item.href}
+                        variant="outline"
+                        className="w-full justify-start"
+                        size="lg"
+                        onClick={() => {
+                          navigate(item.href);
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <item.icon className="mr-2 h-5 w-5" />
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
+
+                  {/* User Section Mobile */}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold mb-2">Mon espace</h3>
+                    {userMenuItems.map((item) => (
+                      <Button
+                        key={item.href}
+                        variant="outline"
+                        className="w-full justify-start"
+                        size="lg"
+                        onClick={() => {
+                          navigate(item.href);
+                          setIsMobileMenuOpen(false);
+                        }}
+                      >
+                        <item.icon className="mr-2 h-5 w-5" />
+                        {item.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </SheetContent>
