@@ -11,6 +11,9 @@ import { TeamSection } from "./components/sections/TeamSection";
 import { TestimonialsSection } from "./components/sections/TestimonialsSection";
 import { BlogSection } from "./components/sections/BlogSection";
 import { ContactSection } from "./components/sections/ContactSection";
+import { NewsletterSection } from "./components/sections/NewsletterSection";
+import { LoyaltySection } from "./components/sections/LoyaltySection";
+import { WebPushNotification } from "./components/notifications/WebPushNotification";
 import { AIChatBubble } from "./components/ChatBubble";
 import { queryClient } from "./lib/react-query";
 import Dashboard from "./pages/Dashboard";
@@ -29,6 +32,8 @@ function HomePage() {
         <TeamSection />
         <TestimonialsSection />
         <BlogSection />
+        <NewsletterSection />
+        <LoyaltySection />
         <ContactSection />
       </main>
     </>
@@ -58,6 +63,7 @@ function App() {
           </div>
         </footer>
       </div>
+      <WebPushNotification />
       <AIChatBubble />
     </QueryClientProvider>
   );
