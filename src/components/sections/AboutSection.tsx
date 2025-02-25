@@ -395,7 +395,18 @@ export const AboutSection = () => {
             <MapPin className="text-primary" />
             <p>P7GG+QX, Brazzaville, République du Congo</p>
           </div>
-          <div ref={mapContainer} className="w-full h-[400px] rounded-lg shadow-lg" />
+          <div className="w-full aspect-video rounded-lg shadow-lg overflow-hidden">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3978.745263068652!2d15.276011375048!3d-4.269680096165313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1stopcenter%20!5e0!3m2!1sfr!2scg!4v1740498139400!5m2!1sfr!2scg" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }}
+              allowFullScreen 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full"
+            />
+          </div>
         </div>
       </div>
     </section>
