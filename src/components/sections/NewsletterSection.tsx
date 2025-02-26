@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Mail, Gift } from "lucide-react";
+import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export const NewsletterSection = () => {
@@ -17,8 +17,15 @@ export const NewsletterSection = () => {
 
     try {
       const { error } = await supabase
-        .from('newsletter_subscribers')
-        .insert([{ email }]);
+        .from('contacts')  // Utilisons la table contacts au lieu de newsletter_subscribers
+        .insert([{
+          email,
+          name: 'Newsletter Subscriber',  // Valeur par défaut
+          phone: 'N/A',  // Valeur par défaut
+          message: 'Newsletter subscription',  // Valeur par défaut
+          service: 'Newsletter',  // Valeur par défaut
+          created_at: new Date().toISOString()
+        }]);
 
       if (error) throw error;
 

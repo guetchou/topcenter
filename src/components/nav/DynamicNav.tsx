@@ -1,6 +1,7 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMenus } from "@/hooks/useMenus";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Menu, 
   Globe, 
@@ -33,7 +34,6 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "./SearchDialog";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "react-toastify";
 import { LogOut } from "lucide-react";
 
 export const DynamicNav = () => {
@@ -44,6 +44,7 @@ export const DynamicNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isAdmin } = useAuth();
+  const { toast } = useToast();
 
   const isActive = (path: string) => location.pathname === path;
 

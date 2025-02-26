@@ -1,5 +1,5 @@
 
-import { MoveRight, ShieldCheck, Globe2 } from "lucide-react";
+import { MoveRight, ShieldCheck, Globe2, Star, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
