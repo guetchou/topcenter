@@ -1,4 +1,3 @@
-
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMenus } from "@/hooks/useMenus";
 import { Button } from "@/components/ui/button";
@@ -34,6 +33,8 @@ import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 import { SearchDialog } from "./SearchDialog";
 import { useAuth } from "@/hooks/useAuth";
+import { toast } from "react-toastify";
+import { LogOut } from "lucide-react";
 
 export const DynamicNav = () => {
   const { data: headerMenus, isLoading } = useMenus("header");
@@ -105,6 +106,18 @@ export const DynamicNav = () => {
     { code: 'en', label: 'English' }
   ];
 
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleLogout = () => {
+    navigate("/");
+    toast({
+      title: "Déconnexion réussie",
+      description: "À bientôt!",
+    });
+  };
+
   if (isLoading || !headerMenus) {
     return <div className="h-20 animate-pulse bg-muted"></div>;
   }
@@ -128,6 +141,16 @@ export const DynamicNav = () => {
 
         {/* Navigation Desktop */}
         <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
+          <Link
+            to="/"
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              isActive("/") ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            Accueil
+          </Link>
+
           {/* Services Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -152,27 +175,55 @@ export const DynamicNav = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {headerMenus?.map((menu) => (
-            <div key={menu.id} className="flex items-center space-x-6">
-              {menu.items?.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.url}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary relative group",
-                    isActive(item.url) ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {item.label}
-                  <span className="absolute inset-x-0 -bottom-1 h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform"></span>
-                </Link>
-              ))}
-            </div>
-          ))}
+          <Link
+            to="/contact"
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              isActive("/contact") ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            Contact
+          </Link>
         </div>
 
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center space-x-2">
+          {!isAuthenticated ? (
+            <Button variant="default" size="sm" onClick={handleLogin}>
+              <User className="h-4 w-4 mr-2" />
+              Connexion
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <User className="h-4 w-4" />
+                  Mon compte
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Mon espace</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {userMenuItems.map((item) => (
+                  <DropdownMenuItem
+                    key={item.href}
+                    onClick={() => navigate(item.href)}
+                    className="cursor-pointer"
+                  >
+                    <item.icon className="mr-2 h-4 w-4" />
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Déconnexion
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           {isAuthenticated && (
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
@@ -263,7 +314,6 @@ export const DynamicNav = () => {
                 <DropdownMenuItem
                   key={lang.code}
                   onClick={() => {
-                    // Logique de changement de langue ici
                     document.documentElement.lang = lang.code;
                   }}
                 >

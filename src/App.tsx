@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
@@ -22,6 +21,7 @@ import Settings from "./pages/Settings";
 import ClientPortal from "./pages/ClientPortal";
 import NewsAdmin from "./pages/NewsAdmin";
 import Services from "./pages/services/Services";
+import Login from "./pages/auth/Login";
 
 function HomePage() {
   return (
@@ -54,6 +54,7 @@ function App() {
           <Route path="/services" element={<Services />} />
           <Route path="/devis" element={<ContactSection />} />
           <Route path="/contact" element={<ContactSection />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/news" element={<NewsAdmin />} />
           <Route path="/settings" element={<Settings />} />
