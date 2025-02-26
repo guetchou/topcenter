@@ -14,7 +14,7 @@ const agents = [
     name: "Nidda KIKAME",
     role: "Chargée de Projet",
     expertise: "Service Client Premium",
-    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+    image: "public/lovable-uploads/WhatsApp Image 2024-02-15 at 17.08.41.jpeg",
     specialties: ["Gestion d'équipe", "Formation", "Support VIP"]
   },
   {
