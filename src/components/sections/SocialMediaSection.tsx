@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Facebook, Linkedin, MessageCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -28,6 +27,7 @@ export const SocialMediaSection = () => {
               size="lg"
               className="w-full gap-2 hover:bg-green-500 hover:text-white transition-colors"
               asChild
+              aria-label="Contactez-nous sur WhatsApp"
             >
               <a
                 href="https://wa.me/242055344253"
@@ -49,6 +49,7 @@ export const SocialMediaSection = () => {
               </div>
               {isClient && (
                 <iframe
+                  title="Facebook Timeline"
                   src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Ftopcenter.cg&tabs=timeline"
                   width="100%"
                   height="500"
@@ -72,6 +73,7 @@ export const SocialMediaSection = () => {
               </div>
               {isClient && (
                 <iframe
+                  title="LinkedIn Feed"
                   src="https://www.linkedin.com/embed/feed/update/urn:li:organization:top-center-cg"
                   width="100%"
                   height="500"
@@ -87,3 +89,6 @@ export const SocialMediaSection = () => {
     </section>
   );
 };
+
+
+
