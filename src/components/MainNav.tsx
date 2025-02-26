@@ -16,7 +16,7 @@ export const MainNav = () => {
         <div className="flex items-center justify-between h-20">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/94200422-356e-4b69-8e4c-c385cc1eb543.png"
+              src="/lovable-uploads/logo-topcenter.png"
               alt="Top Center Logo" 
               className="h-12 object-contain"
             />
