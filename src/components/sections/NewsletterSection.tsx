@@ -17,13 +17,13 @@ export const NewsletterSection = () => {
 
     try {
       const { error } = await supabase
-        .from('contacts')  // Utilisons la table contacts au lieu de newsletter_subscribers
+        .from('contacts')
         .insert([{
           email,
-          name: 'Newsletter Subscriber',  // Valeur par défaut
-          phone: 'N/A',  // Valeur par défaut
-          message: 'Newsletter subscription',  // Valeur par défaut
-          service: 'Newsletter',  // Valeur par défaut
+          name: 'Newsletter Subscriber',
+          phone: 'N/A',
+          message: 'Newsletter subscription',
+          service: 'Newsletter',
           created_at: new Date().toISOString()
         }]);
 
