@@ -6,6 +6,18 @@ import { useToast } from "@/components/ui/use-toast";
 import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+// Interface pour la table contacts
+interface Contact {
+  id?: string;
+  email: string;
+  name: string;
+  phone: string;
+  message: string;
+  service: string;
+  created_at?: string;
+  status?: string;
+}
+
 export const NewsletterSection = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -15,17 +27,18 @@ export const NewsletterSection = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    const newContact: Contact = {
+      email,
+      name: 'Newsletter Subscriber',
+      phone: 'N/A',
+      message: 'Newsletter subscription',
+      service: 'Newsletter',
+    };
+
     try {
       const { error } = await supabase
         .from('contacts')
-        .insert([{
-          email,
-          name: 'Newsletter Subscriber',
-          phone: 'N/A',
-          message: 'Newsletter subscription',
-          service: 'Newsletter',
-          created_at: new Date().toISOString()
-        }]);
+        .insert([newContact]);
 
       if (error) throw error;
 
@@ -35,6 +48,7 @@ export const NewsletterSection = () => {
       });
       setEmail("");
     } catch (error) {
+      console.error('Newsletter subscription error:', error);
       toast({
         title: "Erreur",
         description: "Une erreur est survenue. Veuillez réessayer.",

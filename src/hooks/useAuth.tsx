@@ -2,9 +2,11 @@
 import { create } from 'zustand';
 import { supabase } from "@/integrations/supabase/client";
 
+type UserRole = 'admin' | 'commercial_agent' | 'support_agent' | 'client';
+
 interface AuthUser {
   id: string;
-  role: 'admin' | 'commercial_agent' | 'support_agent' | 'client' | null;
+  role: UserRole | null;
   email: string | null;
   profile?: {
     full_name: string | null;
@@ -47,7 +49,7 @@ export const useAuth = create<AuthStore>((set) => ({
       user: {
         id: session.user.id,
         email: session.user.email,
-        role: roleData?.role || null,
+        role: (roleData?.role as UserRole) || null,
         profile
       },
       isAuthenticated: true
