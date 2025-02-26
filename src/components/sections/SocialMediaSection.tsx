@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Facebook, Linkedin, MessageCircle, PhoneCall } from "lucide-react";
 import { useEffect, useState, Suspense } from "react";
+import { motion } from "framer-motion";
 
 export const SocialMediaSection = () => {
   const [isClient, setIsClient] = useState(false);
@@ -9,49 +10,80 @@ export const SocialMediaSection = () => {
     setIsClient(true);
   }, []);
 
+  // Animation d'apparition avec fade-in
+  const fadeIn = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
+
+  // Animation des icônes (rotation légère au survol)
+  const iconVariants = {
+    initial: { rotate: 0 },
+    hover: { rotate: 10, transition: { type: "spring", stiffness: 200, damping: 10 } },
+  };
+
+  // Animation du bouton (léger tremblement au clic)
+  const buttonVariants = {
+    initial: { scale: 1 },
+    tap: { scale: 0.95, x: [0, -2, 2, -2, 2, 0], transition: { duration: 0.2 } },
+  };
+
   return (
-    <section className="py-16 bg-gray-100">
+    <motion.section 
+      className="py-16 bg-gray-100"
+      initial="hidden"
+      animate="visible"
+      variants={fadeIn}
+    >
       <div className="container mx-auto px-6">
-        <div className="text-center mb-12">
+        <motion.div className="text-center mb-12" variants={fadeIn}>
           <h2 className="text-4xl font-bold text-gray-900">Suivez-nous</h2>
           <p className="text-gray-600 mt-2 text-lg">
             Restez connecté avec nous sur les réseaux sociaux
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* WhatsApp */}
-          <div className="flex flex-col items-center space-y-4 p-6 rounded-lg border bg-white text-gray-900 shadow-lg">
-            <MessageCircle className="h-10 w-10 text-green-500" />
+          <motion.div
+            className="flex flex-col items-center space-y-4 p-6 rounded-lg border bg-white text-gray-900 shadow-lg"
+            variants={fadeIn}
+            whileHover={{ scale: 1.05 }}
+          >
+            <motion.div variants={iconVariants} initial="initial" whileHover="hover">
+              <MessageCircle className="h-10 w-10 text-green-500" />
+            </motion.div>
             <h3 className="text-xl font-semibold">WhatsApp</h3>
             <p className="text-gray-600 text-center">
               Contactez-nous directement sur WhatsApp pour toute question.
             </p>
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full gap-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors"
-              asChild
-              aria-label="Contactez-nous sur WhatsApp"
-            >
-              <a
-                href="https://wa.me/242055344253"
-                target="_blank"
-                rel="noopener noreferrer"
+            <motion.div variants={buttonVariants} whileTap="tap">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full gap-2 border-green-500 text-green-500 hover:bg-green-500 hover:text-white transition-colors"
+                asChild
+                aria-label="Contactez-nous sur WhatsApp"
               >
-                <PhoneCall className="h-5 w-5" />
-                Envoyer un message
-              </a>
-            </Button>
-          </div>
+                <a href="https://wa.me/242055344253" target="_blank" rel="noopener noreferrer">
+                  <PhoneCall className="h-5 w-5" />
+                  Envoyer un message
+                </a>
+              </Button>
+            </motion.div>
+          </motion.div>
 
           {/* Facebook */}
-          <div className="rounded-lg border bg-white text-gray-900 shadow-lg overflow-hidden">
+          <motion.div
+            className="rounded-lg border bg-white text-gray-900 shadow-lg overflow-hidden"
+            variants={fadeIn}
+            whileHover={{ scale: 1.05 }}
+          >
             <div className="p-6">
-              <div className="flex items-center justify-center gap-2 mb-4">
+              <motion.div className="flex items-center justify-center gap-2 mb-4" variants={iconVariants} whileHover="hover">
                 <Facebook className="h-8 w-8 text-blue-600" />
                 <h3 className="text-xl font-semibold">Facebook</h3>
-              </div>
+              </motion.div>
               <p className="text-gray-600 text-center mb-4">
                 Suivez nos actualités et interagissez avec nous sur Facebook.
               </p>
@@ -72,15 +104,19 @@ export const SocialMediaSection = () => {
                 </Suspense>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* LinkedIn */}
-          <div className="rounded-lg border bg-white text-gray-900 shadow-lg overflow-hidden">
+          <motion.div
+            className="rounded-lg border bg-white text-gray-900 shadow-lg overflow-hidden"
+            variants={fadeIn}
+            whileHover={{ scale: 1.05 }}
+          >
             <div className="p-6">
-              <div className="flex items-center justify-center gap-2 mb-4">
+              <motion.div className="flex items-center justify-center gap-2 mb-4" variants={iconVariants} whileHover="hover">
                 <Linkedin className="h-8 w-8 text-[#0A66C2]" />
                 <h3 className="text-xl font-semibold">LinkedIn</h3>
-              </div>
+              </motion.div>
               <p className="text-gray-600 text-center mb-4">
                 Découvrez nos opportunités et nos activités sur LinkedIn.
               </p>
@@ -98,9 +134,9 @@ export const SocialMediaSection = () => {
                 </Suspense>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
