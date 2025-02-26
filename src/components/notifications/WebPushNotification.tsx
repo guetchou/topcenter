@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const WebPushNotification = () => {
   const [isSupported, setIsSupported] = useState(false);
@@ -57,16 +57,16 @@ export const WebPushNotification = () => {
   if (!isSupported) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-20 right-4 z-50">
       {!isSubscribed && (
         <Button
           variant="default"
-          size="lg"
+          size="sm"
           className="shadow-lg gap-2"
           onClick={handleSubscribe}
         >
-          <Bell className="h-5 w-5" />
-          Activer les notifications
+          <Bell className="h-4 w-4" />
+          Notifications
         </Button>
       )}
     </div>

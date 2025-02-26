@@ -21,24 +21,23 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import ClientPortal from "./pages/ClientPortal";
 import NewsAdmin from "./pages/NewsAdmin";
+import Services from "./pages/services/Services";
 
 function HomePage() {
   return (
-    <>
-      <main role="main" className="flex-1">
-        <HeroSection />
-        <AboutSection />
-        <CallToActionSection />
-        <PartnersSection />
-        <TeamSection />
-        <TestimonialsSection />
-        <BlogSection />
-        <SocialMediaSection />
-        <NewsletterSection />
-        <LoyaltySection />
-        <ContactSection />
-      </main>
-    </>
+    <main role="main" className="flex-1">
+      <HeroSection />
+      <AboutSection />
+      <CallToActionSection />
+      <PartnersSection />
+      <TeamSection />
+      <TestimonialsSection />
+      <BlogSection />
+      <SocialMediaSection />
+      <NewsletterSection />
+      <LoyaltySection />
+      <ContactSection />
+    </main>
   );
 }
 
@@ -52,6 +51,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutSection />} />
+          <Route path="/services" element={<Services />} />
           <Route path="/devis" element={<ContactSection />} />
           <Route path="/contact" element={<ContactSection />} />
           <Route path="/admin" element={<Dashboard />} />
