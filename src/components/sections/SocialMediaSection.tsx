@@ -30,7 +30,7 @@ export const SocialMediaSection = () => {
               asChild
             >
               <a
-                href="https://api.whatsapp.com/send?phone=+242055344253"
+                href="https://wa.me/242055344253"
                 target="_blank"
                 rel="noopener noreferrer"
               >
