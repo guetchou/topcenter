@@ -22,6 +22,7 @@ import ClientPortal from "./pages/ClientPortal";
 import NewsAdmin from "./pages/NewsAdmin";
 import Services from "./pages/services/Services";
 import Login from "./pages/auth/Login";
+import { AuthCallback } from "./components/auth/AuthCallback";
 
 function HomePage() {
   return (
@@ -52,13 +53,15 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutSection />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          
+          <Route path="/admin/*" element={<AdminRoutes />} />
+          <Route path="/agent/*" element={<AgentRoutes />} />
+          <Route path="/client/*" element={<ClientRoutes />} />
+          
           <Route path="/devis" element={<ContactSection />} />
           <Route path="/contact" element={<ContactSection />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/admin/news" element={<NewsAdmin />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/client" element={<ClientPortal />} />
         </Routes>
         <footer role="contentinfo" className="bg-muted py-8">
           <div className="container text-center text-muted-foreground">

@@ -37,13 +37,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { LogOut } from "lucide-react";
 
 export const DynamicNav = () => {
+  const { user, isAuthenticated, logout } = useAuth();
   const { data: headerMenus, isLoading } = useMenus("header");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isAdmin } = useAuth();
   const { toast } = useToast();
 
   const isActive = (path: string) => location.pathname === path;
@@ -107,16 +107,78 @@ export const DynamicNav = () => {
     { code: 'en', label: 'English' }
   ];
 
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleLogout = () => {
-    navigate("/");
+  const handleLogout = async () => {
+    await logout();
     toast({
       title: "Déconnexion réussie",
       description: "À bientôt!",
     });
+    navigate('/');
+  };
+
+  const renderAuthButton = () => {
+    if (isAuthenticated && user) {
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="gap-2">
+              <User className="h-4 w-4" />
+              {user.profile?.full_name || user.email}
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Mon espace</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            
+            {user.role === 'admin' && (
+              <>
+                <DropdownMenuItem onClick={() => navigate('/admin')}>
+                  <LayoutDashboard className="mr-2 h-4 w-4" />
+                  Administration
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/admin/users')}>
+                  <Users className="mr-2 h-4 w-4" />
+                  Gestion utilisateurs
+                </DropdownMenuItem>
+              </>
+            )}
+            
+            {(user.role === 'commercial_agent' || user.role === 'support_agent') && (
+              <DropdownMenuItem onClick={() => navigate(`/agent/${user.role === 'commercial_agent' ? 'commercial' : 'support'}`)}>
+                <Building2 className="mr-2 h-4 w-4" />
+                Espace agent
+              </DropdownMenuItem>
+            )}
+            
+            {user.role === 'client' && (
+              <DropdownMenuItem onClick={() => navigate('/client')}>
+                <User className="mr-2 h-4 w-4" />
+                Mon compte
+              </DropdownMenuItem>
+            )}
+            
+            <DropdownMenuItem onClick={() => navigate('/settings')}>
+              <Settings className="mr-2 h-4 w-4" />
+              Paramètres
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+              <LogOut className="mr-2 h-4 w-4" />
+              Déconnexion
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    }
+
+    return (
+      <Button variant="default" size="sm" onClick={() => navigate('/login')}>
+        <User className="h-4 w-4 mr-2" />
+        Connexion
+      </Button>
+    );
   };
 
   if (isLoading || !headerMenus) {
@@ -189,41 +251,7 @@ export const DynamicNav = () => {
 
         {/* Actions Desktop */}
         <div className="hidden md:flex items-center space-x-2">
-          {!isAuthenticated ? (
-            <Button variant="default" size="sm" onClick={handleLogin}>
-              <User className="h-4 w-4 mr-2" />
-              Connexion
-            </Button>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="h-4 w-4" />
-                  Mon compte
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Mon espace</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {userMenuItems.map((item) => (
-                  <DropdownMenuItem
-                    key={item.href}
-                    onClick={() => navigate(item.href)}
-                    className="cursor-pointer"
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-500">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Déconnexion
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {renderAuthButton()}
 
           {isAuthenticated && (
             <Button variant="ghost" size="icon" className="relative">
@@ -231,68 +259,6 @@ export const DynamicNav = () => {
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full text-[10px] flex items-center justify-center text-primary-foreground">
                 3
               </span>
-            </Button>
-          )}
-
-          {/* Admin Menu - Only shown if user is admin */}
-          {isAdmin && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Building2 className="h-5 w-5" />
-                  <span className="hidden sm:inline-block">Admin</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Administration</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {adminMenuItems.map((item) => (
-                  <DropdownMenuItem
-                    key={item.href}
-                    onClick={() => navigate(item.href)}
-                    className="cursor-pointer"
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {/* User Menu - Only shown if authenticated */}
-          {isAuthenticated && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="h-5 w-5" />
-                  <span className="hidden sm:inline-block">Mon compte</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Mon espace</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {userMenuItems.map((item) => (
-                  <DropdownMenuItem
-                    key={item.href}
-                    onClick={() => navigate(item.href)}
-                    className="cursor-pointer"
-                  >
-                    <item.icon className="mr-2 h-4 w-4" />
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-
-          {/* Not authenticated - show login button */}
-          {!isAuthenticated && (
-            <Button variant="ghost" size="sm" onClick={() => navigate("/login")}>
-              <User className="h-5 w-5 mr-2" />
-              Connexion
             </Button>
           )}
 
@@ -377,7 +343,7 @@ export const DynamicNav = () => {
                 {/* Admin & User Sections Mobile - Only if authenticated */}
                 {isAuthenticated && (
                   <div className="pt-6 border-t space-y-4">
-                    {isAdmin && (
+                    {user.role === 'admin' && (
                       <div className="space-y-2">
                         <h3 className="font-semibold mb-2">Administration</h3>
                         {adminMenuItems.map((item) => (
