@@ -10,7 +10,7 @@ export const Footer = () => {
             <h4 className="mb-4 text-lg font-semibold">À propos</h4>
             <p className="text-sm text-gray-300">
               Top Center est le leader des centres d'appels omnicanaux au Congo,
-              offrant des solutions innovantes pour la relation client.
+              offrant des solutions innovantes pour la gestion de la relation client.
             </p>
           </div>
 
@@ -24,7 +24,7 @@ export const Footer = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>+242 06 000 0000</span>
+                <span>+242 06 449 5353</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
