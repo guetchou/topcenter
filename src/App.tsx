@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
@@ -23,6 +24,9 @@ import NewsAdmin from "./pages/NewsAdmin";
 import Services from "./pages/services/Services";
 import Login from "./pages/auth/Login";
 import { AuthCallback } from "./components/auth/AuthCallback";
+import { AdminRoutes } from "./components/routes/AdminRoutes";
+import { AgentRoutes } from "./components/routes/AgentRoutes";
+import { ClientRoutes } from "./components/routes/ClientRoutes";
 
 function HomePage() {
   return (
