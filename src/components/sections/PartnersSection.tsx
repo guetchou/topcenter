@@ -10,34 +10,34 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const partners = [
   {
-    name: "TechCorp Solutions",
+    name: "PSIPJ",
     logo: "https://images.unsplash.com/photo-1487958449943-2429e8be8625",
-    description: "Leader en solutions technologiques",
-    type: "Technologie"
+    description: "Projet de Protection Sociale et d’Inclusion Productive des Jeunes (PSIPJ)",
+    type: "Aide Sociale"
   },
   {
-    name: "InnovGroup",
+    name: "ACPE",
     logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
-    description: "Innovation et développement digital",
-    type: "Digital"
+    description: "Agence Congolaise Pour l'EMPLOI",
+    type: "Agence Gouvernmentale"
   },
   {
-    name: "GlobalTech",
+    name: "CAMU",
     logo: "https://images.unsplash.com/photo-1554469384-e58fac16e23a",
-    description: "Services IT internationaux",
-    type: "IT"
+    description: "Caisse D'Assurance Maladie Universelle",
+    type: "Agence Gouvernementale"
   },
   {
-    name: "SmartSolutions",
+    name: "FONEA",
     logo: "https://images.unsplash.com/photo-1497366216548-37526070297c",
-    description: "Solutions intelligentes pour entreprises",
-    type: "Solutions"
+    description: "Fond national d'appui à l'employabilité et à l'apprentissage",
+    type: "Agence Gouvernementale"
   },
   {
-    name: "DataPro",
+    name: "ACPCE",
     logo: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
-    description: "Expert en analyse de données",
-    type: "Data"
+    description: "Agence Congolaise pour la Création d'Entreprises",
+    type: "Agence Gouvernementale"
   }
 ];
 
