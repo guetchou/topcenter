@@ -11,28 +11,28 @@ import { Badge } from "@/components/ui/badge";
 
 const agents = [
   {
-    name: "Sophie Dubois",
-    role: "Chef d'équipe Senior",
+    name: "Nidda KIKAME",
+    role: "Chargée de Projet",
     expertise: "Service Client Premium",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
     specialties: ["Gestion d'équipe", "Formation", "Support VIP"]
   },
   {
-    name: "Thomas Martin",
+    name: "Caley BAYI",
     role: "Superviseur",
     expertise: "Support Technique",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
     specialties: ["Résolution de problèmes", "Coaching", "Analyse de données"]
   },
   {
-    name: "Émilie Laurent",
+    name: "Jeancia NANTI",
     role: "Responsable Formation",
     expertise: "Développement des compétences",
     image: "https://images.unsplash.com/photo-1580489944761-15a19d654956",
     specialties: ["Formation initiale", "Amélioration continue", "E-learning"]
   },
   {
-    name: "Alexandre Petit",
+    name: "Julien ELENGA",
     role: "Expert Qualité",
     expertise: "Contrôle qualité",
     image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
