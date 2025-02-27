@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
 
 export const PhoneChannel = () => {
-  const phoneNumber = "+24223456789"; // À remplacer par le vrai numéro
+  const phoneNumber = "+242064495353"; // À remplacer par le vrai numéro
 
   return (
     <div className="flex-1 p-4">
