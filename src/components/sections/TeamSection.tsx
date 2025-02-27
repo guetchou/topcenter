@@ -21,7 +21,7 @@ const agents = [
     name: "Caley BAYI",
     role: "Superviseur",
     expertise: "Support Technique",
-    image: "public/lovable-uploads/avatar-femme.jpg",
+    image: "public/lovable-uploads/caley.png",
     specialties: ["Résolution de problèmes", "Coaching", "Analyse de données"]
   },
   {
