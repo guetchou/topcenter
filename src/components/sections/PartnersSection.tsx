@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+
+import { useRef } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 const partners = [
@@ -9,60 +10,48 @@ const partners = [
   },
   {
     name: "astTECS",
-    logo: "public/lovable-uploads/Logo-Asttect.gif",
+    logo: "/lovable-uploads/Logo-Asttect.gif",
     industry: "Technologie"
   },
   {
     name: "BL Technology",
-    logo: "public/lovable-uploads/Logo-BLT.gif",
+    logo: "/lovable-uploads/Logo-BLT.gif",
     industry: "Services informatiques"
   },
   {
     name: "MTN Congo",
-    logo: "public/lovable-uploads/Logo-MTN.png",
+    logo: "/lovable-uploads/Logo-MTN.png",
     industry: "Télécommunications"
   },
- {
+  {
     name: "PSIPJ",
-    logo: "public/lovable-uploads/psipj-logo.jpg",
+    logo: "/lovable-uploads/psipj-logo.jpg",
     industry: "Social"
   },
-{
+  {
     name: "Infomaniak",
-    logo: "public/lovable-uploads/logo-infomaniak.png",
+    logo: "/lovable-uploads/logo-infomaniak.png",
     industry: "Tecchnologie"
   },
-
-{
+  {
     name: "ACPCE",
-    logo: "public/lovable-uploads/acpce-logo.png",
+    logo: "/lovable-uploads/acpce-logo.png",
     industry: "Agence Gouvernementale"
   },
-{
+  {
     name: "ACPE",
-    logo: "public/lovable-uploads/acpe-logo.png",
+    logo: "/lovable-uploads/acpe-logo.png",
     industry: "Agence Gouvernementale"
   },
-  
   {
     name: "Airtel Congo",
-    logo: "public/lovable-uploads/logo-airtel.jpg",
+    logo: "/lovable-uploads/logo-airtel.jpg",
     industry: "Télécom"
   }
 ];
 
 export const PartnersSection = () => {
   const carouselRef = useRef(null);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (carouselRef.current) {
-        carouselRef.current.scrollBy({ left: 300, behavior: "smooth" });
-      }
-    }, 3000); // Change d'image toutes les 3 secondes
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <section className="py-16 bg-background">
@@ -93,9 +82,13 @@ export const PartnersSection = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <CarouselPrevious />
+            </div>
+            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <CarouselNext />
+            </div>
           </Carousel>
-          <CarouselPrevious className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <CarouselNext className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </div>
     </section>
