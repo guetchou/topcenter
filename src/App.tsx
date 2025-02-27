@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import ClientPortal from "./pages/ClientPortal";
 import NewsAdmin from "./pages/NewsAdmin";
 import Services from "./pages/services/Services";
+import Devis from "./pages/Devis";
 import Login from "./pages/auth/Login";
 import { AuthCallback } from "./components/auth/AuthCallback";
 import { AdminRoutes } from "./components/routes/AdminRoutes";
@@ -57,6 +58,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutSection />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/devis" element={<Devis />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           
@@ -64,7 +66,6 @@ function App() {
           <Route path="/agent/*" element={<AgentRoutes />} />
           <Route path="/client/*" element={<ClientRoutes />} />
           
-          <Route path="/devis" element={<ContactSection />} />
           <Route path="/contact" element={<ContactSection />} />
         </Routes>
         <footer role="contentinfo" className="bg-muted py-8">
@@ -73,7 +74,6 @@ function App() {
           </div>
         </footer>
       </div>
-      <WebPushNotification />
       <AIChatBubble />
     </QueryClientProvider>
   );
