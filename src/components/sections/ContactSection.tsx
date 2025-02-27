@@ -67,7 +67,7 @@ export const ContactSection = () => {
                 <Phone className="w-6 h-6 text-primary" />
                 <div>
                   <p className="font-semibold">Téléphone</p>
-                  <p className="text-muted-foreground">+242 23 456 789</p>
+                  <p className="text-muted-foreground">+242 06 449 5353</p>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -82,7 +82,7 @@ export const ContactSection = () => {
                 <div>
                   <p className="font-semibold">Adresse</p>
                   <p className="text-muted-foreground">
-                    123 Avenue de l'Indépendance, Brazzaville, Congo
+                    28 rue Docteur Cureux, Derrière Imm. Fédéraux, Centre-Ville, Brazzaville, Congo
                   </p>
                 </div>
               </div>
