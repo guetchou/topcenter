@@ -1,3 +1,4 @@
+
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useMenus } from "@/hooks/useMenus";
 import { Button } from "@/components/ui/button";
@@ -192,9 +193,9 @@ export const DynamicNav = () => {
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/94200422-356e-4b69-8e4c-c385cc1eb543.png" 
+              src="/lovable-uploads/logo-topcenter.png" 
               alt="TopCenter Logo"
-              className="h-10 w-auto"
+              className="h-12 w-auto"
             />
             <span className="font-bold text-xl text-primary hidden sm:inline-block">
               TopCenter

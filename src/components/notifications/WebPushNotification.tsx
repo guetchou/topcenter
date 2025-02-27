@@ -36,7 +36,7 @@ export const WebPushNotification = () => {
         // Affiche une notification de test
         new Notification('Bienvenue chez TopCenter!', {
           body: 'Vous recevrez désormais nos actualités en temps réel.',
-          icon: '/lovable-uploads/94200422-356e-4b69-8e4c-c385cc1eb543.png'
+          icon: '/lovable-uploads/logo-topcenter.png'
         });
 
         toast({
@@ -57,7 +57,7 @@ export const WebPushNotification = () => {
   if (!isSupported) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 z-50">
+    <div className="fixed top-20 right-4 z-50">
       {!isSubscribed && (
         <Button
           variant="default"

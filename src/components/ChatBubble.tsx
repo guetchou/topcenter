@@ -78,7 +78,7 @@ Répondez de manière professionnelle, courtoise et engageante.`;
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 left-4 z-50">
       {isOpen ? (
         <div className="bg-background border rounded-lg shadow-lg w-[350px] max-h-[500px] flex flex-col animate-in slide-in-from-bottom-5">
           <div className="p-4 border-b flex items-center justify-between bg-primary/5 rounded-t-lg">
