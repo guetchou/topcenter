@@ -8,24 +8,47 @@ const partners = [
     industry: "Télécommunications"
   },
   {
-    name: "GESS Solutions",
-    logo: "/lovable-uploads/gess.jpg",
+    name: "astTECS",
+    logo: "public/lovable-uploads/Logo-Asttect.gif",
     industry: "Technologie"
   },
   {
-    name: "Matoko Solutions",
-    logo: "/lovable-uploads/matoko.png",
+    name: "BL Technology",
+    logo: "public/lovable-uploads/Logo-BLT.gif",
     industry: "Services informatiques"
   },
   {
-    name: "Télécom Solutions",
-    logo: "/lovable-uploads/Learning-VoIP-Effecti.jpg",
-    industry: "Communications"
+    name: "MTN Congo",
+    logo: "public/lovable-uploads/Logo-MTN.png",
+    industry: "Télécommunications"
   },
+ {
+    name: "PSIPJ",
+    logo: "public/lovable-uploads/psipj-logo.jpg",
+    industry: "Social"
+  },
+{
+    name: "Infomaniak",
+    logo: "public/lovable-uploads/logo-infomaniak.png",
+    industry: "Tecchnologie"
+  },
+
+{
+    name: "ACPCE",
+    logo: "public/lovable-uploads/acpce-logo.png",
+    industry: "Agence Gouvernementale"
+  },
+{
+    name: "ACPE",
+    logo: "public/lovable-uploads/acpe-logo.png",
+    industry: "Agence Gouvernementale"
+  },
+  
+  
   {
-    name: "Staff TCE",
-    logo: "/lovable-uploads/staff-tce.jpg",
-    industry: "Ressources humaines"
+    name: "Airtel Congo",
+    logo: "public/lovable-uploads/logo-airtel.jpg",
+    industry: "Télécom"
   }
 ];
 
