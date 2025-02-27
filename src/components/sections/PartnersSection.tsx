@@ -44,7 +44,6 @@ const partners = [
     industry: "Agence Gouvernementale"
   },
   
-  
   {
     name: "Airtel Congo",
     logo: "public/lovable-uploads/logo-airtel.jpg",
@@ -86,7 +85,7 @@ export const PartnersSection = () => {
                 <CarouselItem key={index} className="md:basis-1/3 lg:basis-1/4 pl-4">
                   <div className="p-6 text-center transition-transform transform hover:scale-105 bg-white shadow-lg rounded-lg h-full flex flex-col items-center justify-center">
                     <div className="h-24 w-full flex items-center justify-center mb-4">
-                      <img src={partner.logo} alt={`${partner.name} logo`} className="max-h-full max-w-full object-contain" />
+                      <img src={partner.logo} alt={`${partner.name} logo`} className="max-h-24 max-w-full object-contain" />
                     </div>
                     <h3 className="font-medium text-lg">{partner.name}</h3>
                     <p className="text-sm text-muted-foreground">{partner.industry}</p>
