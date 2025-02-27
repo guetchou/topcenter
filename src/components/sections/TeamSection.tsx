@@ -11,6 +11,27 @@ import { Badge } from "@/components/ui/badge";
 
 const agents = [
   {
+    name: "Gess NGUIE",
+    role: "Manager Général",
+    expertise: "Gestion de projet, CRM, Business Développement",
+    image: "public/lovable-uploads/gess.jpg",
+    specialties: ["Gestion d'entreprise", "CRM & VOIP", "Business Développemnt"]
+  },
+  {
+    name: "Gess NGUIE",
+    role: "Manager Général",
+    expertise: "Gestion de projet, CRM, Business Développement",
+    image: "public/lovable-uploads/gess.jpg",
+    specialties: ["Gestion d'équipe", "Formation", "Support VIP"]
+  },
+   {
+    name: "Myna BAYI",
+    role: "Managet IT",
+    expertise: "Manager Technique",
+    image: "public/lovable-uploads/bayimina.jpg",
+    specialties: ["Réseaux & Télécom", "VOIP"]
+  },
+  {
     name: "Nidda KIKAME",
     role: "Chargée de Projet",
     expertise: "Service Client Premium",
@@ -28,16 +49,10 @@ const agents = [
     name: "Jeancia NANTI",
     role: "Responsable Formation",
     expertise: "Développement des compétences",
-    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956",
+    image: "public/lovable-uploads/jeancia.jpeg",
     specialties: ["Formation initiale", "Amélioration continue", "E-learning"]
   },
-  {
-    name: "Julien ELENGA",
-    role: "Expert Qualité",
-    expertise: "Contrôle qualité",
-    image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7",
-    specialties: ["Audit qualité", "Processus qualité", "Satisfaction client"]
-  }
+ 
 ];
 
 export const TeamSection = () => {
