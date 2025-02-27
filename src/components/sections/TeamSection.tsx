@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   Carousel,
@@ -9,61 +10,65 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { EmblaCarouselType } from "embla-carousel-react";
 
 const agents = [
   {
     name: "Gess NGUIE",
     role: "Manager Général",
     expertise: "Gestion de projet, CRM, Business Développement",
-    image: "public/lovable-uploads/gess.jpg",
+    image: "/lovable-uploads/gess.jpg",
     specialties: ["Gestion d'entreprise", "CRM & VOIP", "Business Développement"],
   },
   {
     name: "Myna BAYI",
     role: "Manager IT",
     expertise: "Manager Technique",
-    image: "public/lovable-uploads/bayimina.jpg",
+    image: "/lovable-uploads/bayimina.jpg",
     specialties: ["Réseaux & Télécom", "VOIP"],
   },
   {
     name: "Nidda KIKAME",
     role: "Chargée de Projet",
     expertise: "Service Client Premium",
-    image: "public/lovable-uploads/nidda_photo.jpeg",
+    image: "/lovable-uploads/nidda_photo.jpeg",
     specialties: ["Gestion d'équipe", "Formation", "Support VIP"],
   },
   {
     name: "Caley BAYI",
     role: "Superviseur",
     expertise: "Support Technique",
-    image: "public/lovable-uploads/caley.png",
+    image: "/lovable-uploads/caley.png",
     specialties: ["Résolution de problèmes", "Coaching", "Analyse de données"],
   },
   {
     name: "Jeancia NANTI",
     role: "Responsable Formation",
     expertise: "Développement des compétences",
-    image: "public/lovable-uploads/jeancia.jpeg",
+    image: "/lovable-uploads/jeancia.jpeg",
     specialties: ["Formation initiale", "Amélioration continue", "E-learning"],
   },
 ];
 
 export const TeamSection = () => {
-  const [autoSlide, setAutoSlide] = useState(true);
+  const [api, setApi] = useState<EmblaCarouselType | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (!autoSlide) return;
-    const interval = setInterval(() => {
-      document.querySelector("[data-carousel-next]")?.click();
+    if (!api || isPaused) return;
+    
+    const intervalId = setInterval(() => {
+      api.scrollNext();
     }, 4000);
-    return () => clearInterval(interval);
-  }, [autoSlide]);
+    
+    return () => clearInterval(intervalId);
+  }, [api, isPaused]);
 
   return (
     <section
       className="py-16 bg-muted/30"
-      onMouseEnter={() => setAutoSlide(false)}
-      onMouseLeave={() => setAutoSlide(true)}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
       <div className="container">
         <div className="text-center mb-12">
@@ -74,6 +79,7 @@ export const TeamSection = () => {
         </div>
 
         <Carousel
+          setApi={setApi}
           opts={{ align: "start", loop: true }}
           className="w-full max-w-5xl mx-auto"
         >
@@ -107,8 +113,12 @@ export const TeamSection = () => {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious data-carousel-prev />
-          <CarouselNext data-carousel-next />
+          <div className="absolute -left-4 top-1/2 transform -translate-y-1/2">
+            <CarouselPrevious />
+          </div>
+          <div className="absolute -right-4 top-1/2 transform -translate-y-1/2">
+            <CarouselNext />
+          </div>
         </Carousel>
       </div>
     </section>

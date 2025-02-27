@@ -1,8 +1,11 @@
+
+import { useState, useEffect } from "react";
 import { StarIcon } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
+import type { EmblaCarouselType } from "embla-carousel-react";
 
 const testimonials = [
   {
@@ -29,6 +32,19 @@ const testimonials = [
 ];
 
 export const TestimonialsSection = () => {
+  const [api, setApi] = useState<EmblaCarouselType | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (!api || isPaused) return;
+    
+    const intervalId = setInterval(() => {
+      api.scrollNext();
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
+  }, [api, isPaused]);
+
   return (
     <section className="py-16 bg-primary/5">
       <div className="container">
@@ -39,50 +55,60 @@ export const TestimonialsSection = () => {
           </p>
         </div>
 
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-            autoplay: 5000,
-          }}
-          className="w-full max-w-5xl mx-auto"
+        <div 
+          className="relative"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
         >
-          <CarouselContent>
-            {testimonials.map((testimonial, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 pl-4">
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <Card className="h-full hover-lift border-primary/10 shadow-lg">
-                    <CardContent className="p-6 flex flex-col h-full">
-                      <div className="flex mb-4">
-                        {Array(5).fill(0).map((_, i) => (
-                          <StarIcon 
-                            key={i} 
-                            className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted'}`} 
-                          />
-                        ))}
-                      </div>
-                      <blockquote className="text-muted-foreground mb-6 flex-grow">
-                        "{testimonial.text}"
-                      </blockquote>
-                      <div className="flex items-center">
-                        <Avatar className="h-10 w-10 mr-3">
-                          <AvatarImage src={testimonial.avatar} alt={testimonial.author} />
-                          <AvatarFallback>{testimonial.author.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-semibold text-sm">{testimonial.author}</p>
-                          <p className="text-xs text-muted-foreground">{testimonial.position}</p>
+          <Carousel
+            setApi={setApi}
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full max-w-5xl mx-auto"
+          >
+            <CarouselContent>
+              {testimonials.map((testimonial, index) => (
+                <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Card className="h-full hover-lift border-primary/10 shadow-lg">
+                      <CardContent className="p-6 flex flex-col h-full">
+                        <div className="flex mb-4">
+                          {Array(5).fill(0).map((_, i) => (
+                            <StarIcon 
+                              key={i} 
+                              className={`w-4 h-4 ${i < testimonial.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted'}`} 
+                            />
+                          ))}
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+                        <blockquote className="text-muted-foreground mb-6 flex-grow">
+                          "{testimonial.text}"
+                        </blockquote>
+                        <div className="flex items-center">
+                          <Avatar className="h-10 w-10 mr-3">
+                            <AvatarImage src={testimonial.avatar} alt={testimonial.author} />
+                            <AvatarFallback>{testimonial.author.charAt(0)}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-semibold text-sm">{testimonial.author}</p>
+                            <p className="text-xs text-muted-foreground">{testimonial.position}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="absolute -left-4 top-1/2 transform -translate-y-1/2">
+              <CarouselPrevious />
+            </div>
+            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2">
+              <CarouselNext />
+            </div>
+          </Carousel>
+        </div>
       </div>
     </section>
   );

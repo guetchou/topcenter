@@ -1,6 +1,7 @@
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import type { EmblaCarouselType } from "embla-carousel-react";
 
 const partners = [
   {
@@ -31,7 +32,7 @@ const partners = [
   {
     name: "Infomaniak",
     logo: "/lovable-uploads/logo-infomaniak.png",
-    industry: "Tecchnologie"
+    industry: "Technologie"
   },
   {
     name: "ACPCE",
@@ -51,7 +52,18 @@ const partners = [
 ];
 
 export const PartnersSection = () => {
-  const carouselRef = useRef(null);
+  const [api, setApi] = useState<EmblaCarouselType | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (!api || isPaused) return;
+    
+    const intervalId = setInterval(() => {
+      api.scrollNext();
+    }, 3000);
+    
+    return () => clearInterval(intervalId);
+  }, [api, isPaused]);
 
   return (
     <section className="py-16 bg-background">
@@ -63,10 +75,16 @@ export const PartnersSection = () => {
           </p>
         </div>
 
-        <div className="relative group">
+        <div className="relative group"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           <Carousel
-            ref={carouselRef}
-            opts={{ align: "start", loop: true }}
+            setApi={setApi}
+            opts={{ 
+              align: "start", 
+              loop: true,
+            }}
             className="w-full max-w-5xl mx-auto overflow-hidden"
           >
             <CarouselContent>

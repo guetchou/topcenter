@@ -188,23 +188,20 @@ const Devis = () => {
 
       if (contactError) throw contactError;
 
-      // Enregistrer les détails du devis
-      const { error: quoteError } = await supabase
-        .from('quotes')
-        .insert([{
-          contact_email: formData.email,
-          service_type: formData.service,
-          agent_count: formData.agentCount[0],
-          hours_per_week: formData.hours[0],
-          additional_services: formData.additionalServices,
-          additional_languages: formData.additionalLanguages,
-          crm_integration: formData.crm,
-          priority_level: formData.priority,
-          quote_amount: quote.total,
-          status: 'pending'
-        }]);
-
-      if (quoteError) throw quoteError;
+      // Stockage temporaire côté client
+      // Note: Dans une vraie application, on utiliserait une table 'quotes' dans la base de données
+      localStorage.setItem('lastQuote', JSON.stringify({
+        contact_email: formData.email,
+        service_type: formData.service,
+        agent_count: formData.agentCount[0],
+        hours_per_week: formData.hours[0],
+        additional_services: formData.additionalServices,
+        additional_languages: formData.additionalLanguages,
+        crm_integration: formData.crm,
+        priority_level: formData.priority,
+        quote_amount: quote?.total || 0,
+        status: 'pending'
+      }));
 
       toast({
         title: "Demande envoyée !",
