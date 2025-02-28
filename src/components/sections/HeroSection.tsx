@@ -9,7 +9,7 @@ export const HeroSection = () => {
   const { toast } = useToast();
 
   const handleCallNow = () => {
-    window.location.href = "tel:+24223456789";
+    window.location.href = "tel:+242064495353";
     toast({
       title: "Appel en cours",
       description: "Vous allez être mis en relation avec notre équipe.",
