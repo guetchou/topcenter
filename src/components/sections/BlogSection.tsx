@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { EmblaCarouselType } from "embla-carousel-react";
+import type { UseEmblaCarouselType } from "embla-carousel-react";
 
 const articles = [
   {
@@ -40,7 +40,7 @@ const articles = [
 
 export const BlogSection = () => {
   const navigate = useNavigate();
-  const [api, setApi] = useState<EmblaCarouselType | null>(null);
+  const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {

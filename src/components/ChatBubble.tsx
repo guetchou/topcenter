@@ -18,18 +18,47 @@ export const AIChatBubble = () => {
   const [activeTab, setActiveTab] = useState("ai");
   const [chatterpalLoaded, setChatterpalLoaded] = useState(false);
 
-  const systemContext = `Vous êtes l'assistant virtuel de TopCenter, une entreprise spécialisée dans la relation client et les centres d'appels.
+  // Contexte amélioré pour l'IA avec des informations précises sur TopCenter
+  const systemContext = `Vous êtes l'assistant virtuel officiel de TopCenter, un centre d'appels et service client basé au Congo-Brazzaville.
 
-Voici les informations clés sur TopCenter :
-- Services principaux : Centre d'appel, service client 24/7, prise de rendez-vous, chat en direct, support multilingue
-- Points forts : Technologies avancées (IA, analyses en temps réel), équipe professionnelle, disponibilité 24/7
-- Valeurs : Excellence du service client, innovation technologique, satisfaction client
-- Contact : Formulaire sur le site, chat en direct, téléphone
-- Localisation : France
+Informations précises sur TopCenter:
+- Nom complet de l'entreprise: TopCenter SARL
+- Fondée en: 2018
+- Adresse: 28 rue Docteur Cureux, Derrière Imm. Fédéraux, Centre-Ville, Brazzaville, Congo
+- Contact: +242 06 449 5353 / contact@topcenter.cg
+- Site web: www.topcenter.cg
 
-Si on vous pose des questions sur les prix, indiquez qu'ils varient selon les besoins spécifiques et recommandez de contacter l'équipe commerciale via le formulaire de contact.
+Nos services principaux:
+1. Centre d'appels: Gestion des appels entrants et sortants, télémarketing, enquêtes de satisfaction
+2. Service client multicanal: Téléphone, email, chat en direct, WhatsApp, réseaux sociaux
+3. Prise de rendez-vous: Gestion d'agenda et suivi pour entreprises et professionnels
+4. Support technique: Assistance 24/7 pour les produits et services de nos clients
 
-Répondez de manière professionnelle, courtoise et engageante.`;
+Nos points forts:
+- Équipe de 35 téléconseillers professionnels formés en continu
+- Technologies avancées: CRM, IA prédictive, analyses en temps réel
+- Support multilingue: Français, Anglais, Lingala, Kituba
+- Prix compétitifs adaptés au marché africain
+- Expertise locale avec standards internationaux
+- Disponibilité 24/7
+
+Nos clients principaux:
+- Opérateurs télécoms: MTN Congo, Airtel Congo, Congo Télécom
+- Institutions financières et banques
+- Entreprises de services (santé, éducation, tourisme)
+- Administrations publiques
+
+Pour les demandes de prix, indiquez que nos tarifs sont personnalisés selon:
+- Le volume d'appels ou de contacts à gérer
+- Le nombre d'agents nécessaires
+- Les langues requises
+- La complexité des scripts et processus
+- La durée d'engagement
+
+Les prix commencent à partir de 30€/heure/agent pour les services de base.
+Pour un devis précis, dirigez vers le formulaire de contact ou la page de devis.
+
+Gardez vos réponses professionnelles, précises et orientées solution. Mettez en avant notre expertise locale et notre connaissance du marché congolais.`;
 
   // Initialiser ChatterPal
   useEffect(() => {
@@ -55,6 +84,16 @@ Répondez de manière professionnelle, courtoise et engageante.`;
       }
     }
   }, [activeTab, isOpen]);
+
+  // Message d'accueil initial
+  useEffect(() => {
+    if (isOpen && messages.length === 0) {
+      setMessages([{
+        text: "Bonjour ! Je suis l'assistant virtuel de TopCenter. Comment puis-je vous aider aujourd'hui ? Je peux vous renseigner sur nos services de centre d'appels, notre support client 24/7 ou vous aider à obtenir un devis personnalisé.",
+        isUser: false
+      }]);
+    }
+  }, [isOpen, messages.length]);
 
   // Fonction pour gérer l'envoi de message à l'assistant IA
   const handleSendMessage = async () => {
@@ -97,7 +136,7 @@ Répondez de manière professionnelle, courtoise et engageante.`;
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
       setMessages(prev => [...prev, { 
-        text: "Désolé, une erreur est survenue. Veuillez réessayer.", 
+        text: "Désolé, une erreur est survenue. Veuillez réessayer ou contacter directement notre équipe au +242 06 449 5353.", 
         isUser: false 
       }]);
     } finally {
@@ -120,7 +159,7 @@ Répondez de manière professionnelle, courtoise et engageante.`;
                 )}
               </div>
               <span className="font-medium">
-                {activeTab === "ai" ? "Assistant IA" : "Support Client"}
+                {activeTab === "ai" ? "Assistant TopCenter" : "Support Client"}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -133,7 +172,6 @@ Répondez de manière professionnelle, courtoise et engageante.`;
                     <SelectItem value="perplexity">Perplexity</SelectItem>
                     <SelectItem value="llama2">Llama 2</SelectItem>
                     <SelectItem value="mistral">Mistral 7B</SelectItem>
-                    <SelectItem value="bloom">BLOOM</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -146,16 +184,11 @@ Répondez de manière professionnelle, courtoise et engageante.`;
           <Tabs defaultValue="ai" value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
             <TabsList className="grid grid-cols-2 mx-4 my-2">
               <TabsTrigger value="ai">Assistant IA</TabsTrigger>
-              <TabsTrigger value="chatterpal">Support Humain</TabsTrigger>
+              <TabsTrigger value="chatterpal">Agent Humain</TabsTrigger>
             </TabsList>
             
             <TabsContent value="ai" className="flex-1 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden">
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 && (
-                  <div className="text-center text-muted-foreground">
-                    Bonjour ! Je suis l'assistant virtuel de TopCenter. Comment puis-je vous aider aujourd'hui ?
-                  </div>
-                )}
                 {messages.map((msg, index) => (
                   <div
                     key={index}

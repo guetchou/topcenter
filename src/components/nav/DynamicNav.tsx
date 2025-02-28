@@ -48,6 +48,7 @@ export const DynamicNav = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [showNotificationDot, setShowNotificationDot] = useState(true);
+  const [notificationsRead, setNotificationsRead] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -71,11 +72,14 @@ export const DynamicNav = () => {
           title: "Notifications activées",
           description: "Vous recevrez nos actualités en temps réel."
         });
-        
-        // Retire l'indicateur visuel
-        setShowNotificationDot(false);
       }
     }
+  };
+  
+  // Fonction pour marquer les notifications comme lues
+  const markNotificationsAsRead = () => {
+    setNotificationsRead(true);
+    setShowNotificationDot(false);
   };
 
   const serviceItems = [
@@ -218,7 +222,7 @@ export const DynamicNav = () => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-20 items-center justify-between">
-        {/* Logo et Marque */}
+        {/* Logo seul, sans texte TopCenter */}
         <div className="flex items-center gap-4">
           <Link to="/" className="flex items-center gap-2">
             <img 
@@ -226,9 +230,6 @@ export const DynamicNav = () => {
               alt="TopCenter Logo"
               className="h-12 w-auto"
             />
-            <span className="font-bold text-xl text-primary hidden sm:inline-block">
-              TopCenter
-            </span>
           </Link>
         </div>
 
@@ -294,11 +295,13 @@ export const DynamicNav = () => {
           {renderAuthButton()}
 
           {/* Notification Bell */}
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(open) => {
+            if (open) markNotificationsAsRead();
+          }}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="relative" onClick={requestNotificationPermission}>
                 <Bell className="h-5 w-5" />
-                {showNotificationDot && (
+                {!notificationsRead && showNotificationDot && (
                   <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full text-[10px] flex items-center justify-center text-primary-foreground">
                     {notificationCount}
                   </span>
@@ -377,7 +380,7 @@ export const DynamicNav = () => {
           {/* Notification Bell for Mobile */}
           <Button variant="ghost" size="icon" className="relative" onClick={requestNotificationPermission}>
             <Bell className="h-5 w-5" />
-            {showNotificationDot && (
+            {!notificationsRead && showNotificationDot && (
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full text-[10px] flex items-center justify-center text-primary-foreground">
                 {notificationCount}
               </span>

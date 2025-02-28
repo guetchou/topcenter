@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import type { EmblaCarouselType } from "embla-carousel-react";
+import type { UseEmblaCarouselType } from "embla-carousel-react";
 
 const agents = [
   {
@@ -51,7 +51,7 @@ const agents = [
 ];
 
 export const TeamSection = () => {
-  const [api, setApi] = useState<EmblaCarouselType | null>(null);
+  const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {

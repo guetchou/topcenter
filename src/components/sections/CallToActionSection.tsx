@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -25,7 +26,7 @@ export const CallToActionSection = () => {
               variant="outline" 
               size="lg"
               onClick={() => document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-transparent text-primary-foreground border-primary-foreground hover:bg-primary-foreground hover:text-primary"
+              className="bg-white text-primary border-primary hover:bg-primary-foreground hover:text-primary"
             >
               Demander un devis
             </Button>

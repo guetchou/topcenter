@@ -5,7 +5,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { motion } from "framer-motion";
-import type { EmblaCarouselType } from "embla-carousel-react";
+import type { UseEmblaCarouselType } from "embla-carousel-react";
 
 const testimonials = [
   {
@@ -32,7 +32,7 @@ const testimonials = [
 ];
 
 export const TestimonialsSection = () => {
-  const [api, setApi] = useState<EmblaCarouselType | null>(null);
+  const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
