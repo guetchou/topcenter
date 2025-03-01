@@ -61,7 +61,7 @@ export const PartnersSection = () => {
   useEffect(() => {
     if (!api) return;
     
-    // Correction ici - ajout du second argument (fonction de rappel vide)
+    // Fixed: Added the second argument to api.on with proper callback
     api.on('select', () => {
       setActiveIndex(api.selectedScrollSnap());
     });
