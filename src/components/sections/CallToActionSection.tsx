@@ -26,7 +26,7 @@ export const CallToActionSection = () => {
               variant="outline" 
               size="lg"
               onClick={() => document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white text-primary border-primary hover:bg-primary-foreground hover:text-primary"
+              className="bg-white text-primary border-white hover:bg-primary-foreground hover:text-primary"
             >
               Demander un devis
             </Button>

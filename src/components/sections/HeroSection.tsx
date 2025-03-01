@@ -64,7 +64,7 @@ export const HeroSection = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="text-white hover:text-primary"
+              className="text-white border-white hover:bg-white hover:text-primary"
               onClick={handleQuoteRequest}
             >
               Demander un devis

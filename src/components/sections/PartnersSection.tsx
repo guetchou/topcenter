@@ -54,15 +54,49 @@ const partners = [
 export const PartnersSection = () => {
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const autoPlayInterval = useRef<number | null>(null);
 
+  // Mise à jour de l'index actif lorsque le carrousel change
   useEffect(() => {
-    if (!api || isPaused) return;
+    if (!api) return;
     
-    const intervalId = setInterval(() => {
-      api.scrollNext();
+    api.on('select', () => {
+      setActiveIndex(api.selectedScrollSnap());
+    });
+    
+    return () => {
+      api.off('select');
+    };
+  }, [api]);
+
+  // Fonction pour démarrer l'autoplay
+  const startAutoplay = () => {
+    if (autoPlayInterval.current !== null) return;
+    
+    autoPlayInterval.current = window.setInterval(() => {
+      if (api && !isPaused) {
+        api.scrollNext();
+      }
     }, 3000);
+  };
+
+  // Fonction pour arrêter l'autoplay
+  const stopAutoplay = () => {
+    if (autoPlayInterval.current !== null) {
+      window.clearInterval(autoPlayInterval.current);
+      autoPlayInterval.current = null;
+    }
+  };
+
+  // Démarrer l'autoplay quand l'API est prête
+  useEffect(() => {
+    if (!api) return;
+    startAutoplay();
     
-    return () => clearInterval(intervalId);
+    return () => {
+      stopAutoplay();
+    };
   }, [api, isPaused]);
 
   return (
@@ -75,7 +109,8 @@ export const PartnersSection = () => {
           </p>
         </div>
 
-        <div className="relative group"
+        <div 
+          className="relative group"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -90,7 +125,9 @@ export const PartnersSection = () => {
             <CarouselContent>
               {partners.map((partner, index) => (
                 <CarouselItem key={index} className="md:basis-1/3 lg:basis-1/4 pl-4">
-                  <div className="p-6 text-center transition-transform transform hover:scale-105 bg-white shadow-lg rounded-lg h-full flex flex-col items-center justify-center">
+                  <div 
+                    className={`p-6 text-center transition-all duration-300 transform hover:scale-105 bg-white shadow-lg rounded-lg h-full flex flex-col items-center justify-center ${activeIndex === index ? 'ring-2 ring-primary/50' : ''}`}
+                  >
                     <div className="h-24 w-full flex items-center justify-center mb-4">
                       <img src={partner.logo} alt={`${partner.name} logo`} className="max-h-24 max-w-full object-contain" />
                     </div>
@@ -100,13 +137,33 @@ export const PartnersSection = () => {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <CarouselPrevious />
+            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <CarouselPrevious onClick={() => setIsPaused(true)} />
             </div>
-            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <CarouselNext />
+            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <CarouselNext onClick={() => setIsPaused(true)} />
             </div>
           </Carousel>
+          
+          {/* Indicateurs de slides */}
+          <div className="flex justify-center mt-4 gap-2">
+            {partners.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (api) {
+                    api.scrollTo(index);
+                    setIsPaused(true);
+                    setTimeout(() => setIsPaused(false), 5000);
+                  }
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  activeIndex === index ? 'bg-primary w-4' : 'bg-gray-300'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
