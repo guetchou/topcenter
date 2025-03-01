@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FileText } from "lucide-react";
 
 export const CallToActionSection = () => {
   return (
@@ -26,8 +26,10 @@ export const CallToActionSection = () => {
               variant="outline" 
               size="lg"
               onClick={() => document.getElementById('devis')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white text-primary border-white hover:bg-primary-foreground hover:text-primary"
+              className="bg-white text-primary hover:bg-white/90 hover:text-primary/90 border-2 border-white shadow-lg transition-all duration-300 font-semibold relative overflow-hidden group"
             >
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+              <FileText className="mr-2 w-5 h-5" />
               Demander un devis
             </Button>
           </div>

@@ -64,11 +64,12 @@ export const HeroSection = () => {
             <Button 
               size="lg" 
               variant="outline" 
-              className="text-white border-white hover:bg-white hover:text-primary"
+              className="relative overflow-hidden group border-2 border-white bg-transparent text-white hover:bg-white/10 transition-all duration-300 shadow-lg"
               onClick={handleQuoteRequest}
             >
+              <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
               Demander un devis
-              <FileText className="w-4 h-4 ml-2" />
+              <FileText className="w-5 h-5 ml-2 text-primary" />
             </Button>
           </div>
 
