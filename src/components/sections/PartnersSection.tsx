@@ -1,166 +1,148 @@
 
-import { useEffect, useRef, useState } from "react";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useState, useEffect, useCallback } from "react";
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 
 const partners = [
   {
+    id: 1,
     name: "Congo Télécom",
-    logo: "/lovable-uploads/Logo_CongoTélécom-transformed (1).png",
-    industry: "Télécommunications"
+    logo: "/lovable-uploads/Logo_Congotelecom.png",
+    website: "https://www.congotelecom.cg"
   },
   {
-    name: "astTECS",
-    logo: "/lovable-uploads/Logo-Asttect.gif",
-    industry: "Technologie"
-  },
-  {
-    name: "BL Technology",
-    logo: "/lovable-uploads/Logo-BLT.gif",
-    industry: "Services informatiques"
-  },
-  {
-    name: "MTN Congo",
+    id: 2,
+    name: "MTN",
     logo: "/lovable-uploads/Logo-MTN.png",
-    industry: "Télécommunications"
+    website: "https://www.mtn.cg"
   },
   {
-    name: "PSIPJ",
-    logo: "/lovable-uploads/psipj-logo.jpg",
-    industry: "Social"
+    id: 3,
+    name: "Airtel",
+    logo: "/lovable-uploads/logo-airtel.jpg",
+    website: "https://www.airtel.cg"
   },
   {
-    name: "Infomaniak",
-    logo: "/lovable-uploads/logo-infomaniak.png",
-    industry: "Technologie"
-  },
-  {
+    id: 4,
     name: "ACPCE",
     logo: "/lovable-uploads/acpce-logo.png",
-    industry: "Agence Gouvernementale"
+    website: "https://www.acpce.cg"
   },
   {
-    name: "ACPE",
-    logo: "/lovable-uploads/acpe-logo.png",
-    industry: "Agence Gouvernementale"
+    id: 5,
+    name: "PSIPJ",
+    logo: "/lovable-uploads/psipj-logo.jpg",
+    website: "https://www.psipj.org"
   },
   {
-    name: "Airtel Congo",
-    logo: "/lovable-uploads/logo-airtel.jpg",
-    industry: "Télécom"
+    id: 6,
+    name: "BLT",
+    logo: "/lovable-uploads/Logo-BLT.gif",
+    website: "https://www.blt.cg"
+  },
+  {
+    id: 7,
+    name: "Infomaniak",
+    logo: "/lovable-uploads/logo-infomaniak.png",
+    website: "https://www.infomaniak.com"
   }
 ];
 
 export const PartnersSection = () => {
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
-  const [isPaused, setIsPaused] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
-  const autoPlayInterval = useRef<number | null>(null);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Mise à jour de l'index actif lorsque le carrousel change
+  const onSelect = useCallback(() => {
+    if (!api) return;
+    setActiveIndex(api.selectedScrollSnap());
+  }, [api]);
+
   useEffect(() => {
     if (!api) return;
     
     // Fixed: Added the second argument to api.on with proper callback
-    api.on('select', () => {
-      setActiveIndex(api.selectedScrollSnap());
-    });
+    api.on('select', onSelect);
     
     return () => {
-      api.off('select');
+      api.off('select', onSelect);
     };
-  }, [api]);
+  }, [api, onSelect]);
 
-  // Fonction pour démarrer l'autoplay
-  const startAutoplay = () => {
-    if (autoPlayInterval.current !== null) return;
-    
-    autoPlayInterval.current = window.setInterval(() => {
-      if (api && !isPaused) {
-        api.scrollNext();
-      }
-    }, 3000);
-  };
-
-  // Fonction pour arrêter l'autoplay
-  const stopAutoplay = () => {
-    if (autoPlayInterval.current !== null) {
-      window.clearInterval(autoPlayInterval.current);
-      autoPlayInterval.current = null;
-    }
-  };
-
-  // Démarrer l'autoplay quand l'API est prête
   useEffect(() => {
-    if (!api) return;
-    startAutoplay();
+    if (!api || isPaused) return;
     
-    return () => {
-      stopAutoplay();
-    };
+    const intervalId = setInterval(() => {
+      api.scrollNext();
+    }, 3000);
+    
+    return () => clearInterval(intervalId);
   }, [api, isPaused]);
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-16 bg-muted/30">
       <div className="container">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold mb-4">Nos Partenaires</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
-            Des entreprises de confiance qui font confiance à notre expertise
-          </p>
-        </div>
-
+        <h2 className="text-3xl font-bold text-center mb-12">Ils nous font confiance</h2>
+        
         <div 
-          className="relative group"
+          className="relative"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <Carousel
-            setApi={setApi}
-            opts={{ 
-              align: "start", 
+          <Carousel 
+            setApi={setApi} 
+            opts={{
+              align: "start",
               loop: true,
             }}
-            className="w-full max-w-5xl mx-auto overflow-hidden"
+            className="w-full max-w-5xl mx-auto"
           >
             <CarouselContent>
-              {partners.map((partner, index) => (
-                <CarouselItem key={index} className="md:basis-1/3 lg:basis-1/4 pl-4">
-                  <div 
-                    className={`p-6 text-center transition-all duration-300 transform hover:scale-105 bg-white shadow-lg rounded-lg h-full flex flex-col items-center justify-center ${activeIndex === index ? 'ring-2 ring-primary/50' : ''}`}
+              {partners.map((partner) => (
+                <CarouselItem key={partner.id} className="md:basis-1/3 lg:basis-1/4 pl-4">
+                  <a 
+                    href={partner.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block h-full"
                   >
-                    <div className="h-24 w-full flex items-center justify-center mb-4">
-                      <img src={partner.logo} alt={`${partner.name} logo`} className="max-h-24 max-w-full object-contain" />
-                    </div>
-                    <h3 className="font-medium text-lg">{partner.name}</h3>
-                    <p className="text-sm text-muted-foreground">{partner.industry}</p>
-                  </div>
+                    <Card className="hover-lift h-full cursor-pointer transition-shadow hover:shadow-md">
+                      <CardContent className="flex items-center justify-center p-6 h-full">
+                        <img 
+                          src={partner.logo} 
+                          alt={partner.name} 
+                          className="max-h-16 md:max-h-20 w-auto object-contain filter grayscale hover:grayscale-0 transition-all duration-300" 
+                        />
+                      </CardContent>
+                    </Card>
+                  </a>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <CarouselPrevious onClick={() => setIsPaused(true)} />
+            
+            <div className="hidden md:block absolute -left-4 top-1/2 transform -translate-y-1/2">
+              <CarouselPrevious />
             </div>
-            <div className="absolute right-0 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <CarouselNext onClick={() => setIsPaused(true)} />
+            <div className="hidden md:block absolute -right-4 top-1/2 transform -translate-y-1/2">
+              <CarouselNext />
             </div>
           </Carousel>
           
-          {/* Indicateurs de slides */}
-          <div className="flex justify-center mt-4 gap-2">
+          <div className="flex justify-center mt-6 space-x-2">
             {partners.map((_, index) => (
               <button
                 key={index}
-                onClick={() => {
-                  if (api) {
-                    api.scrollTo(index);
-                    setIsPaused(true);
-                    setTimeout(() => setIsPaused(false), 5000);
-                  }
-                }}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  activeIndex === index ? 'bg-primary w-4' : 'bg-gray-300'
+                className={`h-2 rounded-full transition-all ${
+                  activeIndex === index ? "w-6 bg-primary" : "w-2 bg-muted-foreground/30"
                 }`}
+                onClick={() => api?.scrollTo(index)}
                 aria-label={`Go to slide ${index + 1}`}
               />
             ))}

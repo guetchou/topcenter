@@ -6,37 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
-
-const articles = [
-  {
-    id: 1,
-    title: "Comment l'IA transforme les centres d'appels en 2024",
-    excerpt: "Découvrez les technologies d'IA qui révolutionnent l'expérience client et améliorent l'efficacité des centres d'appels modernes.",
-    date: "2024-06-15",
-    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7"
-  },
-  {
-    id: 2,
-    title: "Les 5 meilleures pratiques pour une satisfaction client exceptionnelle",
-    excerpt: "Quelles sont les stratégies qui font vraiment la différence? Découvrez comment les meilleurs centres d'appels atteignent 98% de satisfaction.",
-    date: "2024-06-10",
-    image: "https://images.unsplash.com/photo-1519389950473-47ba0277781c"
-  },
-  {
-    id: 3,
-    title: "Omnicanalité: Pourquoi c'est essentiel pour votre entreprise",
-    excerpt: "L'approche omnicanale n'est plus optionnelle. Apprenez comment l'intégrer efficacement dans votre stratégie de relation client.",
-    date: "2024-06-05",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978"
-  },
-  {
-    id: 4,
-    title: "Management à distance: Guide complet pour les centres d'appels",
-    excerpt: "La gestion d'équipes délocalisées présente des défis uniques. Voici les solutions que Top Center a développées avec succès.",
-    date: "2024-06-01",
-    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf"
-  }
-];
+import { blogArticles } from "@/data/blog-articles";
 
 export const BlogSection = () => {
   const navigate = useNavigate();
@@ -52,6 +22,11 @@ export const BlogSection = () => {
     
     return () => clearInterval(intervalId);
   }, [api, isPaused]);
+
+  // Get the 4 most recent articles
+  const articles = blogArticles.sort((a, b) => 
+    new Date(b.date).getTime() - new Date(a.date).getTime()
+  ).slice(0, 4);
 
   return (
     <section className="py-16">

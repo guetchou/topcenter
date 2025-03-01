@@ -22,6 +22,7 @@ import Settings from "./pages/Settings";
 import ClientPortal from "./pages/ClientPortal";
 import NewsAdmin from "./pages/NewsAdmin";
 import News from "./pages/News";
+import BlogPost from "./pages/blog/BlogPost";
 import Services from "./pages/services/Services";
 import Devis from "./pages/Devis";
 import Login from "./pages/auth/Login";
@@ -63,7 +64,9 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/blog" element={<News />} />
+          <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/news" element={<News />} />
+          <Route path="/news/:id" element={<BlogPost />} />
           <Route path="/news-admin" element={<NewsAdmin />} />
           
           <Route path="/admin/*" element={<AdminRoutes />} />
