@@ -26,10 +26,15 @@ import BlogPost from "./pages/blog/BlogPost";
 import Services from "./pages/services/Services";
 import Devis from "./pages/Devis";
 import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
+import ResetPassword from "./pages/auth/ResetPassword";
+import NewPassword from "./pages/auth/NewPassword";
 import { AuthCallback } from "./components/auth/AuthCallback";
 import { AdminRoutes } from "./components/routes/AdminRoutes";
 import { AgentRoutes } from "./components/routes/AgentRoutes";
 import { ClientRoutes } from "./components/routes/ClientRoutes";
+import { useEffect } from "react";
+import { useAuth } from "./hooks/useAuth";
 
 function HomePage() {
   return (
@@ -51,6 +56,12 @@ function HomePage() {
 
 function App() {
   const intl = useIntl();
+  const { checkUser } = useAuth();
+
+  useEffect(() => {
+    // Vérifier l'authentification au chargement
+    checkUser();
+  }, [checkUser]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -61,14 +72,22 @@ function App() {
           <Route path="/about" element={<AboutSection />} />
           <Route path="/services" element={<Services />} />
           <Route path="/devis" element={<Devis />} />
+          
+          {/* Routes d'authentification */}
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/auth/new-password" element={<NewPassword />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          
+          {/* Routes du blog */}
           <Route path="/blog" element={<News />} />
           <Route path="/blog/:id" element={<BlogPost />} />
           <Route path="/news" element={<News />} />
           <Route path="/news/:id" element={<BlogPost />} />
           <Route path="/news-admin" element={<NewsAdmin />} />
           
+          {/* Routes protégées par rôle */}
           <Route path="/admin/*" element={<AdminRoutes />} />
           <Route path="/agent/*" element={<AgentRoutes />} />
           <Route path="/client/*" element={<ClientRoutes />} />

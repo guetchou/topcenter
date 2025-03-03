@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Plus, Pencil, Trash2, Share2, Eye, Calendar, CheckCircle, XCircle, Image, Send } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Share2, Eye, Calendar, CheckCircle, XCircle, Image, Send, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,10 +15,11 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/hooks/useAuth";
 
 // Type pour les articles
 type Article = {
-  id: number;
+  id: string;
   title: string;
   content: string;
   excerpt: string;
@@ -27,60 +28,49 @@ type Article = {
   image?: string;
   category: string;
   featured: boolean;
+  author_id?: string;
+  created_at?: string;
+  updated_at?: string;
 };
 
 const NewsAdmin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user, isAuthenticated } = useAuth();
   const [articles, setArticles] = useState<Article[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
 
-  // Simulation de chargement des articles depuis l'API
+  // Vérification que l'utilisateur a le rôle admin
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Chargement des articles depuis Supabase
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         setIsLoading(true);
-        // Vous pouvez remplacer cette partie par une vraie appel à l'API Supabase
-        setTimeout(() => {
-          setArticles([
-            {
-              id: 1,
-              title: "Top Center étend ses services en Afrique Centrale",
-              content: "Top Center, leader dans le domaine des centres d'appels et services clients au Congo, annonce aujourd'hui son expansion dans plusieurs pays d'Afrique Centrale. Cette initiative stratégique vise à répondre à une demande croissante de services de relation client de qualité dans la région.\n\nGrâce à notre expertise locale et nos standards internationaux, nous sommes désormais en mesure d'offrir nos services au Gabon, au Cameroun et en République Démocratique du Congo. Cette expansion s'accompagne d'un recrutement de nouveaux talents locaux et d'investissements importants dans nos infrastructures technologiques.\n\n\"Notre objectif est de devenir le partenaire de référence en matière de relation client sur l'ensemble du marché d'Afrique Centrale d'ici 2025\", déclare Gess NGUIE, Manager Général de Top Center.",
-              excerpt: "Top Center poursuit sa croissance et s'implante dans de nouveaux pays d'Afrique Centrale pour répondre à la demande croissante.",
-              status: "published",
-              date: "2024-02-20",
-              category: "Entreprise",
-              featured: true,
-              image: "/lovable-uploads/equipe-topcenter.jpg"
-            },
-            {
-              id: 2,
-              title: "L'évolution des centres d'appels en 2024",
-              content: "Le secteur des centres d'appels connaît une transformation profonde en 2024, portée par l'intégration de nouvelles technologies et l'évolution des attentes des consommateurs.\n\nL'intelligence artificielle joue désormais un rôle central dans la gestion des interactions clients. Chez Top Center, nous avons déployé des solutions d'IA avancées qui permettent d'analyser les conversations en temps réel et de fournir aux agents les informations nécessaires pour résoudre rapidement les problèmes des clients.\n\nLe support omnicanal s'est également imposé comme un standard incontournable. Les clients s'attendent à pouvoir contacter les entreprises via leur canal préféré - que ce soit par téléphone, email, chat ou réseaux sociaux - et à bénéficier d'une expérience cohérente.\n\nEnfin, le travail à distance a redéfini l'organisation des centres d'appels. Notre modèle hybride permet désormais à nos agents de travailler aussi bien depuis nos locaux que depuis leur domicile, tout en maintenant les mêmes standards de qualité.",
-              excerpt: "Découvrez comment l'IA, l'omnicanal et le travail hybride transforment le secteur des centres d'appels en 2024.",
-              status: "draft",
-              date: "2024-02-18",
-              category: "Technologie",
-              featured: false
-            },
-            {
-              id: 3,
-              title: "Comment améliorer la satisfaction client grâce aux données",
-              content: "Dans l'économie actuelle centrée sur le client, la capacité à exploiter les données pour améliorer l'expérience client est devenue un avantage compétitif majeur.\n\nChez Top Center, nous utilisons l'analyse avancée des données pour optimiser chaque interaction client. En collectant et en analysant systématiquement les retours, les comportements et les préférences des clients, nous sommes en mesure d'identifier précisément les points de friction et d'y apporter des solutions adaptées.\n\nL'analyse prédictive nous permet également d'anticiper les besoins des clients et de personnaliser leur expérience. Par exemple, nos systèmes peuvent identifier quand un client est susceptible de rencontrer un problème particulier et proposer une assistance proactive.\n\nEnfin, le partage des insights tirés des données avec l'ensemble de l'organisation permet d'aligner tous les départements sur les attentes réelles des clients et d'améliorer continuellement nos processus et nos services.",
-              excerpt: "Découvrez comment l'analyse des données permet d'offrir une expérience client personnalisée et proactive.",
-              status: "published",
-              date: "2024-01-15",
-              category: "Satisfaction client",
-              featured: true
-            }
-          ]);
-          setIsLoading(false);
-        }, 800);
+        
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .order('date', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          setArticles(data as Article[]);
+        }
       } catch (error) {
         console.error("Erreur lors du chargement des articles:", error);
         toast({
@@ -88,6 +78,7 @@ const NewsAdmin = () => {
           description: "Impossible de charger les articles.",
           variant: "destructive"
         });
+      } finally {
         setIsLoading(false);
       }
     };
@@ -97,7 +88,7 @@ const NewsAdmin = () => {
   
   const resetForm = () => {
     setCurrentArticle({
-      id: Date.now(), // Temporaire pour simulation
+      id: '',
       title: "",
       content: "",
       excerpt: "",
@@ -114,51 +105,124 @@ const NewsAdmin = () => {
   };
 
   const handleEdit = (article: Article) => {
-    setCurrentArticle(article);
+    setCurrentArticle({
+      ...article,
+      date: article.date ? new Date(article.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+    });
     setIsEditing(true);
   };
 
-  const handleDelete = (id: number) => {
-    setArticles(prev => prev.filter(article => article.id !== id));
-    toast({
-      title: "Article supprimé",
-      description: "L'article a été supprimé avec succès."
-    });
+  const confirmDelete = (id: string) => {
+    setDeleteId(id);
+    setOpenDialog(true);
   };
 
-  const handleSave = () => {
-    if (!currentArticle) return;
+  const handleDelete = async () => {
+    if (!deleteId) return;
     
-    if (currentArticle.id && articles.some(a => a.id === currentArticle.id)) {
-      // Mise à jour
-      setArticles(prev => prev.map(article => 
-        article.id === currentArticle.id ? currentArticle : article
-      ));
+    try {
+      setIsSubmitting(true);
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', deleteId);
+      
+      if (error) throw error;
+      
+      setArticles(prev => prev.filter(article => article.id !== deleteId));
+      
       toast({
-        title: "Article mis à jour",
-        description: "L'article a été modifié avec succès."
+        title: "Article supprimé",
+        description: "L'article a été supprimé avec succès."
       });
-    } else {
-      // Création
-      setArticles(prev => [...prev, currentArticle]);
+    } catch (error) {
+      console.error("Erreur lors de la suppression:", error);
       toast({
-        title: "Article créé",
-        description: "L'article a été créé avec succès."
+        title: "Erreur",
+        description: "Impossible de supprimer l'article.",
+        variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
+      setOpenDialog(false);
+      setDeleteId(null);
     }
-    
-    setIsEditing(false);
   };
 
-  const handleShare = (id: number) => {
+  const handleSave = async () => {
+    if (!currentArticle || !user?.id) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      const articleData = {
+        ...currentArticle,
+        author_id: user.id,
+        updated_at: new Date().toISOString()
+      };
+      
+      let result;
+      
+      if (currentArticle.id) {
+        // Mise à jour
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .update(articleData)
+          .eq('id', currentArticle.id)
+          .select();
+        
+        if (error) throw error;
+        result = data;
+        
+        setArticles(prev => prev.map(article => 
+          article.id === currentArticle.id ? { ...article, ...articleData } : article
+        ));
+        
+        toast({
+          title: "Article mis à jour",
+          description: "L'article a été modifié avec succès."
+        });
+      } else {
+        // Création
+        const { data, error } = await supabase
+          .from('blog_posts')
+          .insert({ ...articleData, created_at: new Date().toISOString() })
+          .select();
+        
+        if (error) throw error;
+        result = data;
+        
+        if (data && data[0]) {
+          setArticles(prev => [data[0] as Article, ...prev]);
+        }
+        
+        toast({
+          title: "Article créé",
+          description: "L'article a été créé avec succès."
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder l'article.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+      setIsEditing(false);
+    }
+  };
+
+  const handleShare = (id: string) => {
     const article = articles.find(a => a.id === id);
     if (!article) return;
     
     if (navigator.share) {
       navigator.share({
         title: article.title,
-        text: article.excerpt,
-        url: `https://topcenter.cg/blog/${id}`
+        text: article.excerpt || article.title,
+        url: `${window.location.origin}/blog/${id}`
       }).catch(err => {
         console.error('Erreur lors du partage:', err);
         toast({
@@ -169,7 +233,7 @@ const NewsAdmin = () => {
       });
     } else {
       // Fallback pour les navigateurs qui ne supportent pas l'API Web Share
-      navigator.clipboard.writeText(`https://topcenter.cg/blog/${id}`);
+      navigator.clipboard.writeText(`${window.location.origin}/blog/${id}`);
       toast({
         title: "Lien copié",
         description: "Le lien de l'article a été copié dans le presse-papier."
@@ -177,17 +241,37 @@ const NewsAdmin = () => {
     }
   };
 
-  const handlePublish = (id: number, status: 'draft' | 'published') => {
-    setArticles(prev => prev.map(article => 
-      article.id === id ? {...article, status} : article
-    ));
-    
-    toast({
-      title: status === 'published' ? "Article publié" : "Article mis en brouillon",
-      description: status === 'published' 
-        ? "L'article est maintenant visible sur le site." 
-        : "L'article a été retiré du site."
-    });
+  const handlePublish = async (id: string, status: 'draft' | 'published') => {
+    try {
+      setIsSubmitting(true);
+      
+      const { error } = await supabase
+        .from('blog_posts')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      
+      if (error) throw error;
+      
+      setArticles(prev => prev.map(article => 
+        article.id === id ? {...article, status} : article
+      ));
+      
+      toast({
+        title: status === 'published' ? "Article publié" : "Article mis en brouillon",
+        description: status === 'published' 
+          ? "L'article est maintenant visible sur le site." 
+          : "L'article a été retiré du site."
+      });
+    } catch (error) {
+      console.error("Erreur lors du changement de statut:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de modifier le statut de l'article.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const filteredArticles = filter === 'all' 
@@ -309,16 +393,24 @@ const NewsAdmin = () => {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline" onClick={() => setIsEditing(false)}>Annuler</Button>
+            <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSubmitting}>Annuler</Button>
             <div className="space-x-2">
               <Button 
                 variant="outline" 
                 onClick={() => currentArticle && setCurrentArticle({...currentArticle, status: "draft"})}
+                disabled={isSubmitting}
               >
                 Enregistrer comme brouillon
               </Button>
-              <Button onClick={handleSave}>
-                {currentArticle?.status === "published" ? "Publier les modifications" : "Publier"}
+              <Button onClick={handleSave} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enregistrement...
+                  </>
+                ) : (
+                  currentArticle?.status === "published" ? "Publier les modifications" : "Publier"
+                )}
               </Button>
             </div>
           </CardFooter>
@@ -379,7 +471,7 @@ const NewsAdmin = () => {
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4 mr-1" />
-                        {article.date}
+                        {new Date(article.date).toLocaleDateString('fr-FR')}
                       </div>
                     </div>
                     
@@ -415,38 +507,15 @@ const NewsAdmin = () => {
                         >
                           <Pencil className="w-4 h-4" />
                         </Button>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-destructive hover:text-destructive/90"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Confirmer la suppression</DialogTitle>
-                              <DialogDescription>
-                                Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button variant="outline" onClick={() => setOpenDialog(false)}>Annuler</Button>
-                              <Button 
-                                variant="destructive"
-                                onClick={() => {
-                                  handleDelete(article.id);
-                                  setOpenDialog(false);
-                                }}
-                              >
-                                Supprimer
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-destructive hover:text-destructive/90"
+                          onClick={() => confirmDelete(article.id)}
+                          title="Supprimer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                         {article.status === "draft" ? (
                           <Button 
                             variant="ghost" 
@@ -454,6 +523,7 @@ const NewsAdmin = () => {
                             className="text-green-600 hover:text-green-700"
                             onClick={() => handlePublish(article.id, "published")}
                             title="Publier"
+                            disabled={isSubmitting}
                           >
                             <CheckCircle className="w-4 h-4" />
                           </Button>
@@ -464,6 +534,7 @@ const NewsAdmin = () => {
                             className="text-amber-600 hover:text-amber-700"
                             onClick={() => handlePublish(article.id, "draft")}
                             title="Retirer de la publication"
+                            disabled={isSubmitting}
                           >
                             <XCircle className="w-4 h-4" />
                           </Button>
@@ -494,6 +565,35 @@ const NewsAdmin = () => {
           </div>
         </>
       )}
+
+      {/* Dialog de confirmation pour la suppression */}
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              Êtes-vous sûr de vouloir supprimer cet article ? Cette action est irréversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpenDialog(false)} disabled={isSubmitting}>Annuler</Button>
+            <Button 
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Suppression...
+                </>
+              ) : (
+                "Supprimer"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
