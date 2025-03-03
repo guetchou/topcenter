@@ -16,32 +16,18 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { useAuth } from "@/hooks/useAuth";
-
-// Type pour les articles
-type Article = {
-  id: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  status: 'draft' | 'published';
-  date: string;
-  image?: string;
-  category: string;
-  featured: boolean;
-  author_id?: string;
-  created_at?: string;
-  updated_at?: string;
-};
+import { BlogPost } from "@/types/blog";
+import { slugify } from "@/lib/utils";
 
 const NewsAdmin = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
-  const [articles, setArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
+  const [currentArticle, setCurrentArticle] = useState<Partial<BlogPost> | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
@@ -62,14 +48,14 @@ const NewsAdmin = () => {
         const { data, error } = await supabase
           .from('blog_posts')
           .select('*')
-          .order('date', { ascending: false });
+          .order('created_at', { ascending: false });
         
         if (error) {
           throw error;
         }
         
         if (data) {
-          setArticles(data as Article[]);
+          setArticles(data as BlogPost[]);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des articles:", error);
@@ -88,14 +74,13 @@ const NewsAdmin = () => {
   
   const resetForm = () => {
     setCurrentArticle({
-      id: '',
       title: "",
       content: "",
       excerpt: "",
       status: "draft",
-      date: new Date().toISOString().split('T')[0],
       category: "",
-      featured: false
+      featured_image_url: "",
+      slug: ""
     });
   };
 
@@ -104,11 +89,8 @@ const NewsAdmin = () => {
     setIsEditing(true);
   };
 
-  const handleEdit = (article: Article) => {
-    setCurrentArticle({
-      ...article,
-      date: article.date ? new Date(article.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-    });
+  const handleEdit = (article: BlogPost) => {
+    setCurrentArticle(article);
     setIsEditing(true);
   };
 
@@ -155,16 +137,21 @@ const NewsAdmin = () => {
     try {
       setIsSubmitting(true);
       
+      // Create slug if needed
+      if (!currentArticle.slug) {
+        currentArticle.slug = slugify(currentArticle.title || '');
+      }
+      
       const articleData = {
         ...currentArticle,
         author_id: user.id,
-        updated_at: new Date().toISOString()
+        published_at: currentArticle.status === 'published' ? new Date().toISOString() : null
       };
       
       let result;
       
       if (currentArticle.id) {
-        // Mise à jour
+        // Update
         const { data, error } = await supabase
           .from('blog_posts')
           .update(articleData)
@@ -175,7 +162,7 @@ const NewsAdmin = () => {
         result = data;
         
         setArticles(prev => prev.map(article => 
-          article.id === currentArticle.id ? { ...article, ...articleData } : article
+          article.id === currentArticle.id ? { ...article, ...articleData } as BlogPost : article
         ));
         
         toast({
@@ -183,17 +170,17 @@ const NewsAdmin = () => {
           description: "L'article a été modifié avec succès."
         });
       } else {
-        // Création
+        // Create
         const { data, error } = await supabase
           .from('blog_posts')
-          .insert({ ...articleData, created_at: new Date().toISOString() })
+          .insert(articleData)
           .select();
         
         if (error) throw error;
         result = data;
         
         if (data && data[0]) {
-          setArticles(prev => [data[0] as Article, ...prev]);
+          setArticles(prev => [data[0] as BlogPost, ...prev]);
         }
         
         toast({
@@ -247,13 +234,16 @@ const NewsAdmin = () => {
       
       const { error } = await supabase
         .from('blog_posts')
-        .update({ status, updated_at: new Date().toISOString() })
+        .update({ 
+          status, 
+          published_at: status === 'published' ? new Date().toISOString() : null 
+        })
         .eq('id', id);
       
       if (error) throw error;
       
       setArticles(prev => prev.map(article => 
-        article.id === id ? {...article, status} : article
+        article.id === id ? {...article, status} as BlogPost : article
       ));
       
       toast({
@@ -277,6 +267,15 @@ const NewsAdmin = () => {
   const filteredArticles = filter === 'all' 
     ? articles 
     : articles.filter(article => article.status === filter);
+
+  // Format date helper function
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 
   return (
     <div className="container py-8">
@@ -335,12 +334,12 @@ const NewsAdmin = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="slug">Slug (URL)</Label>
                 <Input 
-                  id="date" 
-                  type="date" 
-                  value={currentArticle?.date || ''} 
-                  onChange={(e) => setCurrentArticle(prev => prev ? {...prev, date: e.target.value} : null)} 
+                  id="slug" 
+                  value={currentArticle?.slug || ''} 
+                  onChange={(e) => setCurrentArticle(prev => prev ? {...prev, slug: e.target.value} : null)} 
+                  placeholder="slug-de-article"
                 />
               </div>
             </div>
@@ -368,12 +367,12 @@ const NewsAdmin = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="image">Image principale</Label>
+              <Label htmlFor="featured_image_url">Image principale</Label>
               <div className="flex items-center gap-4">
                 <Input 
-                  id="image" 
-                  value={currentArticle?.image || ''} 
-                  onChange={(e) => setCurrentArticle(prev => prev ? {...prev, image: e.target.value} : null)} 
+                  id="featured_image_url" 
+                  value={currentArticle?.featured_image_url || ''} 
+                  onChange={(e) => setCurrentArticle(prev => prev ? {...prev, featured_image_url: e.target.value} : null)} 
                   placeholder="URL de l'image"
                 />
                 <Button type="button" variant="outline" size="sm">
@@ -381,15 +380,6 @@ const NewsAdmin = () => {
                   Parcourir
                 </Button>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch 
-                id="featured" 
-                checked={currentArticle?.featured || false} 
-                onCheckedChange={(checked) => setCurrentArticle(prev => prev ? {...prev, featured: checked} : null)} 
-              />
-              <Label htmlFor="featured">Mettre en avant sur la page d'accueil</Label>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
@@ -456,27 +446,22 @@ const NewsAdmin = () => {
               ))
             ) : (
               filteredArticles.map((article) => (
-                <Card key={article.id} className={article.featured ? "border-primary/50" : ""}>
+                <Card key={article.id}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-2">
                         <Badge variant={article.status === "published" ? "default" : "secondary"}>
                           {article.status === "published" ? "Publié" : "Brouillon"}
                         </Badge>
-                        {article.featured && (
-                          <Badge variant="outline" className="border-primary text-primary">
-                            En vedette
-                          </Badge>
-                        )}
                       </div>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Calendar className="w-4 h-4 mr-1" />
-                        {new Date(article.date).toLocaleDateString('fr-FR')}
+                        {formatDate(article.created_at)}
                       </div>
                     </div>
                     
                     <h3 className="font-semibold text-xl mb-2">{article.title}</h3>
-                    <p className="text-muted-foreground mb-4 line-clamp-2">{article.excerpt}</p>
+                    <p className="text-muted-foreground mb-4 line-clamp-2">{article.excerpt || ''}</p>
                     
                     <div className="flex justify-between items-center">
                       <div>

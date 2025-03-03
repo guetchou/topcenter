@@ -8,21 +8,13 @@ import { useNavigate } from "react-router-dom";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-
-type BlogArticle = {
-  id: string;
-  title: string;
-  excerpt: string;
-  date: string;
-  image?: string;
-  category: string;
-};
+import { BlogPost } from "@/types/blog";
 
 export const BlogSection = () => {
   const navigate = useNavigate();
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [isPaused, setIsPaused] = useState(false);
-  const [articles, setArticles] = useState<BlogArticle[]>([]);
+  const [articles, setArticles] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,15 +23,15 @@ export const BlogSection = () => {
         setIsLoading(true);
         const { data, error } = await supabase
           .from('blog_posts')
-          .select('id, title, excerpt, date, image, category')
+          .select('id, title, excerpt, created_at, featured_image_url, category')
           .eq('status', 'published')
-          .order('date', { ascending: false })
+          .order('created_at', { ascending: false })
           .limit(4);
           
         if (error) throw error;
         
         if (data) {
-          setArticles(data as BlogArticle[]);
+          setArticles(data as BlogPost[]);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des articles:", error);
@@ -60,6 +52,15 @@ export const BlogSection = () => {
     
     return () => clearInterval(intervalId);
   }, [api, isPaused]);
+
+  // Format date helper function
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 
   return (
     <section className="py-16">
@@ -115,7 +116,7 @@ export const BlogSection = () => {
                     <Card className="hover-lift cursor-pointer h-full group" onClick={() => navigate(`/blog/${article.id}`)}>
                       <div className="relative h-48 overflow-hidden rounded-t-lg">
                         <img
-                          src={article.image || "/placeholder.svg"}
+                          src={article.featured_image_url || "/placeholder.svg"}
                           alt={article.title}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
@@ -124,16 +125,12 @@ export const BlogSection = () => {
                       <CardHeader>
                         <div className="flex items-center text-sm text-muted-foreground mb-2">
                           <Calendar className="w-4 h-4 mr-2" />
-                          {new Date(article.date).toLocaleDateString('fr-FR', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
+                          {formatDate(article.created_at)}
                         </div>
                         <CardTitle className="line-clamp-2 group-hover:text-primary transition-colors">{article.title}</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-muted-foreground line-clamp-3">{article.excerpt}</p>
+                        <p className="text-muted-foreground line-clamp-3">{article.excerpt || ''}</p>
                       </CardContent>
                     </Card>
                   </CarouselItem>

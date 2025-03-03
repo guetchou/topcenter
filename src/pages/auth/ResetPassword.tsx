@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const ResetPassword = () => {
   const [email, setEmail] = useState("");
@@ -13,18 +13,15 @@ const ResetPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/new-password`,
-      });
-
-      if (error) throw error;
-
+      await resetPassword(email);
+      
       setIsSubmitted(true);
       toast({
         title: "Email envoyé",

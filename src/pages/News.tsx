@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,24 +9,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, ArrowRight, Search, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-
-type Article = {
-  id: string;
-  title: string;
-  content: string;
-  excerpt: string;
-  status: string;
-  date: string;
-  category: string;
-  featured: boolean;
-  image?: string;
-};
+import { BlogPost } from "@/types/blog";
 
 const News = () => {
   const navigate = useNavigate();
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
-  const [featuredArticles, setFeaturedArticles] = useState<Article[]>([]);
+  const [articles, setArticles] = useState<BlogPost[]>([]);
+  const [filteredArticles, setFilteredArticles] = useState<BlogPost[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -42,20 +30,20 @@ const News = () => {
           .from('blog_posts')
           .select('*')
           .eq('status', 'published')
-          .order('date', { ascending: false });
+          .order('created_at', { ascending: false });
         
         if (error) throw error;
         
         if (data) {
-          const articlesData = data as Article[];
+          const articlesData = data as BlogPost[];
           setArticles(articlesData);
           setFilteredArticles(articlesData);
           
-          // Extraire les articles mis en avant
-          const featured = articlesData.filter(article => article.featured);
+          // Extract featured articles (those with featured_image_url)
+          const featured = articlesData.filter(article => article.featured_image_url);
           setFeaturedArticles(featured.length > 0 ? featured.slice(0, 3) : articlesData.slice(0, 3));
           
-          // Extraire les catégories uniques
+          // Extract unique categories
           const uniqueCategories = Array.from(new Set(articlesData.map(article => article.category)));
           setCategories(uniqueCategories);
         }
@@ -70,13 +58,13 @@ const News = () => {
   }, []);
 
   useEffect(() => {
-    // Filtrer les articles selon la recherche et la catégorie
+    // Filter articles by search term and category
     let results = articles;
     
     if (searchTerm) {
       results = results.filter(article =>
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (article.excerpt && article.excerpt.toLowerCase().includes(searchTerm.toLowerCase())) ||
         article.content.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -87,6 +75,15 @@ const News = () => {
     
     setFilteredArticles(results);
   }, [searchTerm, selectedCategory, articles]);
+
+  // Format date helper function
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
 
   return (
     <div className="container py-16">
@@ -140,10 +137,10 @@ const News = () => {
                 className="hover-lift overflow-hidden cursor-pointer group"
                 onClick={() => navigate(`/blog/${article.id}`)}
               >
-                {article.image && (
+                {article.featured_image_url && (
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src={article.image}
+                      src={article.featured_image_url}
                       alt={article.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -153,14 +150,10 @@ const News = () => {
                 <CardContent className="p-6">
                   <div className="flex items-center text-sm text-muted-foreground mb-2">
                     <Calendar className="w-4 h-4 mr-2" />
-                    {new Date(article.date).toLocaleDateString('fr-FR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
+                    {formatDate(article.created_at)}
                   </div>
                   <h3 className="font-semibold text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
-                  <p className="text-muted-foreground mb-4 line-clamp-3">{article.excerpt}</p>
+                  <p className="text-muted-foreground mb-4 line-clamp-3">{article.excerpt || ''}</p>
                   <div className="flex items-center justify-between">
                     <Badge variant="outline">{article.category}</Badge>
                     <Button variant="ghost" size="sm" className="group/btn">
@@ -205,10 +198,10 @@ const News = () => {
                 onClick={() => navigate(`/blog/${article.id}`)}
               >
                 <div className="flex flex-col h-full">
-                  {article.image && (
+                  {article.featured_image_url && (
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={article.image}
+                        src={article.featured_image_url}
                         alt={article.title}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
@@ -218,14 +211,10 @@ const News = () => {
                   <CardContent className="p-6 flex-1 flex flex-col">
                     <div className="flex items-center text-sm text-muted-foreground mb-2">
                       <Calendar className="w-4 h-4 mr-2" />
-                      {new Date(article.date).toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {formatDate(article.created_at)}
                     </div>
                     <h3 className="font-semibold text-xl mb-2 line-clamp-2 group-hover:text-primary transition-colors">{article.title}</h3>
-                    <p className="text-muted-foreground mb-4 flex-1 line-clamp-3">{article.excerpt}</p>
+                    <p className="text-muted-foreground mb-4 flex-1 line-clamp-3">{article.excerpt || ''}</p>
                     <div className="flex items-center justify-between mt-auto">
                       <Badge variant="outline">{article.category}</Badge>
                       <Button variant="ghost" size="sm" className="group/btn">
