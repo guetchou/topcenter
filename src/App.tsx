@@ -25,6 +25,9 @@ import NewsAdmin from "./pages/NewsAdmin";
 import News from "./pages/News";
 import BlogPost from "./pages/blog/BlogPost";
 import Services from "./pages/services/Services";
+import CallCenter from "./pages/services/CallCenter";
+import OnlineSales from "./pages/services/OnlineSales";
+import TelephonySystem from "./pages/services/TelephonySystem";
 import Devis from "./pages/Devis";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -35,6 +38,7 @@ import { AdminRoutes } from "./components/routes/AdminRoutes";
 import { AgentRoutes } from "./components/routes/AgentRoutes";
 import { ClientRoutes } from "./components/routes/ClientRoutes";
 import UserManagement from "./pages/admin/UserManagement";
+import Recruitment from "./pages/recruitment/Index";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 
@@ -76,8 +80,16 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutSection />} />
+          
+          {/* Routes des services */}
           <Route path="/services" element={<Services />} />
+          <Route path="/services/call-center" element={<CallCenter />} />
+          <Route path="/services/online-sales" element={<OnlineSales />} />
+          <Route path="/services/telephony-system" element={<TelephonySystem />} />
           <Route path="/devis" element={<Devis />} />
+          
+          {/* Route de recrutement */}
+          <Route path="/recruitment" element={<Recruitment />} />
           
           {/* Routes d'authentification */}
           <Route path="/login" element={<Login />} />

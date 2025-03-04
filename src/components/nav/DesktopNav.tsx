@@ -1,112 +1,81 @@
 
-import { Link, useLocation } from "react-router-dom";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-export const DesktopNav = () => {
-  const location = useLocation();
+interface NavItem {
+  title: string;
+  path: string;
+  children?: {
+    title: string;
+    path: string;
+  }[];
+}
 
+interface DesktopNavProps {
+  items: NavItem[];
+}
+
+export function DesktopNav({ items }: DesktopNavProps) {
   return (
-    <div className="hidden md:block">
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Services</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2">
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      to="/services/call-center"
-                      className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        location.pathname === "/services/call-center" && "bg-accent"
-                      )}
-                    >
-                      <div className="text-sm font-medium leading-none">Centre d'Appels</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Service client professionnel 24/7
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      to="/services/online-sales"
-                      className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        location.pathname === "/services/online-sales" && "bg-accent"
-                      )}
-                    >
-                      <div className="text-sm font-medium leading-none">Vente en Ligne</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Solutions de commerce électronique
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      to="/services/telephony-system"
-                      className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        location.pathname === "/services/telephony-system" && "bg-accent"
-                      )}
-                    >
-                      <div className="text-sm font-medium leading-none">Téléphonie</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Solutions de communication professionnelle
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link 
-              to="/blog" 
-              className={cn(
-                "px-4 py-2 transition-colors",
-                location.pathname === "/blog" ? "text-primary" : "hover:text-primary"
-              )}
+    <nav className="hidden md:flex gap-6 ml-6">
+      {items.map((item) => {
+        // Déterminer si l'élément a des enfants
+        const hasChildren = item.children && item.children.length > 0;
+
+        // Si pas d'enfants, afficher un lien simple
+        if (!hasChildren) {
+          return (
+            <Link
+              key={item.title}
+              to={item.path}
+              className="text-sm font-medium transition-colors hover:text-primary"
             >
-              Blog
+              {item.title}
             </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link 
-              to="/recruitment" 
-              className={cn(
-                "px-4 py-2 transition-colors",
-                location.pathname === "/recruitment" ? "text-primary" : "hover:text-primary"
-              )}
+          );
+        }
+
+        // Si l'élément a des enfants, afficher un menu déroulant
+        return (
+          <div key={item.title} className="relative group">
+            <Link
+              to={item.path}
+              className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1"
             >
-              Recrutement
+              {item.title}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="transition-transform group-hover:rotate-180"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
             </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link 
-              to="/contact" 
-              className={cn(
-                "px-4 py-2 transition-colors",
-                location.pathname === "/contact" ? "text-primary" : "hover:text-primary"
-              )}
-            >
-              Contact
-            </Link>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-    </div>
+            
+            {/* Menu déroulant */}
+            <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-background shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+              <div className="py-1 rounded-md bg-background border border-border">
+                {item.children?.map((child) => (
+                  <Link
+                    key={child.title}
+                    to={child.path}
+                    className="block px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                  >
+                    {child.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </nav>
   );
-};
+}

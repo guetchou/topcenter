@@ -15,7 +15,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, checkUser } = useAuth();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -35,11 +35,30 @@ const Login = () => {
 
       if (error) throw error;
 
+      await checkUser();
+      
       toast({
         title: "Connexion réussie",
         description: "Bienvenue sur votre espace TopCenter",
       });
-      navigate("/");
+      
+      // Redirection basée sur le rôle
+      const { user } = useAuth.getState();
+      if (user) {
+        if (user.role === 'super_admin') {
+          navigate('/super-admin/users');
+        } else if (user.role === 'admin') {
+          navigate('/admin');
+        } else if (user.role === 'commercial_agent' || user.role === 'support_agent') {
+          navigate('/agent');
+        } else if (user.role === 'client') {
+          navigate('/client');
+        } else {
+          navigate('/');
+        }
+      } else {
+        navigate('/');
+      }
     } catch (error: any) {
       console.error("Erreur de connexion:", error);
       
@@ -73,6 +92,48 @@ const Login = () => {
       toast({
         title: "Erreur de connexion",
         description: "Impossible de se connecter avec Google. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Fonction pour créer un compte super admin (à utiliser pour le développement)
+  const createSuperAdmin = async () => {
+    try {
+      // 1. Créer un utilisateur
+      const { data: userData, error: userError } = await supabase.auth.signUp({
+        email: 'admin@topcenter.com',
+        password: 'Admin@123456',
+        options: {
+          data: {
+            full_name: 'Super Administrateur',
+          },
+        },
+      });
+
+      if (userError) throw userError;
+
+      if (userData.user) {
+        // 2. Assigner le rôle super_admin
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({ 
+            user_id: userData.user.id, 
+            role: 'super_admin' 
+          });
+
+        if (roleError) throw roleError;
+
+        toast({
+          title: "Compte super admin créé",
+          description: "Email: admin@topcenter.com, Mot de passe: Admin@123456",
+        });
+      }
+    } catch (error: any) {
+      console.error("Erreur création super admin:", error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible de créer le compte super admin",
         variant: "destructive",
       });
     }
@@ -176,6 +237,16 @@ const Login = () => {
               S'inscrire
             </Button>
           </p>
+          
+          {/* Bouton caché pour créer un super admin (pour le développement) */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs text-muted-foreground" 
+            onClick={createSuperAdmin}
+          >
+            Créer compte super admin
+          </Button>
         </div>
       </div>
     </div>
