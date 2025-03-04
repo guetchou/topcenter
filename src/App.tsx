@@ -16,6 +16,7 @@ import { LoyaltySection } from "./components/sections/LoyaltySection";
 import { SocialMediaSection } from "./components/sections/SocialMediaSection";
 import { WebPushNotification } from "./components/notifications/WebPushNotification";
 import { AIChatBubble } from "./components/ChatBubble";
+import { ImpersonationBanner } from "./components/ImpersonationBanner";
 import { queryClient } from "./lib/react-query";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
@@ -33,6 +34,7 @@ import { AuthCallback } from "./components/auth/AuthCallback";
 import { AdminRoutes } from "./components/routes/AdminRoutes";
 import { AgentRoutes } from "./components/routes/AgentRoutes";
 import { ClientRoutes } from "./components/routes/ClientRoutes";
+import UserManagement from "./pages/admin/UserManagement";
 import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
 
@@ -56,16 +58,20 @@ function HomePage() {
 
 function App() {
   const intl = useIntl();
-  const { checkUser } = useAuth();
+  const { checkUser, user, impersonatedUser } = useAuth();
 
   useEffect(() => {
     // Vérifier l'authentification au chargement
     checkUser();
   }, [checkUser]);
 
+  // Déterminer quel utilisateur est actuellement actif (réel ou impersonifié)
+  const activeUser = impersonatedUser || user;
+
   return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background text-foreground">
+        <ImpersonationBanner />
         <DynamicNav />
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -91,6 +97,9 @@ function App() {
           <Route path="/admin/*" element={<AdminRoutes />} />
           <Route path="/agent/*" element={<AgentRoutes />} />
           <Route path="/client/*" element={<ClientRoutes />} />
+          
+          {/* Routes super admin */}
+          <Route path="/super-admin/users" element={<UserManagement />} />
           
           <Route path="/contact" element={<ContactSection />} />
         </Routes>

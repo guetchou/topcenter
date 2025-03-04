@@ -22,6 +22,9 @@ export const AuthCallback = () => {
         const user = useAuth.getState().user;
         if (user) {
           switch (user.role) {
+            case 'super_admin':
+              navigate('/super-admin/users');
+              break;
             case 'admin':
               navigate('/admin');
               break;
@@ -52,7 +55,7 @@ export const AuthCallback = () => {
     };
 
     handleCallback();
-  }, []);
+  }, [checkUser, navigate, toast]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

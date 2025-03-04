@@ -4,11 +4,14 @@ import { useAuth } from '@/hooks/useAuth';
 import Dashboard from '@/pages/Dashboard';
 import NewsAdmin from '@/pages/NewsAdmin';
 import Settings from '@/pages/Settings';
+import UserManagement from '@/pages/admin/UserManagement';
 
 export const AdminRoutes = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, impersonatedUser } = useAuth();
+  const activeUser = impersonatedUser || user;
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  // Vérifier si l'utilisateur est admin ou super_admin
+  if (!activeUser || (activeUser.role !== 'admin' && activeUser.role !== 'super_admin')) {
     return <Navigate to="/login" replace />;
   }
 
@@ -17,6 +20,9 @@ export const AdminRoutes = () => {
       <Route index element={<Dashboard />} />
       <Route path="news" element={<NewsAdmin />} />
       <Route path="settings" element={<Settings />} />
+      {activeUser.role === 'super_admin' && (
+        <Route path="users" element={<UserManagement />} />
+      )}
     </Routes>
   );
 };

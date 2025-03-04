@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from "@/integrations/supabase/client";
 
-type UserRole = 'admin' | 'commercial_agent' | 'support_agent' | 'client';
+type UserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
 
 interface AuthUser {
   id: string;
@@ -19,6 +19,7 @@ interface AuthStore {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  impersonatedUser: AuthUser | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
@@ -26,6 +27,9 @@ interface AuthStore {
   register: (email: string, password: string, fullName: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
+  impersonateUser: (userId: string) => Promise<void>;
+  stopImpersonation: () => void;
+  promoteToSuperAdmin: (userId: string) => Promise<void>;
 }
 
 export const useAuth = create<AuthStore>()(
@@ -34,6 +38,7 @@ export const useAuth = create<AuthStore>()(
       user: null,
       isAuthenticated: false,
       isLoading: true,
+      impersonatedUser: null,
 
       checkUser: async () => {
         try {
@@ -129,12 +134,99 @@ export const useAuth = create<AuthStore>()(
 
       logout: async () => {
         await supabase.auth.signOut();
-        set({ user: null, isAuthenticated: false });
+        set({ user: null, impersonatedUser: null, isAuthenticated: false });
+      },
+      
+      impersonateUser: async (userId: string) => {
+        const { user } = get();
+        
+        if (!user || user.role !== 'super_admin') {
+          throw new Error("Seuls les super administrateurs peuvent usurper l'identité des utilisateurs");
+        }
+        
+        try {
+          // Récupérer les informations de l'utilisateur à impersonifier
+          const { data: roleData } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .maybeSingle();
+            
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .maybeSingle();
+            
+          const { data: userData } = await supabase
+            .from('users')
+            .select('email')
+            .eq('id', userId)
+            .single();
+            
+          // Sauvegarder l'utilisateur original et définir l'utilisateur impersonifié
+          set({
+            impersonatedUser: {
+              id: userId,
+              email: userData?.email || null,
+              role: (roleData?.role as UserRole) || 'client',
+              profile
+            },
+          });
+          
+          console.log(`Super admin impersonnifie l'utilisateur: ${userId}`);
+        } catch (error) {
+          console.error("Erreur lors de l'impersonnification:", error);
+          throw error;
+        }
+      },
+      
+      stopImpersonation: () => {
+        set({ impersonatedUser: null });
+      },
+      
+      promoteToSuperAdmin: async (userId: string) => {
+        const { user } = get();
+        
+        if (!user || user.role !== 'super_admin') {
+          throw new Error("Seuls les super administrateurs peuvent promouvoir d'autres utilisateurs");
+        }
+        
+        try {
+          // Vérifier si l'utilisateur a déjà un rôle
+          const { data: existingRole } = await supabase
+            .from('user_roles')
+            .select('*')
+            .eq('user_id', userId)
+            .maybeSingle();
+            
+          if (existingRole) {
+            // Mettre à jour le rôle existant
+            await supabase
+              .from('user_roles')
+              .update({ role: 'super_admin' })
+              .eq('user_id', userId);
+          } else {
+            // Créer un nouveau rôle
+            await supabase
+              .from('user_roles')
+              .insert({ user_id: userId, role: 'super_admin' });
+          }
+          
+          console.log(`L'utilisateur ${userId} a été promu super admin`);
+        } catch (error) {
+          console.error("Erreur lors de la promotion:", error);
+          throw error;
+        }
       }
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
+      partialize: (state) => ({ 
+        user: state.user, 
+        impersonatedUser: state.impersonatedUser,
+        isAuthenticated: state.isAuthenticated 
+      }),
     }
   )
 );
@@ -144,6 +236,6 @@ supabase.auth.onAuthStateChange((event, session) => {
   if (session) {
     useAuth.getState().checkUser();
   } else {
-    useAuth.setState({ user: null, isAuthenticated: false });
+    useAuth.setState({ user: null, impersonatedUser: null, isAuthenticated: false });
   }
 });
