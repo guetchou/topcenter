@@ -1,96 +1,54 @@
 
-import { useState } from "react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
-
-const faqs = [
-  {
-    question: "Qu'est-ce qu'un centre d'appels externalisé ?",
-    answer: "Un centre d'appels externalisé est un service qui gère les communications téléphoniques d'une entreprise à distance. Il peut gérer les appels entrants et sortants, le support client, et d'autres formes de communication client."
-  },
-  {
-    question: "Quels sont les avantages d'externaliser son centre d'appels ?",
-    answer: "L'externalisation permet de réduire les coûts opérationnels, d'accéder à une expertise spécialisée, d'améliorer la qualité du service client, d'augmenter la flexibilité opérationnelle et de se concentrer sur votre cœur de métier."
-  },
-  {
-    question: "TopCenter propose-t-il des services en plusieurs langues ?",
-    answer: "Oui, TopCenter propose des services multilingues avec des agents formés pour communiquer en français, anglais et dans plusieurs langues locales africaines."
-  },
-  {
-    question: "Comment assurez-vous la qualité du service ?",
-    answer: "Nous mettons en place des systèmes rigoureux de contrôle qualité, incluant des écoutes d'appels, des évaluations régulières, des formations continues pour nos agents et des rapports détaillés pour nos clients."
-  },
-  {
-    question: "Quels types d'entreprises peuvent bénéficier de vos services ?",
-    answer: "Nos services s'adressent à une large gamme d'entreprises : opérateurs télécom, banques et assurances, e-commerce, services publics, santé, tourisme et hôtellerie, etc."
-  },
-  {
-    question: "Comment démarrer une collaboration avec TopCenter ?",
-    answer: "Le processus commence par une consultation initiale pour comprendre vos besoins. Nous établissons ensuite un cahier des charges, formons une équipe dédiée, et lançons le service après une phase de test. Contactez-nous pour débuter."
-  },
-  {
-    question: "Quelle est la différence entre les appels entrants et sortants ?",
-    answer: "Les appels entrants sont initiés par les clients (service client, support technique, etc.), tandis que les appels sortants sont initiés par le centre d'appels (prospection, enquêtes, relances, etc.)."
-  },
-  {
-    question: "Proposez-vous des solutions temporaires pour les pics d'activité ?",
-    answer: "Oui, nous offrons des solutions flexibles pour gérer les pics d'activité saisonniers ou les campagnes ponctuelles, avec une capacité d'adaptation rapide aux volumes d'appels."
-  }
-];
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 export default function FAQ() {
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  // Filtrer les FAQ basées sur la recherche
-  const filteredFaqs = faqs.filter(
-    (faq) =>
-      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="container py-12">
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6 text-center">Questions fréquentes</h1>
+    <div className="container py-16 max-w-3xl mx-auto">
+      <h1 className="text-4xl font-bold mb-8 text-center">Questions fréquemment posées</h1>
+      
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="item-1">
+          <AccordionTrigger>Quels services proposez-vous ?</AccordionTrigger>
+          <AccordionContent>
+            TopCenter propose des services complets de centre d'appels, incluant le support client, les ventes téléphoniques, les enquêtes de satisfaction, et des solutions de téléphonie d'entreprise avancées adaptées aux besoins spécifiques de votre activité.
+          </AccordionContent>
+        </AccordionItem>
         
-        <div className="relative mb-8">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Rechercher une question..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <Accordion type="single" collapsible className="w-full">
-          {filteredFaqs.map((faq, index) => (
-            <AccordionItem key={index} value={`item-${index}`}>
-              <AccordionTrigger className="text-left">
-                {faq.question}
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="text-muted-foreground">{faq.answer}</p>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-
-        {filteredFaqs.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-lg text-muted-foreground">
-              Aucune question ne correspond à votre recherche.
-            </p>
-          </div>
-        )}
-      </div>
+        <AccordionItem value="item-2">
+          <AccordionTrigger>Comment demander un devis personnalisé ?</AccordionTrigger>
+          <AccordionContent>
+            Vous pouvez demander un devis personnalisé en remplissant notre formulaire sur la page Devis, ou en nous contactant directement par téléphone. Nous vous proposerons une solution adaptée à vos besoins et à votre budget.
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="item-3">
+          <AccordionTrigger>Proposez-vous des services bilingues ?</AccordionTrigger>
+          <AccordionContent>
+            Oui, nos agents sont formés pour communiquer en français et en anglais. Nous pouvons également proposer d'autres langues sur demande pour répondre aux besoins spécifiques de votre clientèle.
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="item-4">
+          <AccordionTrigger>Comment garantissez-vous la qualité de service ?</AccordionTrigger>
+          <AccordionContent>
+            Nous assurons la qualité de nos services grâce à un recrutement rigoureux, des formations régulières, un suivi continu des performances et des évaluations de satisfaction. Chaque appel est analysé pour garantir une amélioration constante de notre service.
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="item-5">
+          <AccordionTrigger>Quelles technologies utilisez-vous ?</AccordionTrigger>
+          <AccordionContent>
+            Nous utilisons des technologies de pointe comme des systèmes CRM avancés, des plateformes omnicanales, et des outils d'analyse alimentés par l'IA. Notre infrastructure technique est constamment mise à jour pour offrir le meilleur service possible.
+          </AccordionContent>
+        </AccordionItem>
+        
+        <AccordionItem value="item-6">
+          <AccordionTrigger>Comment rejoindre votre équipe ?</AccordionTrigger>
+          <AccordionContent>
+            Vous pouvez consulter nos offres d'emploi sur notre page Recrutement et y postuler directement. Nous recherchons régulièrement des talents motivés et orientés service client pour rejoindre notre équipe dynamique.
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
   );
 }

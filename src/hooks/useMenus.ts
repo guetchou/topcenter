@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Json } from "@/integrations/supabase/types";
 
 interface MenuItemChild {
   title: string;
@@ -71,16 +72,16 @@ export const useMenus = () => {
       path: "/blog",
     },
     {
+      title: "FAQ",
+      path: "/faq",
+    },
+    {
       title: "À propos",
       path: "/about",
     },
     {
       title: "Contact",
       path: "/contact",
-    },
-    {
-      title: "Mentions Légales",
-      path: "/legal",
     },
   ];
 
@@ -108,7 +109,11 @@ export const useMenus = () => {
           // Si erreur, utiliser le menu par défaut
           console.log("Utilisation du menu primaire par défaut");
         } else if (primaryData?.items) {
-          setPrimaryMenuItems(primaryData.items as MenuItem[]);
+          // Conversion sécurisée du type Json à MenuItem[]
+          const menuItems = primaryData.items as Json;
+          if (Array.isArray(menuItems)) {
+            setPrimaryMenuItems(menuItems as MenuItem[]);
+          }
         }
 
         // Récupérer le menu du footer depuis Supabase
@@ -122,7 +127,11 @@ export const useMenus = () => {
           // Si erreur, utiliser le menu par défaut
           console.log("Utilisation du menu footer par défaut");
         } else if (footerData?.items) {
-          setFooterMenuItems(footerData.items as MenuItem[]);
+          // Conversion sécurisée du type Json à MenuItem[]
+          const menuItems = footerData.items as Json;
+          if (Array.isArray(menuItems)) {
+            setFooterMenuItems(menuItems as MenuItem[]);
+          }
         }
       } catch (err: any) {
         setError(err);

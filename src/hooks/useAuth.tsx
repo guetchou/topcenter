@@ -2,18 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from "@/integrations/supabase/client";
-
-type UserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
-
-interface AuthUser {
-  id: string;
-  role: UserRole | null;
-  email: string | null;
-  profile?: {
-    full_name: string | null;
-    avatar_url: string | null;
-  };
-}
+import { UserRole, AuthUser } from '@/types/auth';
 
 interface AuthStore {
   user: AuthUser | null;
@@ -50,12 +39,14 @@ export const useAuth = create<AuthStore>()(
             return;
           }
 
+          // Récupérer le rôle de l'utilisateur
           const { data: roleData } = await supabase
             .from('user_roles')
             .select('role')
             .eq('user_id', session.user.id)
             .maybeSingle();
 
+          // Récupérer le profil de l'utilisateur
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
@@ -158,8 +149,9 @@ export const useAuth = create<AuthStore>()(
             .eq('id', userId)
             .maybeSingle();
             
+          // Récupérer l'email de l'utilisateur depuis la table profiles
           const { data: userData } = await supabase
-            .from('users')
+            .from('profiles')
             .select('email')
             .eq('id', userId)
             .single();
@@ -204,13 +196,13 @@ export const useAuth = create<AuthStore>()(
             // Mettre à jour le rôle existant
             await supabase
               .from('user_roles')
-              .update({ role: 'super_admin' })
+              .update({ role: 'super_admin' as UserRole })
               .eq('user_id', userId);
           } else {
             // Créer un nouveau rôle
             await supabase
               .from('user_roles')
-              .insert({ user_id: userId, role: 'super_admin' });
+              .insert({ user_id: userId, role: 'super_admin' as UserRole });
           }
           
           console.log(`L'utilisateur ${userId} a été promu super admin`);

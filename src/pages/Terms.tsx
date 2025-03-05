@@ -1,66 +1,96 @@
 
-import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { Separator } from "@/components/ui/separator";
 
 export default function Terms() {
+  const lastUpdated = "05 mars 2025";
+
   return (
-    <div className="container py-8">
-      <Breadcrumbs />
+    <div className="container py-16 max-w-4xl mx-auto">
+      <h1 className="text-4xl font-bold mb-2">Conditions d'utilisation</h1>
+      <p className="text-muted-foreground mb-8">Dernière mise à jour: {lastUpdated}</p>
       
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6">Conditions d'utilisation</h1>
+      <Separator className="mb-8" />
+      
+      <div className="space-y-8">
+        <section>
+          <h2 className="text-2xl font-bold mb-4">1. Acceptation des conditions</h2>
+          <p className="text-muted-foreground">
+            En accédant et en utilisant les services de TopCenter, vous acceptez d'être lié par ces conditions 
+            d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services.
+          </p>
+        </section>
         
-        <div className="prose prose-lg max-w-none">
-          <h2>1. Acceptation des conditions</h2>
-          <p>
-            En accédant à ce site web, vous acceptez d'être lié par ces conditions d'utilisation, toutes les lois et réglementations applicables, et vous acceptez que vous êtes responsable du respect des lois locales applicables. Si vous n'acceptez pas l'une de ces conditions, vous êtes interdit d'utiliser ou d'accéder à ce site.
+        <section>
+          <h2 className="text-2xl font-bold mb-4">2. Description des services</h2>
+          <p className="text-muted-foreground">
+            TopCenter fournit des services de centre d'appels, de support client, de vente téléphonique et de 
+            solutions de téléphonie d'entreprise. Nous nous réservons le droit de modifier, suspendre ou 
+            interrompre tout aspect de nos services à tout moment.
           </p>
-          
-          <h2>2. Licence d'utilisation</h2>
-          <p>
-            La permission est accordée de télécharger temporairement une copie des documents sur le site web de TopCenter pour un affichage transitoire personnel et non commercial uniquement. Il s'agit de l'octroi d'une licence, et non d'un transfert de titre, et sous cette licence, vous ne pouvez pas :
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">3. Comptes utilisateurs</h2>
+          <p className="text-muted-foreground">
+            Certains services peuvent nécessiter la création d'un compte. Vous êtes responsable de maintenir 
+            la confidentialité de vos informations de connexion et de toutes les activités qui se produisent 
+            sous votre compte. Vous acceptez de nous informer immédiatement de toute utilisation non autorisée 
+            de votre compte.
           </p>
-          <ul>
-            <li>Modifier ou copier les documents</li>
-            <li>Utiliser les documents à des fins commerciales ou pour toute présentation publique</li>
-            <li>Tenter de décompiler ou d'effectuer de l'ingénierie inverse de tout logiciel contenu sur le site web de TopCenter</li>
-            <li>Supprimer tout droit d'auteur ou autres notations de propriété des documents</li>
-            <li>Transférer les documents à une autre personne ou 'miroiter' les documents sur tout autre serveur</li>
-          </ul>
-          
-          <h2>3. Clause de non-responsabilité</h2>
-          <p>
-            Les documents sur le site web de TopCenter sont fournis 'tels quels'. TopCenter ne donne aucune garantie, expresse ou implicite, et décline et nie par la présente toutes les autres garanties, y compris, sans limitation, les garanties implicites ou les conditions de qualité marchande, d'adéquation à un usage particulier, ou de non-violation de la propriété intellectuelle ou autre violation des droits.
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">4. Propriété intellectuelle</h2>
+          <p className="text-muted-foreground">
+            Tout le contenu présent sur notre site web, y compris les textes, graphiques, logos, icônes, 
+            images, clips audio, téléchargements numériques et compilations de données, est la propriété 
+            de TopCenter et est protégé par les lois sur la propriété intellectuelle.
           </p>
-          
-          <h2>4. Limitations</h2>
-          <p>
-            En aucun cas, TopCenter ou ses fournisseurs ne seront responsables de dommages (y compris, sans limitation, les dommages pour perte de données ou de profit, ou en raison d'une interruption d'activité) découlant de l'utilisation ou de l'impossibilité d'utiliser les matériaux sur le site web de TopCenter, même si TopCenter ou un représentant autorisé de TopCenter a été informé verbalement ou par écrit de la possibilité de tels dommages.
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">5. Limitation de responsabilité</h2>
+          <p className="text-muted-foreground">
+            TopCenter ne sera pas responsable des dommages directs, indirects, accessoires, spéciaux ou 
+            consécutifs résultant de l'utilisation ou de l'impossibilité d'utiliser nos services, même 
+            si nous avons été informés de la possibilité de tels dommages.
           </p>
-          
-          <h2>5. Révisions et erreurs</h2>
-          <p>
-            Les documents apparaissant sur le site web de TopCenter peuvent inclure des erreurs techniques, typographiques ou photographiques. TopCenter ne garantit pas que les documents de son site web sont exacts, complets ou à jour. TopCenter peut apporter des modifications aux documents contenus sur son site web à tout moment sans préavis.
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">6. Indemnisation</h2>
+          <p className="text-muted-foreground">
+            Vous acceptez de défendre, d'indemniser et de tenir TopCenter indemne de toute réclamation, 
+            dommage, obligation, perte, responsabilité, coût ou dette, et dépense résultant de votre 
+            utilisation de nos services.
           </p>
-          
-          <h2>6. Liens</h2>
-          <p>
-            TopCenter n'a pas examiné tous les sites liés à son site internet et n'est pas responsable du contenu de ces sites liés. L'inclusion de tout lien n'implique pas l'approbation par TopCenter du site. L'utilisation de tout site web lié est aux risques et périls de l'utilisateur.
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">7. Modifications des conditions</h2>
+          <p className="text-muted-foreground">
+            Nous nous réservons le droit de modifier ces conditions d'utilisation à tout moment. Les 
+            modifications entreront en vigueur immédiatement après leur publication sur notre site web. 
+            Votre utilisation continue de nos services après de telles modifications constitue votre 
+            acceptation des nouvelles conditions.
           </p>
-          
-          <h2>7. Modifications des conditions d'utilisation</h2>
-          <p>
-            TopCenter peut réviser ces conditions d'utilisation de son site web à tout moment sans préavis. En utilisant ce site web, vous acceptez d'être lié par la version actuelle de ces conditions d'utilisation.
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">8. Loi applicable</h2>
+          <p className="text-muted-foreground">
+            Ces conditions sont régies par les lois de la République du Congo. Tout litige relatif à 
+            ces conditions sera soumis à la juridiction exclusive des tribunaux de Brazzaville.
           </p>
-          
-          <h2>8. Loi applicable</h2>
-          <p>
-            Toute réclamation relative au site web de TopCenter sera régie par les lois de la République du Congo sans égard à ses dispositions en matière de conflit de lois.
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-bold mb-4">9. Contact</h2>
+          <p className="text-muted-foreground">
+            Pour toute question concernant ces conditions d'utilisation, veuillez nous contacter à 
+            l'adresse email : legal@topcenter.com
           </p>
-          
-          <p className="font-semibold mt-8">
-            Ces conditions sont effectives à partir du 1er juin 2023.
-          </p>
-        </div>
+        </section>
       </div>
     </div>
   );

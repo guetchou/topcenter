@@ -1,6 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+
+import { Routes, Route, useLocation } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
+import { Suspense, lazy } from "react";
 import { DynamicNav } from "./components/nav/DynamicNav";
 import { Footer } from "./components/Footer";
 import { NetworkStatus } from "./components/NetworkStatus";
@@ -20,29 +22,39 @@ import { WebPushNotification } from "./components/notifications/WebPushNotificat
 import { AIChatBubble } from "./components/ChatBubble";
 import { ImpersonationBanner } from "./components/ImpersonationBanner";
 import { queryClient } from "./lib/react-query";
-import Dashboard from "./pages/Dashboard";
-import Settings from "./pages/Settings";
-import ClientPortal from "./pages/ClientPortal";
-import NewsAdmin from "./pages/NewsAdmin";
-import News from "./pages/News";
-import BlogPost from "./pages/blog/BlogPost";
-import Services from "./pages/services/Services";
-import CallCenter from "./pages/services/CallCenter";
-import OnlineSales from "./pages/services/OnlineSales";
-import TelephonySystem from "./pages/services/TelephonySystem";
-import Devis from "./pages/Devis";
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import ResetPassword from "./pages/auth/ResetPassword";
-import NewPassword from "./pages/auth/NewPassword";
-import { AuthCallback } from "./components/auth/AuthCallback";
-import { AdminRoutes } from "./components/routes/AdminRoutes";
-import { AgentRoutes } from "./components/routes/AgentRoutes";
-import { ClientRoutes } from "./components/routes/ClientRoutes";
-import UserManagement from "./pages/admin/UserManagement";
-import Recruitment from "./pages/recruitment/Index";
-import { useEffect } from "react";
 import { useAuth } from "./hooks/useAuth";
+import { Spinner } from "./components/ui/spinner";
+
+// Lazy-loaded components pour améliorer les performances
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Settings = lazy(() => import("./pages/Settings"));
+const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+const NewsAdmin = lazy(() => import("./pages/NewsAdmin"));
+const News = lazy(() => import("./pages/News"));
+const BlogPost = lazy(() => import("./pages/blog/BlogPost"));
+const Services = lazy(() => import("./pages/services/Services"));
+const CallCenter = lazy(() => import("./pages/services/CallCenter"));
+const OnlineSales = lazy(() => import("./pages/services/OnlineSales"));
+const TelephonySystem = lazy(() => import("./pages/services/TelephonySystem"));
+const Devis = lazy(() => import("./pages/Devis"));
+const Login = lazy(() => import("./pages/auth/Login"));
+const Register = lazy(() => import("./pages/auth/Register"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const NewPassword = lazy(() => import("./pages/auth/NewPassword"));
+const UserManagement = lazy(() => import("./pages/admin/UserManagement"));
+const Recruitment = lazy(() => import("./pages/recruitment/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const FAQ = lazy(() => import("./pages/FAQ"));
+
+// Composant pour le chargement pendant le lazy loading
+const LoadingFallback = () => (
+  <div className="flex justify-center items-center min-h-[70vh]">
+    <Spinner size="lg" />
+    <span className="ml-2 text-lg">Chargement...</span>
+  </div>
+);
 
 function HomePage() {
   return (
@@ -65,8 +77,14 @@ function HomePage() {
 function App() {
   const intl = useIntl();
   const { checkUser, user, impersonatedUser } = useAuth();
+  const location = useLocation();
 
-  useEffect(() => {
+  // Défiler vers le haut lors du changement de route
+  React.useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  React.useEffect(() => {
     // Vérifier l'authentification au chargement
     checkUser();
   }, [checkUser]);
@@ -100,7 +118,6 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/auth/new-password" element={<NewPassword />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
             
             {/* Routes du blog */}
             <Route path="/blog" element={<News />} />
@@ -109,15 +126,18 @@ function App() {
             <Route path="/news/:id" element={<BlogPost />} />
             <Route path="/news-admin" element={<NewsAdmin />} />
             
-            {/* Routes protégées par rôle */}
-            <Route path="/admin/*" element={<AdminRoutes />} />
-            <Route path="/agent/*" element={<AgentRoutes />} />
-            <Route path="/client/*" element={<ClientRoutes />} />
+            {/* Pages informatives */}
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
             
             {/* Routes super admin */}
             <Route path="/super-admin/users" element={<UserManagement />} />
             
             <Route path="/contact" element={<ContactSection />} />
+            
+            {/* Page 404 */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
         
