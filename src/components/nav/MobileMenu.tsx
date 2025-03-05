@@ -3,14 +3,18 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MenuItem } from "@/hooks/useMenus";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 interface MobileMenuProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   items: MenuItem[];
+  isAuthenticated?: boolean;
+  onLogout?: () => Promise<void>;
 }
 
-export function MobileMenu({ open, setOpen, items }: MobileMenuProps) {
+export function MobileMenu({ open, setOpen, items, isAuthenticated, onLogout }: MobileMenuProps) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent side="left" className="w-[300px] sm:w-[400px]">
@@ -55,6 +59,17 @@ export function MobileMenu({ open, setOpen, items }: MobileMenuProps) {
               </Link>
             );
           })}
+          
+          {isAuthenticated && onLogout && (
+            <Button 
+              variant="ghost" 
+              className="justify-start mt-4 text-destructive" 
+              onClick={onLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Déconnexion
+            </Button>
+          )}
         </nav>
       </SheetContent>
     </Sheet>

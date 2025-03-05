@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { DesktopNav } from "./DesktopNav";
@@ -32,20 +31,16 @@ export function DynamicNav() {
   const location = useLocation();
   const { user, impersonatedUser, logout, stopImpersonation } = useAuth();
   
-  // Détermine quel utilisateur est actuellement actif pour les affichages
   const activeUser = impersonatedUser || user;
 
-  // Fermer le menu mobile quand la route change
   useEffect(() => {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
   const handleLogout = async () => {
-    // Si on est en impersonification, arrêter l'impersonification
     if (impersonatedUser) {
       stopImpersonation();
     } else {
-      // Sinon, se déconnecter complètement
       await logout();
     }
   };
@@ -90,7 +85,6 @@ export function DynamicNav() {
           <DesktopNav items={primaryMenuItems} />
         </div>
 
-        {/* Bouton de recherche et connexion/menu utilisateur */}
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -121,7 +115,6 @@ export function DynamicNav() {
                   ) : (
                     <User className="h-5 w-5" />
                   )}
-                  {/* Indicateur d'impersonification */}
                   {impersonatedUser && (
                     <span className="absolute right-0 top-0 h-2 w-2 rounded-full bg-destructive" />
                   )}
@@ -136,7 +129,6 @@ export function DynamicNav() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 
-                {/* Navigation administrative/portail */}
                 <DropdownMenuItem asChild>
                   <Link to={getAdminRoute()}>
                     {activeUser.role === "super_admin" 
@@ -149,12 +141,10 @@ export function DynamicNav() {
                   </Link>
                 </DropdownMenuItem>
                 
-                {/* Profil utilisateur */}
                 <DropdownMenuItem asChild>
                   <Link to={getProfileRoute()}>Mon profil</Link>
                 </DropdownMenuItem>
                 
-                {/* Déconnexion */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -172,7 +162,6 @@ export function DynamicNav() {
             </Button>
           )}
 
-          {/* Bouton de menu mobile */}
           <Button
             variant="ghost"
             size="icon"
@@ -185,10 +174,9 @@ export function DynamicNav() {
         </div>
       </div>
 
-      {/* Menu mobile */}
       <MobileMenu
         open={isMenuOpen}
-        onOpenChange={setIsMenuOpen}
+        setOpen={setIsMenuOpen}
         items={primaryMenuItems}
         isAuthenticated={!!activeUser}
         onLogout={handleLogout}

@@ -1,5 +1,8 @@
-import React, { Routes, Route, useLocation, Suspense, lazy } from "react-router-dom";
+
+import React, { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { Suspense, lazy } from "react";
 import { useIntl } from "react-intl";
 import { DynamicNav } from "./components/nav/DynamicNav";
 import { Footer } from "./components/Footer";
@@ -78,11 +81,11 @@ function App() {
   const location = useLocation();
 
   // Défiler vers le haut lors du changement de route
-  React.useEffect(() => {
+  useEffect(() => {
     window.scrollTo(0, 0);
   }, [location.pathname]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Vérifier l'authentification au chargement
     checkUser();
   }, [checkUser]);
