@@ -1,8 +1,10 @@
-
 import { Routes, Route } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
 import { DynamicNav } from "./components/nav/DynamicNav";
+import { Footer } from "./components/Footer";
+import { NetworkStatus } from "./components/NetworkStatus";
+import { ScrollToTop } from "./components/ScrollToTop";
 import { HeroSection } from "./components/sections/HeroSection";
 import { AboutSection } from "./components/sections/AboutSection";
 import { CallToActionSection } from "./components/sections/CallToActionSection";
@@ -74,54 +76,57 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen flex flex-col bg-background text-foreground">
         <ImpersonationBanner />
         <DynamicNav />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutSection />} />
-          
-          {/* Routes des services */}
-          <Route path="/services" element={<Services />} />
-          <Route path="/services/call-center" element={<CallCenter />} />
-          <Route path="/services/online-sales" element={<OnlineSales />} />
-          <Route path="/services/telephony-system" element={<TelephonySystem />} />
-          <Route path="/devis" element={<Devis />} />
-          
-          {/* Route de recrutement */}
-          <Route path="/recruitment" element={<Recruitment />} />
-          
-          {/* Routes d'authentification */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/auth/new-password" element={<NewPassword />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          
-          {/* Routes du blog */}
-          <Route path="/blog" element={<News />} />
-          <Route path="/blog/:id" element={<BlogPost />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/news/:id" element={<BlogPost />} />
-          <Route path="/news-admin" element={<NewsAdmin />} />
-          
-          {/* Routes protégées par rôle */}
-          <Route path="/admin/*" element={<AdminRoutes />} />
-          <Route path="/agent/*" element={<AgentRoutes />} />
-          <Route path="/client/*" element={<ClientRoutes />} />
-          
-          {/* Routes super admin */}
-          <Route path="/super-admin/users" element={<UserManagement />} />
-          
-          <Route path="/contact" element={<ContactSection />} />
-        </Routes>
-        <footer role="contentinfo" className="bg-muted py-8">
-          <div className="container text-center text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} TopCenter. Tous droits réservés.</p>
-          </div>
-        </footer>
+        
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/about" element={<AboutSection />} />
+            
+            {/* Routes des services */}
+            <Route path="/services" element={<Services />} />
+            <Route path="/services/call-center" element={<CallCenter />} />
+            <Route path="/services/online-sales" element={<OnlineSales />} />
+            <Route path="/services/telephony-system" element={<TelephonySystem />} />
+            <Route path="/devis" element={<Devis />} />
+            
+            {/* Route de recrutement */}
+            <Route path="/recruitment" element={<Recruitment />} />
+            
+            {/* Routes d'authentification */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/new-password" element={<NewPassword />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            
+            {/* Routes du blog */}
+            <Route path="/blog" element={<News />} />
+            <Route path="/blog/:id" element={<BlogPost />} />
+            <Route path="/news" element={<News />} />
+            <Route path="/news/:id" element={<BlogPost />} />
+            <Route path="/news-admin" element={<NewsAdmin />} />
+            
+            {/* Routes protégées par rôle */}
+            <Route path="/admin/*" element={<AdminRoutes />} />
+            <Route path="/agent/*" element={<AgentRoutes />} />
+            <Route path="/client/*" element={<ClientRoutes />} />
+            
+            {/* Routes super admin */}
+            <Route path="/super-admin/users" element={<UserManagement />} />
+            
+            <Route path="/contact" element={<ContactSection />} />
+          </Routes>
+        </Suspense>
+        
+        <Footer />
       </div>
       <AIChatBubble />
+      <WebPushNotification />
+      <NetworkStatus />
+      <ScrollToTop />
     </QueryClientProvider>
   );
 }

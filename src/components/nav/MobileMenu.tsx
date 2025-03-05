@@ -1,72 +1,73 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MenuItem } from "@/hooks/useMenus";
 
 interface MobileMenuProps {
-  isOpen: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  items: MenuItem[];
+  isAuthenticated: boolean;
+  onLogout: () => void;
 }
 
-export const MobileMenu = ({ isOpen }: MobileMenuProps) => {
-  const location = useLocation();
-
+export const MobileMenu = ({ 
+  open, 
+  onOpenChange, 
+  items, 
+  isAuthenticated,
+  onLogout 
+}: MobileMenuProps) => {
   return (
-    <div className={cn("md:hidden", isOpen ? "block" : "hidden")}>
-      <div className="px-2 pt-2 pb-3 space-y-1">
-        <Link
-          to="/services/call-center"
-          className={cn(
-            "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-            location.pathname === "/services/call-center" ? "text-primary" : "hover:text-primary"
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="left" className="flex flex-col pt-16">
+        <div className="flex flex-col space-y-4">
+          {items.map((item) => {
+            // Si l'élément a des enfants, créer un sous-menu
+            if (item.children && item.children.length > 0) {
+              return (
+                <div key={item.title} className="space-y-2">
+                  <div className="font-medium">{item.title}</div>
+                  {item.children.map((child) => (
+                    <Link
+                      key={child.title}
+                      to={child.path}
+                      className="block pl-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      onClick={() => onOpenChange(false)}
+                    >
+                      {child.title}
+                    </Link>
+                  ))}
+                </div>
+              );
+            }
+            
+            // Sinon, afficher un lien simple
+            return (
+              <Link
+                key={item.title}
+                to={item.path}
+                className="py-2 font-medium transition-colors hover:text-primary"
+                onClick={() => onOpenChange(false)}
+              >
+                {item.title}
+              </Link>
+            );
+          })}
+        </div>
+        
+        <div className="mt-auto pt-4 border-t">
+          {isAuthenticated && (
+            <Button variant="ghost" className="w-full justify-start" onClick={onLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Déconnexion
+            </Button>
           )}
-        >
-          Centre d'Appels
-        </Link>
-        <Link
-          to="/services/online-sales"
-          className={cn(
-            "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-            location.pathname === "/services/online-sales" ? "text-primary" : "hover:text-primary"
-          )}
-        >
-          Vente en Ligne
-        </Link>
-        <Link
-          to="/services/telephony-system"
-          className={cn(
-            "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-            location.pathname === "/services/telephony-system" ? "text-primary" : "hover:text-primary"
-          )}
-        >
-          Téléphonie
-        </Link>
-        <Link
-          to="/blog"
-          className={cn(
-            "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-            location.pathname === "/blog" ? "text-primary" : "hover:text-primary"
-          )}
-        >
-          Blog
-        </Link>
-        <Link
-          to="/recruitment"
-          className={cn(
-            "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-            location.pathname === "/recruitment" ? "text-primary" : "hover:text-primary"
-          )}
-        >
-          Recrutement
-        </Link>
-        <Link
-          to="/contact"
-          className={cn(
-            "block px-3 py-2 rounded-md text-base font-medium transition-colors",
-            location.pathname === "/contact" ? "text-primary" : "hover:text-primary"
-          )}
-        >
-          Contact
-        </Link>
-      </div>
-    </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
