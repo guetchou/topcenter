@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { DbUserRole } from "@/types/auth";
 
 const Login = () => {
   const [email, setEmail] = useState("");

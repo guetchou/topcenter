@@ -1,8 +1,6 @@
-
-import { Routes, Route, useLocation } from "react-router-dom";
+import React, { Routes, Route, useLocation, Suspense, lazy } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { useIntl } from "react-intl";
-import { Suspense, lazy } from "react";
 import { DynamicNav } from "./components/nav/DynamicNav";
 import { Footer } from "./components/Footer";
 import { NetworkStatus } from "./components/NetworkStatus";

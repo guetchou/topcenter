@@ -2,7 +2,17 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from "@/integrations/supabase/client";
-import { UserRole, AuthUser } from '@/types/auth';
+import { UserRole, DbUserRole } from '@/types/auth';
+
+interface AuthUser {
+  id: string;
+  role: UserRole | null;
+  email: string | null;
+  profile?: {
+    full_name: string | null;
+    avatar_url: string | null;
+  };
+}
 
 interface AuthStore {
   user: AuthUser | null;
@@ -149,12 +159,12 @@ export const useAuth = create<AuthStore>()(
             .eq('id', userId)
             .maybeSingle();
             
-          // Récupérer l'email de l'utilisateur depuis la table profiles
+          // Récupérer l'email de l'utilisateur depuis l'API auth de Supabase
           const { data: userData } = await supabase
             .from('profiles')
             .select('email')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
             
           // Sauvegarder l'utilisateur original et définir l'utilisateur impersonifié
           set({
@@ -192,17 +202,19 @@ export const useAuth = create<AuthStore>()(
             .eq('user_id', userId)
             .maybeSingle();
             
+          const roleValue: DbUserRole = 'super_admin';
+            
           if (existingRole) {
             // Mettre à jour le rôle existant
             await supabase
               .from('user_roles')
-              .update({ role: 'super_admin' as UserRole })
+              .update({ role: roleValue })
               .eq('user_id', userId);
           } else {
             // Créer un nouveau rôle
             await supabase
               .from('user_roles')
-              .insert({ user_id: userId, role: 'super_admin' as UserRole });
+              .insert({ user_id: userId, role: roleValue });
           }
           
           console.log(`L'utilisateur ${userId} a été promu super admin`);

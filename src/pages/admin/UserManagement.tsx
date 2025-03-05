@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { UserRole, DbUserRole } from "@/types/auth";
 import {
   Table,
   TableBody,
@@ -67,7 +67,6 @@ const UserManagement = () => {
   const { toast } = useToast();
   const { user, impersonateUser, promoteToSuperAdmin } = useAuth();
 
-  // Vérifier si l'utilisateur est un super admin
   useEffect(() => {
     if (user?.role !== 'super_admin') {
       navigate('/login');
@@ -79,30 +78,25 @@ const UserManagement = () => {
     }
   }, [user, navigate, toast]);
 
-  // Charger la liste des utilisateurs
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // Obtenir tous les utilisateurs via l'API admin de Supabase
       const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
       
       if (authError) throw authError;
 
-      // Obtenir les rôles des utilisateurs
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
       
       if (rolesError) throw rolesError;
       
-      // Obtenir les profils des utilisateurs
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id, full_name');
       
       if (profilesError) throw profilesError;
       
-      // Combiner les données
       const roleMap = new Map();
       userRoles?.forEach(item => roleMap.set(item.user_id, item.role));
       
@@ -135,14 +129,12 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  // Filtrer les utilisateurs en fonction du terme de recherche
   const filteredUsers = users.filter(user => 
     user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
     user.role.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Créer un nouvel utilisateur
   const handleAddUser = async () => {
     if (!newUserEmail || !newUserPassword || !newUserFullName) {
       toast({
@@ -155,7 +147,6 @@ const UserManagement = () => {
 
     setIsAddingUser(true);
     try {
-      // Créer l'utilisateur
       const { data, error } = await supabase.auth.admin.createUser({
         email: newUserEmail,
         password: newUserPassword,
@@ -165,7 +156,6 @@ const UserManagement = () => {
 
       if (error) throw error;
       
-      // Assigner le rôle
       await supabase
         .from('user_roles')
         .insert({ 
@@ -173,7 +163,6 @@ const UserManagement = () => {
           role: newUserRole 
         });
 
-      // Rafraîchir la liste
       fetchUsers();
       
       toast({
@@ -181,7 +170,6 @@ const UserManagement = () => {
         description: `L'utilisateur ${newUserEmail} a été créé avec succès`,
       });
       
-      // Réinitialiser le formulaire
       setNewUserEmail("");
       setNewUserPassword("");
       setNewUserFullName("");
@@ -199,7 +187,6 @@ const UserManagement = () => {
     }
   };
 
-  // Se connecter en tant qu'un utilisateur (impersonnification)
   const handleImpersonate = async (userId: string) => {
     try {
       await impersonateUser(userId);
@@ -217,7 +204,6 @@ const UserManagement = () => {
     }
   };
 
-  // Promouvoir un utilisateur en super admin
   const handlePromoteToSuperAdmin = async () => {
     if (!selectedUserId) return;
     
@@ -442,7 +428,6 @@ const UserManagement = () => {
         </div>
       </Card>
 
-      {/* Dialog pour la promotion en super admin */}
       <Dialog open={isPromotingUser} onOpenChange={setIsPromotingUser}>
         <DialogContent>
           <DialogHeader>

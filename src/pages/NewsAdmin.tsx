@@ -142,10 +142,16 @@ const NewsAdmin = () => {
         currentArticle.slug = slugify(currentArticle.title || '');
       }
       
+      // Ensure that all required fields are set
       const articleData = {
         ...currentArticle,
         author_id: user.id,
-        published_at: currentArticle.status === 'published' ? new Date().toISOString() : null
+        title: currentArticle.title || '',
+        content: currentArticle.content || '',
+        category: currentArticle.category || 'Général',
+        slug: currentArticle.slug || '',
+        published_at: currentArticle.status === 'published' ? new Date().toISOString() : null,
+        status: currentArticle.status || 'draft'
       };
       
       let result;

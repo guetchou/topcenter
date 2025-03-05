@@ -1,41 +1,55 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useMenus } from "@/hooks/useMenus";
 import { MobileMenu } from "./nav/MobileMenu";
 import { DesktopNav } from "./nav/DesktopNav";
+import { Button } from "./ui/button";
+import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "@/hooks/useAuth";
+import { Menu } from "lucide-react";
 
-export const MainNav = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleMenu = () => setIsOpen(!isOpen);
+export function MainNav() {
+  const { primaryMenuItems } = useMenus();
+  const { isAuthenticated, user } = useAuth();
+  const [open, setOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          <Link to="/" className="flex items-center gap-2">
-            <img 
-              src="/lovable-uploads/logo-topcenter.png"
-              alt="Top Center Logo" 
-              className="h-12 object-contain"
-            />
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 max-w-screen-2xl items-center">
+        <div className="mr-4 flex">
+          <Link to="/" className="mr-6 flex items-center space-x-2">
+            <span className="font-bold">TopCenter</span>
           </Link>
+        </div>
 
-          <DesktopNav />
+        <DesktopNav items={primaryMenuItems} />
 
+        <div className="flex flex-1 items-center justify-end space-x-2">
+          <nav className="flex items-center">
+            <ThemeToggle />
+            {isAuthenticated ? (
+              <Button variant="link" asChild className="px-2">
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+            ) : (
+              <Button variant="link" asChild className="px-2">
+                <Link to="/login">Se connecter</Link>
+              </Button>
+            )}
+          </nav>
           <Button
             variant="ghost"
             className="md:hidden"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
+            size="icon"
+            onClick={() => setOpen(!open)}
           >
-            {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle Menu</span>
           </Button>
         </div>
-
-        <MobileMenu isOpen={isOpen} />
       </div>
-    </nav>
+      <MobileMenu open={open} setOpen={setOpen} items={primaryMenuItems} />
+    </header>
   );
-};
+}

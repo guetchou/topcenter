@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
 
-interface MenuItemChild {
+export interface MenuItemChild {
   title: string;
   path: string;
 }
@@ -112,7 +112,7 @@ export const useMenus = () => {
           // Conversion sécurisée du type Json à MenuItem[]
           const menuItems = primaryData.items as Json;
           if (Array.isArray(menuItems)) {
-            setPrimaryMenuItems(menuItems as MenuItem[]);
+            setPrimaryMenuItems(menuItems as unknown as MenuItem[]);
           }
         }
 
@@ -130,7 +130,7 @@ export const useMenus = () => {
           // Conversion sécurisée du type Json à MenuItem[]
           const menuItems = footerData.items as Json;
           if (Array.isArray(menuItems)) {
-            setFooterMenuItems(menuItems as MenuItem[]);
+            setFooterMenuItems(menuItems as unknown as MenuItem[]);
           }
         }
       } catch (err: any) {

@@ -1,4 +1,6 @@
 
+import { Json } from "@/integrations/supabase/types";
+
 export type BlogPost = {
   id: string;
   title: string;
@@ -11,8 +13,8 @@ export type BlogPost = {
   created_at: string;
   updated_at: string;
   published_at: string | null;
-  slug?: string;
-  media_gallery?: any;
+  slug: string;
+  media_gallery?: Json;
   
   // Mapped fields for backwards compatibility
   date?: string;

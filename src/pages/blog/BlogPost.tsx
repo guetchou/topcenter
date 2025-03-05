@@ -54,12 +54,17 @@ const BlogPostPage = () => {
           authorAvatar = article.profiles.avatar_url;
         }
 
+        // Ensure the status is of the correct type for BlogPost
+        const status = article.status === 'published' ? 'published' : 'draft';
+
         const articleWithAuthor = {
           ...article,
+          status: status as 'draft' | 'published',
           author_name: authorName,
           author_avatar: authorAvatar
         };
 
+        // Now set the state with properly typed object
         setArticle(articleWithAuthor);
 
         // Fetch related articles in the same category
