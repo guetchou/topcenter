@@ -4,7 +4,7 @@ export type UserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_a
 
 // Définition du type pour les rôles dans la base de données
 // Note: Ceci correspond aux valeurs dans l'enum app_role de la base de données
-export type DbUserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
+export type DbUserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client' | 'moderator' | 'user';
 
 // Type pour les informations utilisateur
 export interface AuthUser {

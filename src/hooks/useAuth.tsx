@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from "@/integrations/supabase/client";
@@ -160,17 +159,15 @@ export const useAuth = create<AuthStore>()(
             .maybeSingle();
             
           // Récupérer l'email de l'utilisateur depuis l'API auth de Supabase
-          const { data: userData } = await supabase
-            .from('profiles')
-            .select('email')
-            .eq('id', userId)
-            .maybeSingle();
+          const { data: authUserData, error } = await supabase.auth.admin.getUserById(userId);
+          
+          if (error) throw error;
             
           // Sauvegarder l'utilisateur original et définir l'utilisateur impersonifié
           set({
             impersonatedUser: {
               id: userId,
-              email: userData?.email || null,
+              email: authUserData.user.email,
               role: (roleData?.role as UserRole) || 'client',
               profile
             },

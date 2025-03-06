@@ -156,11 +156,13 @@ const UserManagement = () => {
 
       if (error) throw error;
       
+      const roleValue: DbUserRole = newUserRole as DbUserRole;
+      
       await supabase
         .from('user_roles')
         .insert({ 
           user_id: data.user.id, 
-          role: newUserRole 
+          role: roleValue 
         });
 
       fetchUsers();
