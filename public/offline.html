@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TopCenter - Mode hors ligne</title>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f9fafb;
+      color: #111827;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .logo {
+      max-width: 150px;
+      margin-bottom: 2rem;
+    }
+    h1 {
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: #f97316;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+      color: #4b5563;
+    }
+    .button {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background-color: #f97316;
+      color: white;
+      text-decoration: none;
+      border-radius: 0.25rem;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    .button:hover {
+      background-color: #ea580c;
+    }
+    .status-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/lovable-uploads/logo-topcenter.png" alt="TopCenter Logo" class="logo">
+    <div class="status-icon">📶</div>
+    <h1>Vous êtes hors ligne</h1>
+    <p>Il semble que vous n'ayez pas de connexion internet. Certaines fonctionnal
+ités peuvent être limitées en mode hors ligne.</p>
+    <p>Vérifiez votre connexion internet et réessayez.</p>
+    <a href="/" class="button">Actualiser la page</a>
+  </div>
+</body>
+</html>

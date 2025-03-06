@@ -1,65 +1,43 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { authService } from '@/services/authService';
+import { authStore } from '@/stores/authStore';
+import { toast } from 'sonner';
 
 export const AuthCallback = () => {
   const navigate = useNavigate();
-  const { checkUser } = useAuth();
-  const { toast } = useToast();
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        await checkUser();
-        toast({
-          title: "Connexion réussie",
-          description: "Bienvenue sur votre espace TopCenter",
-        });
-        
-        // Redirection basée sur le rôle
-        const user = useAuth.getState().user;
-        if (user) {
-          switch (user.role) {
-            case 'super_admin':
-              navigate('/super-admin/users');
-              break;
-            case 'admin':
-              navigate('/admin');
-              break;
-            case 'commercial_agent':
-              navigate('/agent/commercial');
-              break;
-            case 'support_agent':
-              navigate('/agent/support');
-              break;
-            case 'client':
-              navigate('/client');
-              break;
-            default:
-              navigate('/');
-          }
-        } else {
-          navigate('/');
-        }
-      } catch (error) {
-        console.error('Erreur de connexion:', error);
-        toast({
-          title: "Erreur de connexion",
-          description: "Une erreur est survenue lors de la connexion",
-          variant: "destructive",
-        });
+    const handleAuthCallback = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Erreur lors de la récupération de la session:', error);
+        toast.error('Échec de l\'authentification');
+        navigate('/login');
+        return;
+      }
+      
+      if (data.session) {
+        await authService.checkUser();
+        toast.success('Connexion réussie!');
+        navigate('/');
+      } else {
         navigate('/login');
       }
     };
 
-    handleCallback();
-  }, [checkUser, navigate, toast]);
+    handleAuthCallback();
+  }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="flex items-center justify-center min-h-[70vh]">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+        <h2 className="mt-4 text-xl font-semibold">Authentification en cours...</h2>
+      </div>
     </div>
   );
 };
