@@ -23,11 +23,18 @@ serve(async (req) => {
         content: msg.text
       }));
 
-    // Construction des messages avec le contexte système enrichi
+    // Construction des messages avec le contexte système enrichi et instructions de confiance
+    const systemContent = context + `
+    
+IMPORTANT: 
+1. Si vous n'êtes pas sûr d'une réponse (moins de 70% de confiance), commencez votre réponse par "[INCERTAIN]".
+2. Pour les questions complexes, techniques ou spécifiques que vous ne pouvez pas résoudre avec certitude, commencez votre réponse par "[TRANSFERT_RECOMMANDÉ]" et suggérez un transfert vers un agent humain.
+3. Pour les questions sensibles nécessitant une intervention humaine (plaintes, problèmes complexes, demandes de remboursement), commencez par "[TRANSFERT_RECOMMANDÉ]".`;
+
     const messages = [
       {
         role: 'system',
-        content: context || 'Vous êtes un assistant compétent pour TopCenter, un centre d\'appel au Congo-Brazzaville.'
+        content: systemContent
       },
       ...formattedPreviousMessages,
       {
@@ -36,7 +43,7 @@ serve(async (req) => {
       }
     ];
 
-    console.log("Envoi à Perplexity avec contexte enrichi");
+    console.log("Envoi à Perplexity avec contexte enrichi et instructions de confiance");
     
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',

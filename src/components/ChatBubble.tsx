@@ -1,12 +1,14 @@
+
 // @ts-nocheck
 import { Bot, MessageSquareText, X, User, ArrowLeft, ExternalLink } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 export const AIChatBubble = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,8 +18,16 @@ export const AIChatBubble = () => {
   const [selectedModel, setSelectedModel] = useState("perplexity");
   const [activeTab, setActiveTab] = useState("ai");
   const [chatterpalLoaded, setChatterpalLoaded] = useState(false);
+  const [transferring, setTransferring] = useState(false);
+  const [autoTransferEnabled, setAutoTransferEnabled] = useState(true);
+  const [confidenceThreshold] = useState(0.7); // Seuil de confiance pour transfert automatique
+  const consecutiveUncertainResponses = useRef(0);
+  const messagesEndRef = useRef(null);
 
-  // Contexte amélioré pour l'IA avec des informations précises et détaillées sur TopCenter
+  // Notification sonore lors d'un transfert
+  const notificationSound = new Audio('/notification.mp3');
+
+  // Contexte enrichi pour l'IA
   const systemContext = `Vous êtes l'assistant virtuel officiel de TopCenter, un centre d'appels et service client leader au Congo-Brazzaville.
 
 Informations complètes sur TopCenter:
@@ -112,7 +122,20 @@ Tarification (à partager sur demande spécifique):
 
 Pour les devis personnalisés, invitez toujours à remplir le formulaire sur notre site ou à appeler directement notre équipe commerciale au +242 06 449 5353.
 
-Vous devez toujours être courtois, professionnel et précis dans vos réponses, en mettant en avant notre expertise locale et notre connaissance approfondie du marché congolais. Utilisez un ton chaleureux et engageant, représentatif de l'accueil typiquement congolais.`;
+Vous devez toujours être courtois, professionnel et précis dans vos réponses, en mettant en avant notre expertise locale et notre connaissance approfondie du marché congolais. Utilisez un ton chaleureux et engageant, représentatif de l'accueil typiquement congolais.
+
+IMPORTANT: 
+1. Si vous n'êtes pas sûr d'une réponse (moins de 70% de confiance), indiquez-le clairement dans votre réponse.
+2. Pour les questions complexes, techniques ou spécifiques que vous ne pouvez pas résoudre avec certitude, suggérez un transfert vers un agent humain.
+3. Ajoutez "[INCERTAIN]" au début de votre réponse si vous n'êtes pas très confiant.
+4. Ajoutez "[TRANSFERT_RECOMMANDÉ]" au début de votre réponse si vous pensez qu'un agent humain serait plus approprié.`;
+
+  // Faire défiler automatiquement vers le dernier message
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Initialiser ChatterPal
   useEffect(() => {
@@ -149,6 +172,53 @@ Vous devez toujours être courtois, professionnel et précis dans vos réponses,
     }
   }, [isOpen, messages.length]);
 
+  // Fonction pour analyser la réponse de l'IA et décider si un transfert est nécessaire
+  const analyzeAIResponse = (response) => {
+    // Détecte les marqueurs d'incertitude ou de recommandation de transfert
+    if (response.includes("[INCERTAIN]")) {
+      consecutiveUncertainResponses.current += 1;
+      return { needsTransfer: consecutiveUncertainResponses.current >= 2, confidence: 0.5 };
+    } else if (response.includes("[TRANSFERT_RECOMMANDÉ]")) {
+      return { needsTransfer: true, confidence: 0.3 };
+    } else if (response.includes("je ne suis pas sûr") || 
+               response.includes("je ne peux pas répondre") || 
+               response.includes("je n'ai pas cette information")) {
+      consecutiveUncertainResponses.current += 1;
+      return { needsTransfer: consecutiveUncertainResponses.current >= 2, confidence: 0.6 };
+    } else {
+      // Réinitialise le compteur si la réponse est confiante
+      consecutiveUncertainResponses.current = 0;
+      return { needsTransfer: false, confidence: 0.9 };
+    }
+  };
+
+  // Fonction pour transférer à un agent humain
+  const transferToHuman = () => {
+    setTransferring(true);
+    
+    // Ajoute un message de transition
+    setMessages(prev => [...prev, { 
+      text: "Je vous transfère à un agent humain pour mieux répondre à votre demande. Un instant s'il vous plaît...", 
+      isUser: false 
+    }]);
+    
+    // Joue le son de notification
+    try {
+      notificationSound.play();
+    } catch (error) {
+      console.error("Erreur lors de la lecture du son:", error);
+    }
+    
+    // Délai pour simuler la connexion à un agent
+    setTimeout(() => {
+      setActiveTab("chatterpal");
+      setTransferring(false);
+      toast.success("Vous êtes maintenant connecté à un agent humain", {
+        description: "Merci de patienter pendant que l'agent prend connaissance de votre conversation."
+      });
+    }, 1500);
+  };
+
   // Fonction pour gérer l'envoi de message à l'assistant IA
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -181,12 +251,31 @@ Vous devez toujours être courtois, professionnel et précis dans vos réponses,
 
       if (response.error) throw response.error;
 
+      const aiResponseText = response.data.choices[0].message.content;
+      
+      // Nettoie la réponse des marqueurs techniques avant de l'afficher
+      const cleanedResponse = aiResponseText
+        .replace("[INCERTAIN]", "")
+        .replace("[TRANSFERT_RECOMMANDÉ]", "");
+      
       const botResponse = { 
-        text: response.data.choices[0].message.content, 
+        text: cleanedResponse, 
         isUser: false 
       };
       
       setMessages(prev => [...prev, botResponse]);
+      
+      // Analyse la réponse pour déterminer si un transfert est nécessaire
+      if (autoTransferEnabled) {
+        const analysis = analyzeAIResponse(aiResponseText);
+        
+        if (analysis.needsTransfer || analysis.confidence < confidenceThreshold) {
+          // Ajoute un petit délai pour que l'utilisateur puisse lire la réponse avant le transfert
+          setTimeout(() => {
+            transferToHuman();
+          }, 2000);
+        }
+      }
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
       setMessages(prev => [...prev, { 
@@ -270,9 +359,29 @@ Vous devez toujours être courtois, professionnel et précis dans vos réponses,
                     </div>
                   </div>
                 )}
+                {transferring && (
+                  <div className="flex justify-start">
+                    <div className="bg-amber-100 rounded-lg p-3 animate-pulse flex items-center space-x-2">
+                      <span>Transfert vers un agent humain</span>
+                      <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping"></div>
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
 
-              <div className="p-4 border-t">
+              <div className="p-4 border-t flex flex-col gap-2">
+                {activeTab === "ai" && messages.length > 1 && !transferring && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full text-xs flex items-center gap-1 mb-1"
+                    onClick={transferToHuman}
+                  >
+                    <User className="w-3 h-3" />
+                    Parler à un agent humain
+                  </Button>
+                )}
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -285,8 +394,9 @@ Vous devez toujours être courtois, professionnel et précis dans vos réponses,
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Écrivez votre message..."
                     className="flex-1"
+                    disabled={transferring}
                   />
-                  <Button type="submit" size="icon" disabled={isLoading}>
+                  <Button type="submit" size="icon" disabled={isLoading || transferring}>
                     <MessageSquareText className="w-4 h-4" />
                   </Button>
                 </form>
@@ -294,6 +404,17 @@ Vous devez toujours être courtois, professionnel et précis dans vos réponses,
             </TabsContent>
             
             <TabsContent value="chatterpal" className="flex-1 data-[state=active]:flex data-[state=inactive]:hidden">
+              {activeTab === "chatterpal" && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="absolute top-14 left-2 z-10 text-xs flex items-center gap-1"
+                  onClick={() => setActiveTab("ai")}
+                >
+                  <ArrowLeft className="w-3 h-3" />
+                  Retour à l'IA
+                </Button>
+              )}
               <div id="chatterpal-container" className="w-full h-full flex-1 overflow-hidden">
                 {!chatterpalLoaded && (
                   <div className="w-full h-full flex items-center justify-center">

@@ -40,7 +40,15 @@ serve(async (req) => {
         modelEndpoint = '/v1/chat/completions';
     }
 
-    console.log(`Envoi vers LocalAI (${model}) avec contexte enrichi`);
+    // Ajout des instructions de confiance au contexte
+    const systemContent = context + `
+    
+IMPORTANT: 
+1. Si vous n'êtes pas sûr d'une réponse (moins de 70% de confiance), commencez votre réponse par "[INCERTAIN]".
+2. Pour les questions complexes, techniques ou spécifiques que vous ne pouvez pas résoudre avec certitude, commencez votre réponse par "[TRANSFERT_RECOMMANDÉ]" et suggérez un transfert vers un agent humain.
+3. Pour les questions sensibles nécessitant une intervention humaine (plaintes, problèmes complexes, demandes de remboursement), commencez par "[TRANSFERT_RECOMMANDÉ]".`;
+
+    console.log(`Envoi vers LocalAI (${model}) avec contexte enrichi et instructions de confiance`);
 
     const response = await fetch(`${LOCAL_AI_URL}${modelEndpoint}`, {
       method: 'POST',
@@ -51,7 +59,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: context || 'Tu es un assistant virtuel professionnel de TopCenter, expert en centre d\'appels et services clients au Congo-Brazzaville.'
+            content: systemContent
           },
           ...formattedPreviousMessages,
           {
