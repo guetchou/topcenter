@@ -1,30 +1,19 @@
 
-// @ts-nocheck
-import { Bot, MessageSquareText, X, User, ArrowLeft, ExternalLink } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { MessageType } from "@/types/chat";
 
-export const AIChatBubble = () => {
-  const [isOpen, setIsOpen] = useState(false);
+export const useAIChat = () => {
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<MessageType[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState("perplexity");
   const [activeTab, setActiveTab] = useState("ai");
-  const [chatterpalLoaded, setChatterpalLoaded] = useState(false);
   const [transferring, setTransferring] = useState(false);
-  const [autoTransferEnabled, setAutoTransferEnabled] = useState(true);
-  const [confidenceThreshold] = useState(0.7); // Seuil de confiance pour transfert automatique
+  const [autoTransferEnabled] = useState(true);
+  const [confidenceThreshold] = useState(0.7);
   const consecutiveUncertainResponses = useRef(0);
-  const messagesEndRef = useRef(null);
-
-  // Notification sonore lors d'un transfert
   const notificationSound = new Audio('/notification.mp3');
 
   // Contexte enrichi pour l'IA
@@ -130,50 +119,8 @@ IMPORTANT:
 3. Ajoutez "[INCERTAIN]" au début de votre réponse si vous n'êtes pas très confiant.
 4. Ajoutez "[TRANSFERT_RECOMMANDÉ]" au début de votre réponse si vous pensez qu'un agent humain serait plus approprié.`;
 
-  // Faire défiler automatiquement vers le dernier message
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [messages]);
-
-  // Initialiser ChatterPal
-  useEffect(() => {
-    if (activeTab === "chatterpal" && isOpen && !chatterpalLoaded) {
-      // On s'assure que le script ChatterPal est chargé
-      if (window.ChatPal) {
-        try {
-          // On réinitialise ChatterPal si nécessaire
-          if (window.chatPal) {
-            // Si chatPal existe déjà, on ne fait rien
-          } else {
-            window.chatPal = new window.ChatPal({
-              embedId: '2yyMeBsp8GxX', 
-              remoteBaseUrl: 'https://chatterpal.me/', 
-              version: '8.3',
-              containerSelector: '#chatterpal-container'
-            });
-          }
-          setChatterpalLoaded(true);
-        } catch (error) {
-          console.error("Erreur lors de l'initialisation de ChatterPal:", error);
-        }
-      }
-    }
-  }, [activeTab, isOpen]);
-
-  // Message d'accueil initial
-  useEffect(() => {
-    if (isOpen && messages.length === 0) {
-      setMessages([{
-        text: "Bonjour ! Je suis l'assistant virtuel de TopCenter. Comment puis-je vous aider aujourd'hui ? Je peux vous renseigner sur nos services de centre d'appels, notre support client 24/7 ou vous aider à obtenir un devis personnalisé.",
-        isUser: false
-      }]);
-    }
-  }, [isOpen, messages.length]);
-
   // Fonction pour analyser la réponse de l'IA et décider si un transfert est nécessaire
-  const analyzeAIResponse = (response) => {
+  const analyzeAIResponse = (response: string) => {
     // Détecte les marqueurs d'incertitude ou de recommandation de transfert
     if (response.includes("[INCERTAIN]")) {
       consecutiveUncertainResponses.current += 1;
@@ -288,152 +235,19 @@ IMPORTANT:
     }
   };
 
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {isOpen ? (
-        <div className="bg-background border rounded-lg shadow-lg w-[350px] max-h-[500px] flex flex-col animate-in slide-in-from-bottom-5">
-          <div className="p-4 border-b flex items-center justify-between bg-primary/5 rounded-t-lg">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                {activeTab === "ai" ? (
-                  <Bot className="w-5 h-5 text-primary" />
-                ) : (
-                  <User className="w-5 h-5 text-primary" />
-                )}
-              </div>
-              <span className="font-medium">
-                {activeTab === "ai" ? "Assistant TopCenter" : "Support Client"}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              {activeTab === "ai" && (
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger className="w-24 h-8">
-                    <SelectValue placeholder="Modèle" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="perplexity">Perplexity</SelectItem>
-                    <SelectItem value="llama2">Llama 2</SelectItem>
-                    <SelectItem value="mistral">Mistral 7B</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-
-          <Tabs defaultValue="ai" value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-            <TabsList className="grid grid-cols-2 mx-4 my-2">
-              <TabsTrigger value="ai">Assistant IA</TabsTrigger>
-              <TabsTrigger value="chatterpal">Agent Humain</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="ai" className="flex-1 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden">
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={cn(
-                      "flex",
-                      msg.isUser ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[80%] rounded-lg p-3",
-                        msg.isUser
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
-                      )}
-                    >
-                      {msg.text}
-                    </div>
-                  </div>
-                ))}
-                {isLoading && (
-                  <div className="flex justify-start">
-                    <div className="bg-muted rounded-lg p-3 animate-pulse">
-                      En train d'écrire...
-                    </div>
-                  </div>
-                )}
-                {transferring && (
-                  <div className="flex justify-start">
-                    <div className="bg-amber-100 rounded-lg p-3 animate-pulse flex items-center space-x-2">
-                      <span>Transfert vers un agent humain</span>
-                      <div className="w-3 h-3 rounded-full bg-amber-500 animate-ping"></div>
-                    </div>
-                  </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
-
-              <div className="p-4 border-t flex flex-col gap-2">
-                {activeTab === "ai" && messages.length > 1 && !transferring && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full text-xs flex items-center gap-1 mb-1"
-                    onClick={transferToHuman}
-                  >
-                    <User className="w-3 h-3" />
-                    Parler à un agent humain
-                  </Button>
-                )}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleSendMessage();
-                  }}
-                  className="flex gap-2"
-                >
-                  <Input
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Écrivez votre message..."
-                    className="flex-1"
-                    disabled={transferring}
-                  />
-                  <Button type="submit" size="icon" disabled={isLoading || transferring}>
-                    <MessageSquareText className="w-4 h-4" />
-                  </Button>
-                </form>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="chatterpal" className="flex-1 data-[state=active]:flex data-[state=inactive]:hidden">
-              {activeTab === "chatterpal" && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="absolute top-14 left-2 z-10 text-xs flex items-center gap-1"
-                  onClick={() => setActiveTab("ai")}
-                >
-                  <ArrowLeft className="w-3 h-3" />
-                  Retour à l'IA
-                </Button>
-              )}
-              <div id="chatterpal-container" className="w-full h-full flex-1 overflow-hidden">
-                {!chatterpalLoaded && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                  </div>
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-      ) : (
-        <Button
-          onClick={() => setIsOpen(true)}
-          size="lg"
-          className="rounded-full w-12 h-12 shadow-lg animate-bounce-subtle"
-        >
-          <MessageSquareText className="w-6 h-6" />
-        </Button>
-      )}
-    </div>
-  );
+  return {
+    message,
+    setMessage,
+    messages,
+    setMessages,
+    isLoading,
+    selectedModel,
+    setSelectedModel,
+    activeTab,
+    setActiveTab,
+    transferring,
+    systemContext,
+    handleSendMessage,
+    transferToHuman
+  };
 };

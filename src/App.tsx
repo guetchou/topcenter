@@ -19,7 +19,7 @@ import { NewsletterSection } from "./components/sections/NewsletterSection";
 import { LoyaltySection } from "./components/sections/LoyaltySection";
 import { SocialMediaSection } from "./components/sections/SocialMediaSection";
 import { WebPushNotification } from "./components/notifications/WebPushNotification";
-import { AIChatBubble } from "./components/ChatBubble";
+import { AIChatBubble } from "./components/AIChatBubble";
 import { ImpersonationBanner } from "./components/ImpersonationBanner";
 import { queryClient } from "./lib/react-query";
 import { useAuth } from "./hooks/useAuth";
