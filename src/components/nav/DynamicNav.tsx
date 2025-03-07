@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { DesktopNav } from "./DesktopNav";
@@ -12,6 +13,7 @@ import {
   Menu,
   Search,
   Shield,
+  Bell,
 } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,10 +25,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const { primaryMenuItems } = useMenus();
   const location = useLocation();
   const { user, impersonatedUser, logout, stopImpersonation } = useAuth();
@@ -35,6 +39,10 @@ export function DynamicNav() {
 
   useEffect(() => {
     setIsMenuOpen(false);
+    // Vérifier si les notifications sont déjà activées
+    if ('Notification' in window) {
+      setNotificationsEnabled(Notification.permission === 'granted');
+    }
   }, [location.pathname]);
 
   const handleLogout = async () => {
@@ -42,6 +50,48 @@ export function DynamicNav() {
       stopImpersonation();
     } else {
       await logout();
+    }
+  };
+
+  const handleNotificationToggle = async () => {
+    if (!('Notification' in window)) {
+      toast({
+        title: "Non supporté",
+        description: "Votre navigateur ne supporte pas les notifications.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const permission = await Notification.requestPermission();
+      
+      if (permission === 'granted') {
+        setNotificationsEnabled(true);
+        
+        // Affiche une notification de test
+        new Notification('Bienvenue chez TopCenter!', {
+          body: 'Vous recevrez désormais nos actualités en temps réel.',
+          icon: '/lovable-uploads/logo-topcenter.png'
+        });
+
+        toast({
+          title: "Notifications activées",
+          description: "Vous recevrez nos actualités en temps réel.",
+        });
+      } else {
+        toast({
+          title: "Notifications refusées",
+          description: "Vous ne recevrez pas de notifications.",
+        });
+      }
+    } catch (error) {
+      console.error('Error requesting notification permission:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'activer les notifications.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -99,6 +149,20 @@ export function DynamicNav() {
             open={isSearchOpen}
             onOpenChange={setIsSearchOpen}
           />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={notificationsEnabled ? "Notifications activées" : "Activer les notifications"}
+            onClick={handleNotificationToggle}
+            className="mr-1 relative"
+            title={notificationsEnabled ? "Notifications activées" : "Activer les notifications"}
+          >
+            <Bell className="h-5 w-5" />
+            {notificationsEnabled && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
+            )}
+          </Button>
 
           <ThemeToggle />
 

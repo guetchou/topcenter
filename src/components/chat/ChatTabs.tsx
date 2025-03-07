@@ -40,25 +40,29 @@ export const ChatTabs = ({
         {children}
       </TabsContent>
       
-      <TabsContent value="chatterpal" className="flex-1 data-[state=active]:flex data-[state=inactive]:hidden">
+      <TabsContent value="chatterpal" className="flex-1 data-[state=active]:flex data-[state=inactive]:hidden flex-col">
         {activeTab === "chatterpal" && (
           <Button 
             variant="ghost" 
             size="sm" 
-            className="absolute top-14 left-2 z-10 text-xs flex items-center gap-1"
+            className="mb-2 ml-2 z-10 text-xs flex items-center gap-1 self-start"
             onClick={() => setActiveTab("ai")}
           >
             <ArrowLeft className="w-3 h-3" />
             Retour à l'IA
           </Button>
         )}
-        <div className="absolute top-20 left-4 right-4 bg-amber-50 rounded-lg p-3 mb-4 text-sm">
-          <p className="flex items-center gap-2 text-amber-800">
-            <MessageSquare className="w-4 h-4" />
-            Un agent vous répondra dans les plus brefs délais. Temps d'attente estimé : 2-5 minutes.
-          </p>
-        </div>
-        <div id="chatterpal-container" className="w-full h-full flex-1 overflow-hidden mt-16">
+        
+        {activeTab === "chatterpal" && (
+          <div className="mx-4 mb-4 bg-amber-50 rounded-lg p-3 text-sm">
+            <p className="flex items-center gap-2 text-amber-800">
+              <MessageSquare className="w-4 h-4" />
+              Un agent vous répondra dans les plus brefs délais. Temps d'attente estimé : 2-5 minutes.
+            </p>
+          </div>
+        )}
+        
+        <div id="chatterpal-container" className="w-full flex-1 overflow-hidden">
           {!chatterpalLoaded && (
             <div className="w-full h-full flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
