@@ -1,4 +1,3 @@
-
 export interface MessageType {
   text: string;
   isUser: boolean;
@@ -18,4 +17,11 @@ export interface ChatContextType {
   systemContext: string;
   handleSendMessage: () => Promise<void>;
   transferToHuman: () => void;
+}
+
+declare global {
+  interface Window {
+    ChatPal?: any;
+    chatPal?: any;
+  }
 }

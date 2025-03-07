@@ -1,9 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInputForm } from "./ChatInputForm";
-import { ModelSelector } from "./ModelSelector";
 import { ChatTabs } from "./ChatTabs";
 import { useAIChat } from "@/hooks/useAIChat";
 import { Button } from "@/components/ui/button";
@@ -29,19 +27,14 @@ export const ChatContainer = () => {
     transferToHuman
   } = useAIChat();
 
-  // Initialiser ChatterPal
   useEffect(() => {
     if (activeTab === "chatterpal" && isOpen && !chatterpalLoaded) {
-      // On s'assure que le script ChatterPal est chargé
-      if (window.ChatPal) {
+      if (typeof window.ChatPal !== 'undefined') {
         try {
-          // On réinitialise ChatterPal si nécessaire
-          if (window.chatPal) {
-            // Si chatPal existe déjà, on ne fait rien
-          } else {
+          if (!window.chatPal) {
             window.chatPal = new window.ChatPal({
-              embedId: '2yyMeBsp8GxX', 
-              remoteBaseUrl: 'https://chatterpal.me/', 
+              embedId: '2yyMeBsp8GxX',
+              remoteBaseUrl: 'https://chatterpal.me/',
               version: '8.3',
               containerSelector: '#chatterpal-container'
             });
@@ -49,12 +42,12 @@ export const ChatContainer = () => {
           setChatterpalLoaded(true);
         } catch (error) {
           console.error("Erreur lors de l'initialisation de ChatterPal:", error);
+          toast.error("Impossible de charger le chat humain. Veuillez réessayer.");
         }
       }
     }
   }, [activeTab, isOpen]);
 
-  // Message d'accueil initial
   useEffect(() => {
     if (isOpen && messages.length === 0) {
       setMessages([{
@@ -64,7 +57,6 @@ export const ChatContainer = () => {
     }
   }, [isOpen, messages.length, setMessages]);
 
-  // Fonction pour gérer l'envoi de message
   const handleMessageSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSendMessage();
@@ -73,7 +65,7 @@ export const ChatContainer = () => {
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
-        <div className="bg-background border rounded-lg shadow-lg w-[350px] max-h-[500px] flex flex-col animate-in slide-in-from-bottom-5">
+        <div className="bg-background border rounded-lg shadow-lg w-[400px] max-h-[600px] flex flex-col animate-in slide-in-from-bottom-5">
           <ChatHeader 
             activeTab={activeTab} 
             selectedModel={selectedModel} 
@@ -98,11 +90,11 @@ export const ChatContainer = () => {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full text-xs flex items-center gap-1 mb-1"
+                    className="w-full text-xs flex items-center gap-1 mb-1 hover:bg-amber-50"
                     onClick={transferToHuman}
                   >
                     <User className="w-3 h-3" />
-                    Parler à un agent humain
+                    Parler à un agent humain pour des questions complexes
                   </Button>
                 )}
                 
