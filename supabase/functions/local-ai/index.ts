@@ -14,7 +14,15 @@ serve(async (req) => {
   }
 
   try {
-    const { message, model } = await req.json();
+    const { message, model, context, previousMessages } = await req.json();
+
+    // Conversion des messages précédents au format attendu par l'API
+    const formattedPreviousMessages = previousMessages
+      .filter(msg => msg.text.trim())
+      .map(msg => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.text
+      }));
 
     // Sélection du modèle en fonction du paramètre
     let modelEndpoint;
@@ -32,6 +40,8 @@ serve(async (req) => {
         modelEndpoint = '/v1/chat/completions';
     }
 
+    console.log(`Envoi vers LocalAI (${model}) avec contexte enrichi`);
+
     const response = await fetch(`${LOCAL_AI_URL}${modelEndpoint}`, {
       method: 'POST',
       headers: {
@@ -41,8 +51,9 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'Tu es un assistant virtuel professionnel de TopCenter, expert en centre d\'appels et services clients.'
+            content: context || 'Tu es un assistant virtuel professionnel de TopCenter, expert en centre d\'appels et services clients au Congo-Brazzaville.'
           },
+          ...formattedPreviousMessages,
           {
             role: 'user',
             content: message
@@ -54,6 +65,7 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    console.log("Réponse reçue de LocalAI");
     
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

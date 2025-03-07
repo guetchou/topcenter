@@ -20,6 +20,20 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not set')
     }
 
+    // Contexte enrichi pour TopCenter
+    const systemContext = `Vous êtes un assistant du service client de TopCenter, un centre d'appels professionnel basé à Brazzaville, Congo. 
+    
+TopCenter offre des services de centre d'appels, service client multicanal, prise de rendez-vous et support technique. 
+L'entreprise travaille avec des clients importants comme MTN Congo, Airtel Congo, LCB Bank et bien d'autres.
+
+Répondez aux questions des clients de manière professionnelle, chaleureuse et précise, conformément aux valeurs de TopCenter:
+- Professionnalisme et rigueur
+- Innovation constante
+- Expertise locale avec standards internationaux
+- Satisfaction client au cœur de tout
+
+Pour les demandes de prix, mentionnez que les tarifs sont personnalisés selon les besoins et dirigez vers le formulaire de contact ou au numéro +242 06 449 5353.`
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -31,7 +45,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: "Vous êtes un assistant du service client de TopCenter, professionnel et serviable. Répondez aux questions des clients de manière concise et précise."
+            content: systemContext
           },
           { role: 'user', content: message }
         ],

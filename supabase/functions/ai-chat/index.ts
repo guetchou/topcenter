@@ -13,8 +13,31 @@ serve(async (req) => {
   }
 
   try {
-    const { message } = await req.json();
+    const { message, context, previousMessages } = await req.json();
+    
+    // Conversion des messages précédents au format attendu par l'API
+    const formattedPreviousMessages = previousMessages
+      .filter(msg => msg.text.trim()) // filtrer les messages vides
+      .map(msg => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.text
+      }));
 
+    // Construction des messages avec le contexte système enrichi
+    const messages = [
+      {
+        role: 'system',
+        content: context || 'Vous êtes un assistant compétent pour TopCenter, un centre d\'appel au Congo-Brazzaville.'
+      },
+      ...formattedPreviousMessages,
+      {
+        role: 'user',
+        content: message
+      }
+    ];
+
+    console.log("Envoi à Perplexity avec contexte enrichi");
+    
     const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
@@ -23,16 +46,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'llama-3.1-sonar-small-128k-online',
-        messages: [
-          {
-            role: 'system',
-            content: 'Vous êtes un assistant compétent pour TopCenter, un centre d\'appel. Répondez de manière précise et professionnelle.'
-          },
-          {
-            role: 'user',
-            content: message
-          }
-        ],
+        messages: messages,
         temperature: 0.2,
         top_p: 0.9,
         max_tokens: 1000,
@@ -46,6 +60,7 @@ serve(async (req) => {
     });
 
     const data = await response.json();
+    console.log("Réponse reçue de Perplexity");
 
     return new Response(
       JSON.stringify(data),
@@ -55,6 +70,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
+    console.error("Erreur AI Chat:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
