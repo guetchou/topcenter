@@ -56,7 +56,6 @@ export function DynamicNav() {
   const handleNotificationToggle = async () => {
     if (!('Notification' in window)) {
       toast({
-        title: "Non supporté",
         description: "Votre navigateur ne supporte pas les notifications.",
         variant: "destructive",
       });
@@ -76,19 +75,16 @@ export function DynamicNav() {
         });
 
         toast({
-          title: "Notifications activées",
           description: "Vous recevrez nos actualités en temps réel.",
         });
       } else {
         toast({
-          title: "Notifications refusées",
           description: "Vous ne recevrez pas de notifications.",
         });
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
       toast({
-        title: "Erreur",
         description: "Impossible d'activer les notifications.",
         variant: "destructive",
       });

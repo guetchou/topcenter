@@ -53,3 +53,5 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate 
     </Card>
   );
 };
+
+export default BlogPostCard;

@@ -10,11 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { BlogPost } from "@/types/blog";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const BlogPostPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: useToastFn } = useToast();
   const [article, setArticle] = useState<BlogPost & { author_name?: string; author_avatar?: string }>();
   const [relatedArticles, setRelatedArticles] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,7 +94,7 @@ const BlogPostPage = () => {
     };
 
     fetchArticle();
-  }, [id, navigate, toast]);
+  }, [id, navigate]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fr-FR', {
