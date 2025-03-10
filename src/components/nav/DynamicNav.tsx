@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { DesktopNav } from "./DesktopNav";
@@ -55,10 +54,7 @@ export function DynamicNav() {
 
   const handleNotificationToggle = async () => {
     if (!('Notification' in window)) {
-      toast({
-        description: "Votre navigateur ne supporte pas les notifications.",
-        variant: "destructive",
-      });
+      toast("Votre navigateur ne supporte pas les notifications.");
       return;
     }
 
@@ -74,20 +70,13 @@ export function DynamicNav() {
           icon: '/lovable-uploads/logo-topcenter.png'
         });
 
-        toast({
-          description: "Vous recevrez nos actualités en temps réel.",
-        });
+        toast("Vous recevrez nos actualités en temps réel.");
       } else {
-        toast({
-          description: "Vous ne recevrez pas de notifications.",
-        });
+        toast("Vous ne recevrez pas de notifications.");
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
-      toast({
-        description: "Impossible d'activer les notifications.",
-        variant: "destructive",
-      });
+      toast("Impossible d'activer les notifications.");
     }
   };
 

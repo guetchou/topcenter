@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Calendar, User, Share2 } from "lucide-react";
@@ -9,13 +8,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { BlogPost } from "@/types/blog";
-import { useToast } from "@/hooks/use-toast";
 import { toast } from "sonner";
 
 const BlogPostPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toast: useToastFn } = useToast();
   const [article, setArticle] = useState<BlogPost & { author_name?: string; author_avatar?: string }>();
   const [relatedArticles, setRelatedArticles] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,11 +79,7 @@ const BlogPostPage = () => {
         setRelatedArticles(related as BlogPost[] || []);
       } catch (error) {
         console.error("Erreur lors du chargement de l'article:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger l'article demandé.",
-          variant: "destructive"
-        });
+        toast("Impossible de charger l'article demandé.");
         navigate('/blog');
       } finally {
         setIsLoading(false);
@@ -116,10 +109,7 @@ const BlogPostPage = () => {
     } else {
       // Fallback pour les navigateurs qui ne supportent pas l'API Web Share
       navigator.clipboard.writeText(window.location.href);
-      toast({
-        title: "Lien copié",
-        description: "Le lien de l'article a été copié dans le presse-papier."
-      });
+      toast("Le lien de l'article a été copié dans le presse-papier.");
     }
   };
 
