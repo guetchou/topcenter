@@ -144,6 +144,7 @@ export function DynamicNav() {
             className="mr-1"
           >
             <Search className="h-5 w-5" />
+            <span className="sr-only">Rechercher</span>
           </Button>
           <SearchDialog
             open={isSearchOpen}
@@ -237,6 +238,7 @@ export function DynamicNav() {
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu className="h-5 w-5" />
+            <span className="sr-only">Menu</span>
           </Button>
         </div>
       </div>
