@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -5,13 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, ArrowRight, Search, Filter } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { BlogPost } from "@/types/blog";
+import type { BlogPost, NewsProps } from "@/types/blog";
 
-const News = () => {
+const News = ({ title = "Blog & Actualités", description = "Découvrez nos dernières actualités, conseils et tendances dans le domaine du service client et des centres d'appels" }: NewsProps) => {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<BlogPost[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<BlogPost[]>([]);
@@ -88,9 +88,9 @@ const News = () => {
   return (
     <div className="container py-16">
       <div className="max-w-3xl mx-auto text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Blog & Actualités</h1>
+        <h1 className="text-4xl font-bold mb-4">{title}</h1>
         <p className="text-muted-foreground">
-          Découvrez nos dernières actualités, conseils et tendances dans le domaine du service client et des centres d'appels
+          {description}
         </p>
       </div>
 

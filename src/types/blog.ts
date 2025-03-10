@@ -14,15 +14,17 @@ export type BlogPost = {
   updated_at: string;
   published_at: string | null;
   slug: string;
-  media_gallery?: Json;
-  
-  // Mapped fields for backwards compatibility
-  date?: string;
   featured?: boolean;
-  image?: string;
+  media_gallery?: Json;
 };
 
-export type DisplayBlogPost = BlogPost & {
-  author_name?: string;
-  author_avatar?: string;
+export interface BlogPostProps {
+  post: BlogPost;
+  title?: string;
 }
+
+export interface NewsProps {
+  title?: string;
+  description?: string;
+}
+
