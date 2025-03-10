@@ -156,12 +156,14 @@ export function DynamicNav() {
             aria-label={notificationsEnabled ? "Notifications activées" : "Activer les notifications"}
             onClick={handleNotificationToggle}
             className="mr-1 relative"
-            title={notificationsEnabled ? "Notifications activées" : "Activer les notifications"}
           >
             <Bell className="h-5 w-5" />
             {notificationsEnabled && (
               <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full"></span>
             )}
+            <span className="sr-only">
+              {notificationsEnabled ? "Notifications activées" : "Activer les notifications"}
+            </span>
           </Button>
 
           <ThemeToggle />
@@ -173,6 +175,7 @@ export function DynamicNav() {
                   variant="ghost"
                   size="icon"
                   className="relative h-8 w-8 rounded-full"
+                  aria-label="Menu utilisateur"
                 >
                   {activeUser.role === "super_admin" && !impersonatedUser ? (
                     <Shield className="h-5 w-5 text-destructive" />
