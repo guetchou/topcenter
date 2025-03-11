@@ -1,151 +1,148 @@
 
-// Nom et version du cache
+// Nom du cache
 const CACHE_NAME = 'topcenter-cache-v1';
 
-// Liste des ressources à mettre en cache pour le fonctionnement hors ligne
-const STATIC_RESOURCES = [
+// Liste des ressources à mettre en cache
+const urlsToCache = [
   '/',
   '/index.html',
-  '/assets/index.css',
-  '/assets/index.js',
+  '/offline.html',
+  '/manifest.json',
   '/lovable-uploads/logo-topcenter.png',
-  '/placeholder.svg',
-  '/favicon.ico',
-  '/offline.html'
+  '/notification.mp3'
 ];
 
-// Installation du Service Worker
+// Installation du service worker
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Cache ouvert');
-        return cache.addAll(STATIC_RESOURCES);
+        return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
   );
 });
 
-// Activation du Service Worker
+// Activation et nettoyage des anciens caches
 self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.filter((cacheName) => {
-          return cacheName !== CACHE_NAME;
-        }).map((cacheName) => {
-          return caches.delete(cacheName);
+        cacheNames.map((cacheName) => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
         })
       );
     }).then(() => self.clients.claim())
   );
 });
 
-// Interception des requêtes réseau
+// Stratégie de mise en cache network-first avec fallback
 self.addEventListener('fetch', (event) => {
-  // Pour les requêtes API, on utilise réseau d'abord avec fallback cache
-  if (event.request.url.includes('/api/') || 
-      event.request.url.includes('.supabase.co')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Mise en cache de la nouvelle réponse
-          if (response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
+  // Exclure les requêtes vers Supabase ou API externes
+  if (event.request.url.includes('supabase.co') || 
+      event.request.url.includes('api.')) {
+    return;
+  }
+  
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Vérifier si la réponse est valide
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
-        })
-        .catch(() => {
-          // Si la requête échoue, on essaie de récupérer du cache
-          return caches.match(event.request)
-            .then((cachedResponse) => {
-              if (cachedResponse) {
-                return cachedResponse;
-              }
-              // Si la ressource n'est pas dans le cache, on renvoie la page hors ligne
-              if (event.request.headers.get('accept').includes('text/html')) {
-                return caches.match('/offline.html');
-              }
-              return new Response('Erreur réseau', { status: 503 });
-            });
-        })
-    );
-  } else {
-    // Pour les autres ressources, on utilise le cache d'abord avec fallback réseau
-    event.respondWith(
-      caches.match(event.request)
-        .then((cachedResponse) => {
-          // Si la ressource est dans le cache, on la renvoie
-          if (cachedResponse) {
-            return cachedResponse;
-          }
+        }
+        
+        // Clone la réponse
+        const responseToCache = response.clone();
+        
+        // Mise à jour du cache avec la nouvelle réponse
+        caches.open(CACHE_NAME)
+          .then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
           
-          // Sinon, on essaie de récupérer la ressource depuis le réseau
-          return fetch(event.request)
-            .then((response) => {
-              // Mise en cache de la nouvelle réponse si c'est une requête GET
-              if (response.status === 200 && event.request.method === 'GET') {
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(event.request, responseClone);
-                });
-              }
+        return response;
+      })
+      .catch(() => {
+        // Si la requête échoue, on cherche dans le cache
+        return caches.match(event.request)
+          .then((response) => {
+            // Si trouvé dans le cache, on retourne la réponse
+            if (response) {
               return response;
-            })
-            .catch(() => {
-              // Si la requête échoue et qu'on demande une page HTML, on renvoie la page hors ligne
-              if (event.request.headers.get('accept').includes('text/html')) {
-                return caches.match('/offline.html');
-              }
-              // Pour les autres types de ressources, on renvoie une erreur
-              return new Response('Erreur réseau', { status: 503 });
+            }
+            
+            // Si c'est une requête de navigation et qu'il n'y a pas de réponse dans le cache
+            if (event.request.mode === 'navigate') {
+              return caches.match('/offline.html');
+            }
+            
+            return new Response('Ressource non disponible hors ligne', {
+              status: 503,
+              statusText: 'Service Unavailable',
+              headers: new Headers({
+                'Content-Type': 'text/plain'
+              })
             });
-        })
-    );
-  }
+          });
+      })
+  );
 });
-
-// Synchronisation en arrière-plan
-self.addEventListener('sync', (event) => {
-  if (event.tag === 'sync-data') {
-    event.waitUntil(syncData());
-  }
-});
-
-// Fonction pour synchroniser les données stockées localement
-async function syncData() {
-  // Synchronisation des données stockées dans IndexedDB
-  // À implémenter selon les besoins
-}
 
 // Gestion des notifications push
 self.addEventListener('push', (event) => {
+  let data = {};
   if (event.data) {
-    const data = event.data.json();
-    
-    const options = {
-      body: data.body,
-      icon: '/lovable-uploads/logo-topcenter.png',
-      badge: '/favicon.ico',
-      data: data.url
-    };
-    
-    event.waitUntil(
-      self.registration.showNotification(data.title, options)
-    );
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = {
+        title: 'Nouvelle notification',
+        body: event.data.text(),
+        icon: '/lovable-uploads/logo-topcenter.png'
+      };
+    }
   }
+
+  const options = {
+    body: data.body || 'Nouvelle mise à jour disponible',
+    icon: data.icon || '/lovable-uploads/logo-topcenter.png',
+    badge: '/lovable-uploads/logo-topcenter.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      url: data.url || '/'
+    }
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'TopCenter', options)
+  );
 });
 
-// Gestion du clic sur une notification
+// Gestion des clics sur les notifications
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
-  if (event.notification.data) {
-    event.waitUntil(
-      clients.openWindow(event.notification.data)
-    );
-  }
+  const urlToOpen = event.notification.data?.url || '/';
+  
+  event.waitUntil(
+    clients.matchAll({ type: 'window' })
+      .then((clientList) => {
+        // Si un onglet est déjà ouvert avec l'URL cible, on le focus
+        for (const client of clientList) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Sinon on ouvre un nouvel onglet
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
 });

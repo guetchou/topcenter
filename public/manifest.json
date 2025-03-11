@@ -1,0 +1,22 @@
+
+{
+  "name": "TopCenter",
+  "short_name": "TopCenter",
+  "description": "Centre d'appels professionnel basé à Brazzaville, Congo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/lovable-uploads/logo-topcenter.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/lovable-uploads/logo-topcenter.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
