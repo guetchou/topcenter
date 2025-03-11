@@ -76,7 +76,7 @@ export function DynamicNav() {
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
-      toast("Impossible d'activer les notifications.");
+      toast.error("Impossible d'activer les notifications.");
     }
   };
 

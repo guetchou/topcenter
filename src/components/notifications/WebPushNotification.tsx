@@ -2,12 +2,11 @@
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export const WebPushNotification = () => {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Vérifie si les notifications sont supportées
@@ -39,18 +38,11 @@ export const WebPushNotification = () => {
           icon: '/lovable-uploads/logo-topcenter.png'
         });
 
-        toast({
-          title: "Notifications activées",
-          description: "Vous recevrez nos actualités en temps réel.",
-        });
+        toast.success("Vous recevrez nos actualités en temps réel.");
       }
     } catch (error) {
       console.error('Error subscribing to notifications:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'activer les notifications.",
-        variant: "destructive",
-      });
+      toast.error("Impossible d'activer les notifications.");
     }
   };
 
