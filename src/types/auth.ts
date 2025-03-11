@@ -1,18 +1,28 @@
 
-// Types pour les rôles utilisateur
-export type UserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
+export interface UserProfile {
+  id?: string;
+  user_id?: string;
+  full_name?: string;
+  avatar_url?: string;
+  website?: string;
+  updated_at?: string;
+}
 
-// Définition du type pour les rôles dans la base de données
-// Note: Ceci correspond aux valeurs dans l'enum app_role de la base de données
-export type DbUserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client' | 'moderator' | 'user';
-
-// Type pour les informations utilisateur
-export interface AuthUser {
+export interface UserWithProfile {
   id: string;
-  role: UserRole | null;
-  email: string | null;
-  profile?: {
-    full_name: string | null;
-    avatar_url: string | null;
-  };
+  email?: string;
+  role?: string;
+  profile?: UserProfile;
+}
+
+export interface AuthStore {
+  user: UserWithProfile | null;
+  impersonatedUser: UserWithProfile | null;
+  session: any | null;
+  loading: boolean;
+  initialized: boolean;
+  setSession: (session: any | null) => void;
+  setUser: (user: UserWithProfile | null) => void;
+  setImpersonatedUser: (user: UserWithProfile | null) => void;
+  reset: () => void;
 }

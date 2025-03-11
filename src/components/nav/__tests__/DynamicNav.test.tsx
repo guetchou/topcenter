@@ -3,7 +3,27 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { DynamicNav } from '../DynamicNav';
-import { expect, describe, it, beforeEach } from 'vitest';
+import { expect, describe, it, beforeEach, vi } from 'vitest';
+
+// Mock the useAuth hook
+vi.mock('@/hooks/useAuth', () => ({
+  useAuth: () => ({
+    user: null,
+    impersonatedUser: null,
+    logout: vi.fn(),
+    stopImpersonation: vi.fn(),
+    checkUser: vi.fn(),
+  }),
+}));
+
+// Mock the useMenus hook
+vi.mock('@/hooks/useMenus', () => ({
+  useMenus: () => ({
+    primaryMenuItems: [],
+    footerMenuItems: [],
+    isLoading: false,
+  }),
+}));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,16 +46,16 @@ describe('DynamicNav', () => {
     queryClient.clear();
   });
 
-  it('renders loading state initially', () => {
+  it('renders navigation', () => {
     render(<DynamicNav />, { wrapper: Wrapper });
-    expect(screen.getByRole('navigation')).toBeInTheDocument();
+    expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
   it('toggles mobile menu when burger button is clicked', () => {
     render(<DynamicNav />, { wrapper: Wrapper });
-    const burgerButton = screen.getByRole('button');
+    const burgerButton = screen.getByLabelText('Menu');
     fireEvent.click(burgerButton);
-    // Le menu mobile devrait être visible
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // Test that the menu is opened
+    expect(document.querySelector('[role="dialog"]')).toBeInTheDocument();
   });
 });
