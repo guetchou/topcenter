@@ -24,7 +24,6 @@ import { ImpersonationBanner } from "./components/ImpersonationBanner";
 import { queryClient } from "./lib/react-query";
 import { useAuth } from "./hooks/useAuth";
 import { Spinner } from "./components/ui/spinner";
-
 // Lazy-loaded components pour améliorer les performances
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Settings = lazy(() => import("./pages/Settings"));
@@ -55,13 +54,19 @@ const LoadingFallback = () => (
     <span className="ml-2 text-lg">Chargement...</span>
   </div>
 );
+import { EventsCalendarSection } from "./components/sections/EventsCalendarSection";
+import { StatsSection } from "./components/sections/StatsSection";
+import { TimelineSection } from "./components/sections/TimelineSection";
 
 function HomePage() {
   return (
     <main role="main" className="flex-1">
       <HeroSection />
+      <StatsSection />
       <AboutSection />
+      <TimelineSection />
       <CallToActionSection />
+      <EventsCalendarSection />
       <PartnersSection />
       <TeamSection />
       <TestimonialsSection />
