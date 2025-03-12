@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
@@ -31,19 +32,53 @@ export const ChatContainer = () => {
     if (activeTab === "chatterpal" && isOpen && !chatterpalLoaded) {
       if (typeof window.ChatPal !== 'undefined') {
         try {
-          if (!window.chatPal) {
-            window.chatPal = new window.ChatPal({
-              embedId: '2yyMeBsp8GxX',
-              remoteBaseUrl: 'https://chatterpal.me/',
-              version: '8.3',
-              containerSelector: '#chatterpal-container'
-            });
+          // Détruire l'instance précédente si elle existe
+          if (window.chatPal) {
+            try {
+              window.chatPal.destroy();
+            } catch (e) {
+              console.log("Pas d'instance précédente à détruire");
+            }
           }
+          
+          // Créer une nouvelle instance
+          window.chatPal = new window.ChatPal({
+            embedId: '2yyMeBsp8GxX',
+            remoteBaseUrl: 'https://chatterpal.me/',
+            version: '8.3',
+            containerSelector: '#chatterpal-container',
+            position: 'internal', // Force l'affichage à l'intérieur du conteneur
+            width: '100%',
+            height: '100%'
+          });
+          
           setChatterpalLoaded(true);
         } catch (error) {
           console.error("Erreur lors de l'initialisation de ChatterPal:", error);
           toast.error("Impossible de charger le chat humain. Veuillez réessayer.");
         }
+      } else {
+        // Si le script n'est pas encore chargé, on attend 1 seconde et on réessaie
+        const timer = setTimeout(() => {
+          if (typeof window.ChatPal !== 'undefined') {
+            try {
+              window.chatPal = new window.ChatPal({
+                embedId: '2yyMeBsp8GxX',
+                remoteBaseUrl: 'https://chatterpal.me/',
+                version: '8.3',
+                containerSelector: '#chatterpal-container',
+                position: 'internal',
+                width: '100%',
+                height: '100%'
+              });
+              setChatterpalLoaded(true);
+            } catch (error) {
+              console.error("Erreur lors de l'initialisation de ChatterPal:", error);
+            }
+          }
+        }, 1000);
+        
+        return () => clearTimeout(timer);
       }
     }
   }, [activeTab, isOpen]);

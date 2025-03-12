@@ -34,6 +34,21 @@
     <!-- Font preload -->
     <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
+    
+    <!-- ChatterPal Script -->
+    <script defer id="chatterpal-script">
+      window.ChatPal = window.ChatPal || function() {
+        (ChatPal.q = ChatPal.q || []).push(arguments);
+      };
+      (function() {
+        var cp = document.createElement('script');
+        cp.type = 'text/javascript';
+        cp.async = true;
+        cp.src = 'https://chatterpal.me/app.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(cp, s);
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

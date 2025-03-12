@@ -62,9 +62,9 @@ export const ChatTabs = ({
           </div>
         )}
         
-        <div id="chatterpal-container" className="w-full flex-1 overflow-hidden">
+        <div id="chatterpal-container" className="w-full flex-1 overflow-hidden relative" style={{ minHeight: "300px" }}>
           {!chatterpalLoaded && (
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center absolute inset-0">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           )}
