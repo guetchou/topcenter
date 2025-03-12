@@ -2,6 +2,7 @@
 import { MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { QuickReplies } from "./QuickReplies";
 
 interface ChatInputFormProps {
   message: string;
@@ -11,6 +12,13 @@ interface ChatInputFormProps {
   transferring: boolean;
 }
 
+const commonQuestions = [
+  "Quels sont vos services ?",
+  "Comment obtenir un devis ?",
+  "Horaires d'ouverture",
+  "Tarifs centre d'appels"
+];
+
 export const ChatInputForm = ({ 
   message, 
   setMessage, 
@@ -18,18 +26,34 @@ export const ChatInputForm = ({
   isLoading, 
   transferring 
 }: ChatInputFormProps) => {
+  const handleSuggestionSelect = (suggestion: string) => {
+    setMessage(suggestion);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="flex gap-2">
-      <Input
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Écrivez votre message..."
-        className="flex-1"
-        disabled={transferring}
+    <div className="flex flex-col gap-2">
+      <QuickReplies 
+        suggestions={commonQuestions}
+        onSelect={handleSuggestionSelect}
+        className="mb-2"
       />
-      <Button type="submit" size="icon" disabled={isLoading || transferring}>
-        <MessageSquareText className="w-4 h-4" />
-      </Button>
-    </form>
+      
+      <form onSubmit={onSubmit} className="flex gap-2">
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Écrivez votre message..."
+          className="flex-1"
+          disabled={transferring}
+        />
+        <Button 
+          type="submit" 
+          size="icon" 
+          disabled={isLoading || transferring || !message.trim()}
+        >
+          <MessageSquareText className="w-4 h-4" />
+        </Button>
+      </form>
+    </div>
   );
 };

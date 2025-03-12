@@ -2,6 +2,9 @@
 import { useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { MessageType } from "@/types/chat";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { CheckCircle2, Clock } from "lucide-react";
 
 interface ChatMessagesProps {
   messages: MessageType[];
@@ -34,15 +37,30 @@ export const ChatMessages = ({
         >
           <div
             className={cn(
-              "max-w-[80%] rounded-lg p-3 transition-all",
+              "max-w-[80%] rounded-lg p-3 transition-all group relative",
               "shadow-sm hover:shadow",
               msg.isUser
                 ? "bg-primary text-primary-foreground slide-in-from-right-2"
-                : "bg-muted slide-in-from-left-2",
-              "group"
+                : "bg-muted slide-in-from-left-2"
             )}
           >
             {msg.text}
+            <div className={cn(
+              "text-[10px] opacity-70 mt-1 flex items-center gap-1",
+              msg.isUser ? "justify-end" : "justify-start"
+            )}>
+              {msg.timestamp && (
+                <span>
+                  {format(new Date(msg.timestamp), "HH:mm", { locale: fr })}
+                </span>
+              )}
+              {msg.isUser && msg.status && (
+                <span className="flex items-center gap-1">
+                  {msg.status === 'sending' && <Clock className="w-3 h-3" />}
+                  {msg.status === 'sent' && <CheckCircle2 className="w-3 h-3" />}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       ))}

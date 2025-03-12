@@ -1,6 +1,14 @@
 export interface MessageType {
   text: string;
   isUser: boolean;
+  timestamp?: Date;
+  status?: 'sending' | 'sent' | 'error';
+  type?: 'text' | 'suggestion' | 'quick_reply';
+}
+
+export interface QuickReply {
+  text: string;
+  action: string;
 }
 
 export interface ChatContextType {
