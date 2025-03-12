@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
   <head>
@@ -36,18 +35,17 @@
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"></noscript>
     
     <!-- ChatterPal Script -->
-    <script defer id="chatterpal-script">
-      window.ChatPal = window.ChatPal || function() {
-        (ChatPal.q = ChatPal.q || []).push(arguments);
-      };
-      (function() {
-        var cp = document.createElement('script');
-        cp.type = 'text/javascript';
-        cp.async = true;
-        cp.src = 'https://chatterpal.me/app.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(cp, s);
-      })();
+    <script type="text/javascript" src="https://chatterpal.me/build/js/chatpal.js?8.3" 
+            integrity="sha384-+YIWcPZjPZYuhrEm13vJJg76TIO/g7y5B14VE35zhQdrojfD9dPemo7q6vnH44FR" 
+            crossorigin="anonymous" 
+            data-cfasync="false">
+    </script>
+    <script>
+      var chatPal = new ChatPal({
+        embedId: '2yyMeBsp8GxX', 
+        remoteBaseUrl: 'https://chatterpal.me/', 
+        version: '8.3'
+      });
     </script>
   </head>
   <body>
