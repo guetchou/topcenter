@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ChatHeader } from "./ChatHeader";
 import { ChatMessages } from "./ChatMessages";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { MessageSquareText } from "lucide-react";
 import { User } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export const ChatContainer = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,7 +77,13 @@ export const ChatContainer = () => {
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
-        <div className="bg-background border rounded-lg shadow-lg w-[400px] max-h-[600px] flex flex-col animate-in slide-in-from-bottom-5">
+        <div className={cn(
+          "bg-background border rounded-lg shadow-lg w-[400px] max-h-[600px] flex flex-col",
+          "transition-all duration-300 ease-in-out",
+          "transform animate-in slide-in-from-bottom-5 fade-in-0",
+          "hover:shadow-xl",
+          "border-primary/10"
+        )}>
           <ChatHeader 
             activeTab={activeTab} 
             selectedModel={selectedModel} 
@@ -95,15 +103,24 @@ export const ChatContainer = () => {
                 transferring={transferring} 
               />
 
-              <div className="p-4 border-t flex flex-col gap-2">
+              <div className={cn(
+                "p-4 border-t flex flex-col gap-2",
+                "bg-gradient-to-b from-background to-background/80",
+                "backdrop-blur-sm"
+              )}>
                 {activeTab === "ai" && messages.length > 1 && !transferring && (
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="w-full text-xs flex items-center gap-1 mb-1 hover:bg-amber-50"
+                    className={cn(
+                      "w-full text-xs flex items-center gap-1 mb-1",
+                      "transition-colors duration-200",
+                      "hover:bg-primary/5 hover:text-primary",
+                      "group"
+                    )}
                     onClick={transferToHuman}
                   >
-                    <User className="w-3 h-3" />
+                    <User className="w-3 h-3 transition-transform group-hover:scale-110" />
                     Parler à un agent humain pour des questions complexes
                   </Button>
                 )}
@@ -123,7 +140,14 @@ export const ChatContainer = () => {
         <Button
           onClick={() => setIsOpen(true)}
           size="lg"
-          className="rounded-full w-12 h-12 shadow-lg animate-bounce-subtle"
+          className={cn(
+            "rounded-full w-12 h-12 shadow-lg",
+            "transition-all duration-300",
+            "hover:shadow-xl hover:scale-105",
+            "bg-primary text-primary-foreground",
+            "animate-bounce-subtle",
+            messages.length > 0 && "ring-2 ring-primary/20 ring-offset-2"
+          )}
         >
           <MessageSquareText className="w-6 h-6" />
         </Button>
