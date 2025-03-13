@@ -42,8 +42,8 @@ export const VoiceInput = ({ onVoiceInput, isDisabled = false }: VoiceInputProps
   const startListening = () => {
     try {
       // Initialiser l'API de reconnaissance vocale
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognitionAPI();
       
       // Configurer l'API pour le français
       recognitionRef.current.lang = 'fr-FR';
@@ -125,11 +125,3 @@ export const VoiceInput = ({ onVoiceInput, isDisabled = false }: VoiceInputProps
     </Button>
   );
 };
-
-// Type definitions for the Speech Recognition API
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}

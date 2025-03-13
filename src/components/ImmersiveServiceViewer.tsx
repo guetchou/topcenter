@@ -4,7 +4,6 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { 
   OrbitControls, 
   PerspectiveCamera,
-  useGLTF, 
   Text, 
   Environment,
   Html
@@ -12,6 +11,7 @@ import {
 import { Phone, Globe, Shield, Headphones, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import * as THREE from "three";
 
 // Services nodes data
 const services = [
@@ -61,7 +61,7 @@ const services = [
 
 // Node component representing a service
 const ServiceNode = ({ position, color, title, description, isActive, onClick }) => {
-  const sphereRef = useRef();
+  const sphereRef = useRef<THREE.Mesh>(null);
   const textRef = useRef();
   
   useFrame((state) => {
@@ -130,7 +130,7 @@ const ServiceNode = ({ position, color, title, description, isActive, onClick })
 // Background elements
 const BackgroundElements = () => {
   const { viewport } = useThree();
-  const groupRef = useRef();
+  const groupRef = useRef<THREE.Group>(null);
   
   useFrame((state) => {
     if (groupRef.current) {
@@ -179,19 +179,15 @@ const ConnectionLines = () => {
           const startPos = service.position;
           const endPos = services[nextIndex].position;
           
+          const points = [
+            new THREE.Vector3(startPos[0], startPos[1], startPos[2]),
+            new THREE.Vector3(endPos[0], endPos[1], endPos[2])
+          ];
+          
+          const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+          
           return (
-            <line key={`${i}-${nextIndex}`}>
-              <bufferGeometry attach="geometry">
-                <bufferAttribute
-                  attachObject={["attributes", "position"]}
-                  count={2}
-                  array={new Float32Array([
-                    startPos[0], startPos[1], startPos[2],
-                    endPos[0], endPos[1], endPos[2]
-                  ])}
-                  itemSize={3}
-                />
-              </bufferGeometry>
+            <line key={`${i}-${nextIndex}`} geometry={lineGeometry}>
               <lineBasicMaterial 
                 color="#ffffff" 
                 opacity={0.15} 

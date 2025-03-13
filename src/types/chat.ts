@@ -33,7 +33,5 @@ declare global {
   interface Window {
     ChatPal?: any;
     chatPal?: any;
-    SpeechRecognition?: typeof SpeechRecognition;
-    webkitSpeechRecognition?: typeof SpeechRecognition;
   }
 }
