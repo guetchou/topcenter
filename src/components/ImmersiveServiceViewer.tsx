@@ -1,318 +1,226 @@
 
-import { useRef, useState, Suspense } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { 
-  OrbitControls, 
-  PerspectiveCamera,
-  Text, 
-  Environment,
-  Html
-} from "@react-three/drei";
-import { Phone, Globe, Shield, Headphones, Users, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { motion } from "framer-motion";
-import * as THREE from "three";
+import { OrbitControls, Text, Line, Sphere } from "@react-three/drei";
+import { Vector3, BufferGeometry } from "three";
+import { Spinner } from "@/components/ui/spinner";
 
-// Services nodes data
-const services = [
-  {
-    icon: Phone,
-    title: "Centre d'Appels",
-    description: "Service client professionnel 24/7",
-    position: [-4, 0, 0],
-    color: "#FF6B35"
-  },
-  {
-    icon: Globe,
-    title: "Support Multilingue",
-    description: "Communication sans frontières",
-    position: [-2, 2, 2],
-    color: "#1089FF"
-  },
-  {
-    icon: Shield,
-    title: "Sécurité Garantie",
-    description: "Protection des données assurée",
-    position: [0, 4, -2],
-    color: "#36AE7C"
-  },
-  {
-    icon: Headphones,
-    title: "Support Multicanal",
-    description: "Communication sur tous les canaux",
-    position: [3, 1, 2],
-    color: "#8B5CF6"
-  },
-  {
-    icon: Users,
-    title: "Équipe Dédiée",
-    description: "Agents qualifiés à votre service",
-    position: [5, -1, -1],
-    color: "#F59E0B"
-  },
-  {
-    icon: Clock,
-    title: "Disponibilité 24/7",
-    description: "Service continu sans interruption",
-    position: [1, -2, 3],
-    color: "#EC4899"
-  }
-];
+interface Node {
+  id: string;
+  name: string;
+  description: string;
+  position: [number, number, number];
+  connections: string[];
+}
 
-// Node component representing a service
-const ServiceNode = ({ position, color, title, description, isActive, onClick }) => {
-  const sphereRef = useRef<THREE.Mesh>(null);
-  const textRef = useRef();
+interface ServiceNodeProps {
+  node: Node;
+  active: boolean;
+  onClick: () => void;
+  connectedTo?: Node[];
+}
+
+const ServiceNode: React.FC<ServiceNodeProps> = ({ node, active, onClick, connectedTo = [] }) => {
+  const nodeRef = useRef<THREE.Mesh>(null);
+  const [hovered, setHovered] = useState(false);
   
-  useFrame((state) => {
-    if (sphereRef.current) {
-      // Gentle floating animation
-      sphereRef.current.position.y += Math.sin(state.clock.getElapsedTime() * 0.5) * 0.002;
-      // Slow rotation
-      sphereRef.current.rotation.y += 0.002;
+  // Animation for the node
+  useFrame(() => {
+    if (nodeRef.current) {
+      nodeRef.current.rotation.y += 0.01;
+      if (active || hovered) {
+        nodeRef.current.scale.setScalar(1.2);
+      } else {
+        nodeRef.current.scale.setScalar(1);
+      }
     }
   });
 
-  const scale = isActive ? 1.3 : 1;
-  const intensity = isActive ? 1.5 : 1;
-
   return (
-    <group position={position} onClick={onClick}>
-      {/* Service node sphere */}
-      <mesh
-        ref={sphereRef}
-        scale={scale}
-        castShadow
-        receiveShadow
+    <>
+      <Sphere
+        ref={nodeRef}
+        args={[0.5, 32, 32]}
+        position={node.position}
+        onClick={onClick}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
       >
-        <sphereGeometry args={[0.7, 32, 32]} />
         <meshStandardMaterial 
-          color={color}
-          roughness={0.4}
-          metalness={0.2} 
-          emissive={color}
-          emissiveIntensity={intensity}
+          color={active ? "#00ff00" : hovered ? "#aaffaa" : "#aaaaff"} 
+          emissive={active ? "#003300" : hovered ? "#001100" : "#000033"}
+          emissiveIntensity={0.5}
+          roughness={0.3}
         />
-      </mesh>
+      </Sphere>
       
-      {/* Service title text */}
       <Text
-        ref={textRef}
-        position={[0, 1.2, 0]}
-        fontSize={0.3}
-        color="white"
+        position={[node.position[0], node.position[1] + 0.8, node.position[2]]}
+        fontSize={0.2}
+        color={active ? "#ffffff" : "#cccccc"}
         anchorX="center"
         anchorY="middle"
         outlineWidth={0.01}
-        outlineColor="#00000090"
+        outlineColor="#000000"
       >
-        {title}
+        {node.name}
       </Text>
       
-      {/* Information panel that appears when active */}
-      {isActive && (
-        <Html
-          position={[0, 0, 1]}
-          className="pointer-events-none"
-          center
-          distanceFactor={10}
-        >
-          <div className="bg-black/80 backdrop-blur-md p-4 rounded-lg w-64 border border-white/20 text-white transform translate-x-8">
-            <h3 className="text-lg font-bold mb-2">{title}</h3>
-            <p className="text-sm opacity-80">{description}</p>
-          </div>
-        </Html>
-      )}
-    </group>
-  );
-};
-
-// Background elements
-const BackgroundElements = () => {
-  const { viewport } = useThree();
-  const groupRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = state.clock.getElapsedTime() * 0.05;
-    }
-  });
-  
-  return (
-    <group ref={groupRef}>
-      {/* Create some floating particles in the background */}
-      {[...Array(40)].map((_, i) => {
-        const radius = 15 + Math.random() * 15;
-        const angle = Math.random() * Math.PI * 2;
-        const y = (Math.random() - 0.5) * 10;
+      {/* Draw connections to other nodes */}
+      {active && connectedTo.map((connectedNode) => {
+        // Create points for the line
+        const points = [
+          new Vector3(...node.position),
+          new Vector3(...connectedNode.position)
+        ];
         
         return (
-          <mesh 
-            key={i}
-            position={[
-              Math.cos(angle) * radius,
-              y,
-              Math.sin(angle) * radius
-            ]}
-          >
-            <sphereGeometry args={[0.05 + Math.random() * 0.1, 8, 8]} />
-            <meshStandardMaterial 
-              color={`hsl(${Math.floor(Math.random() * 360)}, 70%, 70%)`} 
-              emissive={`hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`}
-              emissiveIntensity={1}
-            />
-          </mesh>
+          <Line
+            key={`line-${node.id}-${connectedNode.id}`}
+            points={points}
+            color="#ffffff"
+            lineWidth={1}
+            dashed={false}
+          />
         );
       })}
-    </group>
-  );
-};
-
-// Connection lines between services
-const ConnectionLines = () => {
-  return (
-    <group>
-      {services.map((service, i) => {
-        // Connect to the next 2 services in the array
-        return [...Array(2)].map((_, j) => {
-          const nextIndex = (i + j + 1) % services.length;
-          const startPos = service.position;
-          const endPos = services[nextIndex].position;
-          
-          const points = [
-            new THREE.Vector3(startPos[0], startPos[1], startPos[2]),
-            new THREE.Vector3(endPos[0], endPos[1], endPos[2])
-          ];
-          
-          const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-          
-          return (
-            <line key={`${i}-${nextIndex}`} geometry={lineGeometry}>
-              <lineBasicMaterial 
-                color="#ffffff" 
-                opacity={0.15} 
-                transparent 
-                linewidth={1} 
-              />
-            </line>
-          );
-        });
-      })}
-    </group>
-  );
-};
-
-// Main 3D scene component
-const Scene = ({ onSelectService }) => {
-  const [activeService, setActiveService] = useState(null);
-  
-  const handleNodeClick = (index) => {
-    setActiveService(index);
-    if (onSelectService) {
-      onSelectService(services[index]);
-    }
-  };
-  
-  return (
-    <>
-      <PerspectiveCamera makeDefault position={[0, 0, 12]} fov={60} />
-      
-      {/* Background environment */}
-      <Environment preset="sunset" />
-      <BackgroundElements />
-      
-      {/* Ambient and key lighting */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[10, 10, 5]} intensity={1} castShadow />
-      <pointLight position={[-10, -10, -5]} intensity={0.5} color="#3b82f6" />
-      
-      {/* Connection lines between services */}
-      <ConnectionLines />
-      
-      {/* Service nodes */}
-      {services.map((service, index) => (
-        <ServiceNode
-          key={index}
-          position={service.position}
-          color={service.color}
-          title={service.title}
-          description={service.description}
-          isActive={activeService === index}
-          onClick={() => handleNodeClick(index)}
-        />
-      ))}
-      
-      {/* Camera controls */}
-      <OrbitControls 
-        enablePan={false}
-        enableZoom={true}
-        minDistance={6}
-        maxDistance={20}
-        autoRotate
-        autoRotateSpeed={0.5}
-      />
     </>
   );
 };
 
-// Loading component
-const Loader = () => (
-  <Html center>
-    <div className="flex flex-col items-center">
-      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-      <p className="mt-4 text-lg">Chargement de l'univers 3D...</p>
-    </div>
-  </Html>
-);
+// Camera controls component
+const CameraController = () => {
+  const { camera } = useThree();
+  const controlsRef = useRef<any>(null);
 
-// Main exported component
-export const ImmersiveServiceViewer = () => {
-  const [selectedService, setSelectedService] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    if (controlsRef.current) {
+      camera.position.set(0, 5, 10);
+      camera.lookAt(0, 0, 0);
+    }
+  }, [camera]);
+
+  return <OrbitControls ref={controlsRef} enableDamping dampingFactor={0.1} />;
+};
+
+// The main 3D scene component
+const Scene: React.FC<{
+  services: Node[];
+  activeNode: string | null;
+  onSelectNode: (id: string) => void;
+}> = ({ services, activeNode, onSelectNode }) => {
+  // Find active node object
+  const activeNodeObj = services.find(s => s.id === activeNode);
   
-  // Handle service selection
-  const handleSelectService = (service) => {
-    setSelectedService(service);
-  };
-  
-  // Toggle fullscreen mode
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
-  };
-  
+  // Find connected nodes
+  const connectedNodes = activeNodeObj
+    ? services.filter(s => activeNodeObj.connections.includes(s.id))
+    : [];
+
   return (
-    <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : 'h-[600px] rounded-xl overflow-hidden'}`}>
-      {/* Fullscreen toggle button */}
-      <Button
-        variant="outline"
-        size="sm"
-        className="absolute top-4 right-4 z-10 bg-black/30 backdrop-blur-sm"
-        onClick={toggleFullscreen}
-      >
-        {isFullscreen ? 'Quitter le mode immersif' : 'Mode immersif'}
-      </Button>
+    <>
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1} />
+      <CameraController />
       
-      {/* Canvas for 3D rendering */}
-      <Canvas shadows className="w-full h-full">
-        <Suspense fallback={<Loader />}>
-          <Scene onSelectService={handleSelectService} />
-        </Suspense>
-      </Canvas>
+      {/* Service nodes */}
+      {services.map((service) => (
+        <ServiceNode
+          key={service.id}
+          node={service}
+          active={service.id === activeNode}
+          onClick={() => onSelectNode(service.id)}
+          connectedTo={service.id === activeNode ? connectedNodes : []}
+        />
+      ))}
       
-      {/* Service information overlay */}
-      {selectedService && (
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute left-4 bottom-4 z-10 p-4 bg-black/50 backdrop-blur-md rounded-lg max-w-md border border-white/10"
-        >
-          <h2 className="text-xl font-bold text-white mb-2">{selectedService.title}</h2>
-          <p className="text-white/80">{selectedService.description}</p>
-          <Button variant="default" size="sm" className="mt-4">
-            En savoir plus
-          </Button>
-        </motion.div>
+      {/* Info panel for active node */}
+      {activeNodeObj && (
+        <group position={[0, -3, 0]}>
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.3}
+            color="#ffffff"
+            anchorX="center"
+            anchorY="middle"
+            maxWidth={5}
+          >
+            {activeNodeObj.description}
+          </Text>
+        </group>
       )}
+    </>
+  );
+};
+
+// Mock service data
+const serviceNodes: Node[] = [
+  {
+    id: "call-center",
+    name: "Centre d'Appel",
+    description: "Des solutions de centre d'appel professionnelles avec une équipe formée pour répondre aux besoins de vos clients.",
+    position: [0, 0, 0],
+    connections: ["online-sales", "telephony"]
+  },
+  {
+    id: "online-sales",
+    name: "Ventes en Ligne",
+    description: "Augmentez vos ventes avec nos stratégies de vente en ligne et nos experts en conversion.",
+    position: [-3, 1, -2],
+    connections: ["call-center", "telephony"]
+  },
+  {
+    id: "telephony",
+    name: "Systèmes Téléphoniques",
+    description: "Solutions téléphoniques avancées adaptées aux entreprises de toutes tailles.",
+    position: [3, 1, -2],
+    connections: ["call-center", "online-sales"]
+  },
+  {
+    id: "training",
+    name: "Formation",
+    description: "Programmes de formation pour vos équipes de vente et de service client.",
+    position: [0, 2, -4],
+    connections: ["call-center"]
+  }
+];
+
+// Main component
+export const ImmersiveServiceViewer: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [activeNode, setActiveNode] = useState<string | null>(null);
+  
+  // Simulate loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="w-full h-96 flex items-center justify-center bg-black/5 rounded-lg">
+        <Spinner size="lg" className="text-primary" />
+        <span className="ml-2 text-lg font-medium">Chargement de l'environnement 3D...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full h-[600px] rounded-lg overflow-hidden border">
+      <Canvas shadows>
+        <Scene 
+          services={serviceNodes} 
+          activeNode={activeNode} 
+          onSelectNode={setActiveNode} 
+        />
+      </Canvas>
+      <div className="absolute bottom-4 left-4 bg-black/70 text-white p-3 rounded-md text-sm">
+        <p>👆 Cliquez sur un nœud pour explorer</p>
+        <p>👆 Cliquez et déplacez pour faire pivoter</p>
+        <p>🖱️ Molette pour zoomer</p>
+      </div>
     </div>
   );
 };
