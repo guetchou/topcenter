@@ -26,7 +26,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Terms from "@/pages/Terms";
 
 // Admin
-import CMSLayout from "@/pages/admin/CMSLayout";
+import { CMSLayout } from "@/pages/admin/CMSLayout";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import ArticlesPage from "@/pages/admin/articles/ArticlesPage";
 import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
