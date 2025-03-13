@@ -1,3 +1,4 @@
+
 export interface MessageType {
   text: string;
   isUser: boolean;
@@ -23,6 +24,7 @@ export interface ChatContextType {
   setActiveTab: (tab: string) => void;
   transferring: boolean;
   systemContext: string;
+  lastSentimentScore: number;
   handleSendMessage: () => Promise<void>;
   transferToHuman: () => void;
 }
@@ -31,5 +33,7 @@ declare global {
   interface Window {
     ChatPal?: any;
     chatPal?: any;
+    SpeechRecognition?: typeof SpeechRecognition;
+    webkitSpeechRecognition?: typeof SpeechRecognition;
   }
 }

@@ -1,9 +1,9 @@
-
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MessageType } from "@/types/chat";
 import { analyzeUserIntent } from "@/utils/intentAnalyzer";
+import { analyzeSentiment } from "@/utils/sentimentAnalyzer";
 
 export const useAIChat = () => {
   const [message, setMessage] = useState("");
@@ -14,6 +14,7 @@ export const useAIChat = () => {
   const [transferring, setTransferring] = useState(false);
   const [autoTransferEnabled] = useState(true);
   const [confidenceThreshold] = useState(0.7);
+  const [lastSentimentScore, setLastSentimentScore] = useState<number>(0);
   const consecutiveUncertainResponses = useRef(0);
   const notificationSound = new Audio('/notification.mp3');
 
@@ -171,9 +172,14 @@ IMPORTANT:
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
-    // Analyser l'intention de l'utilisateur
+    // Analyser l'intention et le sentiment de l'utilisateur
     const userIntent = analyzeUserIntent(message);
+    const userSentiment = analyzeSentiment(message);
     console.log("Intention détectée:", userIntent);
+    console.log("Sentiment détecté:", userSentiment);
+    
+    // Mettre à jour le score de sentiment
+    setLastSentimentScore(userSentiment.score);
 
     // Créer le message utilisateur avec timestamp et statut
     const newMessage = { 
@@ -189,21 +195,21 @@ IMPORTANT:
     try {
       let response;
       
+      // Ajouter des informations sur le sentiment à la requête
+      const sentimentContext = `L'utilisateur exprime un sentiment ${userSentiment.sentiment} (score: ${userSentiment.score.toFixed(2)}, confiance: ${userSentiment.confidence.toFixed(2)})`;
+      
       // En fonction de l'intention détectée, on peut adapter la requête à l'API
-      // Par exemple, ajouter l'intention à la requête pour contextualiser la réponse
       const intentContext = userIntent.confidence > 0.4 
         ? `L'utilisateur pose une question liée à "${userIntent.detectedIntent}" avec une confiance de ${Math.round(userIntent.confidence * 100)}%.` 
         : '';
       
-      const contextWithIntent = intentContext 
-        ? `${systemContext}\n\nContexte supplémentaire: ${intentContext}`
-        : systemContext;
+      const contextWithIntentAndSentiment = `${systemContext}\n\nContexte supplémentaire: ${intentContext} ${sentimentContext}`;
       
       if (selectedModel === "perplexity") {
         response = await supabase.functions.invoke('ai-chat', {
           body: { 
             message,
-            context: contextWithIntent,
+            context: contextWithIntentAndSentiment,
             previousMessages: messages
           }
         });
@@ -211,7 +217,7 @@ IMPORTANT:
         response = await supabase.functions.invoke('local-ai', {
           body: { 
             message,
-            context: contextWithIntent,
+            context: contextWithIntentAndSentiment,
             model: selectedModel,
             previousMessages: messages
           }
@@ -240,11 +246,14 @@ IMPORTANT:
       
       setMessages(prev => [...prev, botResponse]);
       
-      // Analyse la réponse pour déterminer si un transfert est nécessaire
+      // Analyse la réponse et le sentiment pour déterminer si un transfert est nécessaire
       if (autoTransferEnabled) {
         const analysis = analyzeAIResponse(aiResponseText);
         
-        if (analysis.needsTransfer || analysis.confidence < confidenceThreshold) {
+        // Transférer si l'analyse de réponse le suggère ou si le sentiment est très négatif
+        const shouldTransferDueToSentiment = userSentiment.score < -0.5 && userSentiment.confidence > 0.7;
+        
+        if (analysis.needsTransfer || analysis.confidence < confidenceThreshold || shouldTransferDueToSentiment) {
           // Ajoute un petit délai pour que l'utilisateur puisse lire la réponse avant le transfert
           setTimeout(() => {
             transferToHuman();
@@ -282,6 +291,7 @@ IMPORTANT:
     setActiveTab,
     transferring,
     systemContext,
+    lastSentimentScore,
     handleSendMessage,
     transferToHuman
   };
