@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MessageType } from "@/types/chat";
+import { analyzeUserIntent } from "@/utils/intentAnalyzer";
 
 export const useAIChat = () => {
   const [message, setMessage] = useState("");
@@ -170,18 +171,39 @@ IMPORTANT:
   const handleSendMessage = async () => {
     if (!message.trim()) return;
 
-    const newMessage = { text: message, isUser: true };
+    // Analyser l'intention de l'utilisateur
+    const userIntent = analyzeUserIntent(message);
+    console.log("Intention détectée:", userIntent);
+
+    // Créer le message utilisateur avec timestamp et statut
+    const newMessage = { 
+      text: message, 
+      isUser: true,
+      timestamp: new Date(),
+      status: 'sending' as const
+    };
+    
     setMessages(prev => [...prev, newMessage]);
     setIsLoading(true);
     
     try {
       let response;
       
+      // En fonction de l'intention détectée, on peut adapter la requête à l'API
+      // Par exemple, ajouter l'intention à la requête pour contextualiser la réponse
+      const intentContext = userIntent.confidence > 0.4 
+        ? `L'utilisateur pose une question liée à "${userIntent.detectedIntent}" avec une confiance de ${Math.round(userIntent.confidence * 100)}%.` 
+        : '';
+      
+      const contextWithIntent = intentContext 
+        ? `${systemContext}\n\nContexte supplémentaire: ${intentContext}`
+        : systemContext;
+      
       if (selectedModel === "perplexity") {
         response = await supabase.functions.invoke('ai-chat', {
           body: { 
             message,
-            context: systemContext,
+            context: contextWithIntent,
             previousMessages: messages
           }
         });
@@ -189,7 +211,7 @@ IMPORTANT:
         response = await supabase.functions.invoke('local-ai', {
           body: { 
             message,
-            context: systemContext,
+            context: contextWithIntent,
             model: selectedModel,
             previousMessages: messages
           }
@@ -197,6 +219,11 @@ IMPORTANT:
       }
 
       if (response.error) throw response.error;
+
+      // Mettre à jour le statut du message utilisateur à 'sent'
+      setMessages(prev => prev.map(msg => 
+        msg === newMessage ? { ...msg, status: 'sent' as const } : msg
+      ));
 
       const aiResponseText = response.data.choices[0].message.content;
       
@@ -207,7 +234,8 @@ IMPORTANT:
       
       const botResponse = { 
         text: cleanedResponse, 
-        isUser: false 
+        isUser: false,
+        timestamp: new Date()
       };
       
       setMessages(prev => [...prev, botResponse]);
@@ -225,9 +253,16 @@ IMPORTANT:
       }
     } catch (error) {
       console.error("Erreur lors de l'envoi du message:", error);
+      
+      // Mettre à jour le statut du message utilisateur à 'error'
+      setMessages(prev => prev.map(msg => 
+        msg === newMessage ? { ...msg, status: 'error' as const } : msg
+      ));
+      
       setMessages(prev => [...prev, { 
         text: "Désolé, une erreur est survenue. Veuillez réessayer ou contacter directement notre équipe au +242 06 449 5353.", 
-        isUser: false 
+        isUser: false,
+        timestamp: new Date()
       }]);
     } finally {
       setIsLoading(false);

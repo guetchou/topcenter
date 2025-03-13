@@ -130,7 +130,8 @@ export const ChatContainer = () => {
                   setMessage={setMessage} 
                   onSubmit={handleMessageSubmit} 
                   isLoading={isLoading} 
-                  transferring={transferring} 
+                  transferring={transferring}
+                  messages={messages}
                 />
               </div>
             </div>

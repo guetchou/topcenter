@@ -3,6 +3,8 @@ import { MessageSquareText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QuickReplies } from "./QuickReplies";
+import { ContextualSuggestions } from "./ContextualSuggestions";
+import { MessageType } from "@/types/chat";
 
 interface ChatInputFormProps {
   message: string;
@@ -10,6 +12,7 @@ interface ChatInputFormProps {
   onSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   transferring: boolean;
+  messages: MessageType[];
 }
 
 const commonQuestions = [
@@ -24,7 +27,8 @@ export const ChatInputForm = ({
   setMessage, 
   onSubmit, 
   isLoading, 
-  transferring 
+  transferring,
+  messages
 }: ChatInputFormProps) => {
   const handleSuggestionSelect = (suggestion: string) => {
     setMessage(suggestion);
@@ -34,6 +38,13 @@ export const ChatInputForm = ({
     <div className="flex flex-col gap-2">
       <QuickReplies 
         suggestions={commonQuestions}
+        onSelect={handleSuggestionSelect}
+        className="mb-2"
+      />
+      
+      <ContextualSuggestions
+        currentMessage={message}
+        messages={messages}
         onSelect={handleSuggestionSelect}
         className="mb-2"
       />
