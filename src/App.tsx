@@ -37,6 +37,7 @@ import UserManagement from "@/pages/admin/UserManagement";
 
 import { WebPushNotification } from "@/components/notifications/WebPushNotification";
 import { ChatContainer } from "@/components/chat/ChatContainer";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 
 const App = () => {
   return (
@@ -79,6 +80,7 @@ const App = () => {
             <ChatContainer />
             <UIToaster />
             <Toaster position="bottom-right" richColors />
+            <PerformanceMonitor />
           </Router>
         </NotificationsProvider>
       </QueryClientProvider>
