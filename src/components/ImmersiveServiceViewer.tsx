@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text, Line, Sphere } from "@react-three/drei";
-import { Vector3, BufferGeometry } from "three";
+import * as THREE from "three"; // Import THREE as a namespace
 import { Spinner } from "@/components/ui/spinner";
 
 interface Node {
@@ -70,8 +70,8 @@ const ServiceNode: React.FC<ServiceNodeProps> = ({ node, active, onClick, connec
       {active && connectedTo.map((connectedNode) => {
         // Create points for the line
         const points = [
-          new Vector3(...node.position),
-          new Vector3(...connectedNode.position)
+          new THREE.Vector3(...node.position),
+          new THREE.Vector3(...connectedNode.position)
         ];
         
         return (

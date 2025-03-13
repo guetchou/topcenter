@@ -5,7 +5,8 @@ import { ImmersiveServiceViewer } from "@/components/ImmersiveServiceViewer";
 import { CallToActionSection } from "@/components/sections/CallToActionSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Eye3d, LayoutGrid } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
+import { Eye3d } from "@/components/ui/icons"; // Import from our custom icons file
 
 const Services = () => {
   const { data: pageContent, isLoading } = usePageContent('services');
