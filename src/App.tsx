@@ -24,6 +24,10 @@ import News from "@/pages/News";
 import NewsDetail from "@/pages/NewsDetail";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Terms from "@/pages/Terms";
+import Auth from "@/pages/Auth";
+import Dashboard from "@/pages/Dashboard";
+import Settings from "@/pages/Settings";
+import ResetPassword from "@/pages/auth/ResetPassword";
 
 // Admin
 import { CMSLayout } from "@/pages/admin/CMSLayout";
@@ -34,55 +38,68 @@ import MediasPage from "@/pages/admin/medias/MediasPage";
 import MenusPage from "@/pages/admin/menus/MenusPage";
 import SettingsPage from "@/pages/admin/settings/SettingsPage";
 import UserManagement from "@/pages/admin/UserManagement";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import { WebPushNotification } from "@/components/notifications/WebPushNotification";
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 
 const App = () => {
   return (
     <ThemeProvider attribute="class" defaultTheme="light">
       <QueryClientProvider client={queryClient}>
-        <NotificationsProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/support" element={<Support />} />
-              <Route path="/devis" element={<Devis />} />
-              <Route path="/blog" element={<BlogIndex />} />
-              <Route path="/blog/:id" element={<BlogPost />} />
-              <Route path="/recruitment" element={<RecruitmentIndex />} />
-              <Route path="/news" element={<News />} />
-              <Route path="/news/:id" element={<NewsDetail />} />
-              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<Terms />} />
+        <AuthProvider>
+          <NotificationsProvider>
+            <Router>
+              <ImpersonationBanner />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/support" element={<Support />} />
+                <Route path="/devis" element={<Devis />} />
+                <Route path="/blog" element={<BlogIndex />} />
+                <Route path="/blog/:id" element={<BlogPost />} />
+                <Route path="/recruitment" element={<RecruitmentIndex />} />
+                <Route path="/news" element={<News />} />
+                <Route path="/news/:id" element={<NewsDetail />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/settings" element={<Settings />} />
+                
+                {/* Auth routes */}
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/login" element={<Auth />} />
+                <Route path="/register" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                
+                {/* Admin routes */}
+                <Route path="/admin" element={<CMSLayout />}>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="articles" element={<ArticlesPage />} />
+                  <Route path="categories" element={<CategoriesPage />} />
+                  <Route path="medias" element={<MediasPage />} />
+                  <Route path="menus" element={<MenusPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="users" element={<UserManagement />} />
+                </Route>
+                
+                <Route path="*" element={<NotFound />} />
+              </Routes>
               
-              {/* Admin routes */}
-              <Route path="/admin" element={<CMSLayout />}>
-                <Route index element={<AdminDashboard />} />
-                <Route path="articles" element={<ArticlesPage />} />
-                <Route path="categories" element={<CategoriesPage />} />
-                <Route path="medias" element={<MediasPage />} />
-                <Route path="menus" element={<MenusPage />} />
-                <Route path="settings" element={<SettingsPage />} />
-                <Route path="users" element={<UserManagement />} />
-              </Route>
-              
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            
-            <WebPushNotification />
-            <AIChatAssistant />
-            <ChatContainer />
-            <UIToaster />
-            <Toaster position="bottom-right" richColors />
-            <PerformanceMonitor />
-          </Router>
-        </NotificationsProvider>
+              <WebPushNotification />
+              <AIChatAssistant />
+              <ChatContainer />
+              <UIToaster />
+              <Toaster position="bottom-right" richColors />
+              <PerformanceMonitor />
+            </Router>
+          </NotificationsProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ThemeProvider>
   );
