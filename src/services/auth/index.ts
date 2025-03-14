@@ -4,6 +4,7 @@ import { authenticationService } from "./authenticationService";
 import { userService } from "./userService";
 import { adminService } from "./adminService";
 import { AuthServiceInterface } from "./types";
+import { authStoreService } from "./authStore";
 
 // Combine all auth services into a single exported service
 export const authService: AuthServiceInterface = {
