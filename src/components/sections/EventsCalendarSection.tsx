@@ -1,46 +1,40 @@
-
 import { useState } from 'react';
+import { format, isSameDay } from 'date-fns';
+import { fr } from 'date-fns/locale'; // Utilisation du français pour le formatage des dates
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon } from "lucide-react";
 
-const events = [
-  {
-    id: 1,
-    title: "Formation Service Client",
-    date: new Date(2024, 3, 15),
-    type: "formation"
-  },
-  {
-    id: 2,
-    title: "Atelier Gestion des Appels",
-    date: new Date(2024, 3, 20),
-    type: "atelier"
-  },
-  {
-    id: 3,
-    title: "Séminaire Relation Client",
-    date: new Date(2024, 3, 25),
-    type: "seminaire"
-  }
-];
+// Typage des événements
+interface Event {
+  id: number;
+  title: string;
+  date: Date;
+  type: "formation" | "atelier" | "seminaire";
+}
 
-export const EventsCalendarSection = () => {
+interface EventsCalendarSectionProps {
+  events: Event[];
+}
+
+export const EventsCalendarSection = ({ events }: EventsCalendarSectionProps) => {
   const [date, setDate] = useState<Date | undefined>(new Date());
 
+  // Filtrer les événements pour la date sélectionnée
   const selectedDateEvents = events.filter(
-    event => date && event.date.toDateString() === date.toDateString()
+    event => date && isSameDay(event.date, date)
   );
 
   return (
-    <section className="py-12 bg-background">
+    <section className="py-12 bg-background" aria-labelledby="calendar-section-title">
       <div className="container">
         <div className="flex flex-col md:flex-row gap-8">
+          {/* Calendrier */}
           <Card className="flex-1">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5" />
+              <CardTitle className="flex items-center gap-2" id="calendar-section-title">
+                <CalendarIcon className="w-5 h-5" aria-hidden="true" />
                 Calendrier des Événements
               </CardTitle>
             </CardHeader>
@@ -50,26 +44,34 @@ export const EventsCalendarSection = () => {
                 selected={date}
                 onSelect={setDate}
                 className="rounded-md border"
+                locale={fr} // Utilisation du français pour le calendrier
+                aria-label="Calendrier des événements"
               />
             </CardContent>
           </Card>
 
+          {/* Liste des événements du jour */}
           <Card className="flex-1">
             <CardHeader>
               <CardTitle>Événements du Jour</CardTitle>
             </CardHeader>
             <CardContent>
               {selectedDateEvents.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-4" role="list">
                   {selectedDateEvents.map(event => (
-                    <div key={event.id} className="flex items-center gap-2">
-                      <Badge variant="outline">{event.type}</Badge>
+                    <div key={event.id} className="flex items-center gap-2" role="listitem">
+                      <Badge variant="outline" aria-label={`Type: ${event.type}`}>
+                        {event.type}
+                      </Badge>
                       <span>{event.title}</span>
+                      <span className="text-sm text-muted-foreground ml-auto">
+                        {format(event.date, 'PP', { locale: fr })}
+                      </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground" aria-live="polite">
                   Aucun événement prévu pour cette date
                 </p>
               )}
