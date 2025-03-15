@@ -11,6 +11,8 @@ import { SocialMediaSection } from "@/components/sections/SocialMediaSection";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock, Shield, Globe, Zap, Award, BarChart2, CheckCircle } from "lucide-react";
 import { EventsCalendarSection } from "@/components/sections/EventsCalendarSection";
+import { EventsCalendarSection } from "@/components/sections/LoyaltySection";
+
 
 const Index = () => {
   const navigate = useNavigate();
@@ -22,7 +24,10 @@ const Index = () => {
 
       {/* Section : Calendrier des Événements */}
   <EventsCalendarSection />
-
+      
+{/* Section Parrainage : Programme de parrainage */}
+      <LoyaltySection />
+      
       {/* Section : Notre Impact en Chiffres */}
       <section className="py-16 bg-primary/5">
         <div className="container">
