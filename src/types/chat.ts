@@ -1,3 +1,4 @@
+
 export interface MessageType {
   text: string;
   isUser: boolean;
@@ -48,7 +49,7 @@ export interface ChatPal {
 // Déclaration globale corrigée
 declare global {
   interface Window {
-    ChatPal?: new (options: ChatPalOptions) => ChatPal;
-    chatPal?: InstanceType<typeof Window.ChatPal>;
+    ChatPal: new (options: ChatPalOptions) => ChatPal;
+    chatPal?: ChatPal;
   }
 }

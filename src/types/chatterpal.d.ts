@@ -7,6 +7,7 @@ interface ChatPalOptions {
   position?: string;
   width?: string;
   height?: string;
+  language?: string;
 }
 
 interface ChatPal {
@@ -14,8 +15,6 @@ interface ChatPal {
 }
 
 interface Window {
-  ChatPal: {
-    new (options: ChatPalOptions): ChatPal;
-  };
+  ChatPal: new (options: ChatPalOptions) => ChatPal;
   chatPal?: ChatPal;
 }
