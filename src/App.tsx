@@ -10,6 +10,8 @@ import { Toaster as UIToaster } from "@/components/ui/sonner";
 import { AIChatAssistant } from "@/components/AIChatAssistant";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { NetworkStatus } from "@/components/NetworkStatus";
+import { MainNav } from "@/components/MainNav";
+import { Footer } from "@/components/Footer";
 
 // Routes
 import Index from "@/pages/Index";
@@ -49,21 +51,53 @@ import { WebPushNotification } from "@/components/notifications/WebPushNotificat
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
-import { LiveChat } from "@/components/LiveChat";
 import { ElegantNotification } from "@/components/notifications/ElegantNotification";
 import { AIChatBubble } from "@/components/AIChatBubble";
 
-// Ajouter le script ChatterPal
+// Ajouter le script ChatterPal directement
 const ChatterPalScript = () => {
   React.useEffect(() => {
+    // Supprimer l'instance précédente si elle existe
+    if (window.chatPal) {
+      try {
+        window.chatPal.destroy();
+      } catch (err) {
+        console.log("No instance to destroy");
+      }
+    }
+    
+    // Ajouter le script ChatterPal
     const script = document.createElement('script');
-    script.src = 'https://chatterpal.me/build/js/embed.js';
+    script.src = 'https://chatterpal.me/build/js/chatpal.js?8.3';
     script.async = true;
-    script.crossOrigin = 'anonymous';
+    script.integrity = "sha384-+YIWcPZjPZYuhrEm13vJJg76TIO/g7y5B14VE35zhQdrojfD9dPemo7q6vnH44FR";
+    script.crossOrigin = "anonymous";
+    script.setAttribute('data-cfasync', 'false');
+    
+    // Ajouter le script au body
     document.body.appendChild(script);
+    
+    // Initialiser ChatterPal après chargement du script
+    script.onload = () => {
+      window.chatPal = new window.ChatPal({
+        embedId: '2yyMeBsp8GxX',
+        remoteBaseUrl: 'https://chatterpal.me/',
+        version: '8.3'
+      });
+    };
 
     return () => {
-      document.body.removeChild(script);
+      // Nettoyer lors du démontage du composant
+      if (window.chatPal) {
+        try {
+          window.chatPal.destroy();
+        } catch (err) {
+          console.log("Error destroying ChatPal instance:", err);
+        }
+      }
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
     };
   }, []);
 
@@ -79,6 +113,7 @@ const App = () => {
         <NotificationsProvider>
           <ImpersonationBanner />
           <NetworkStatus />
+          <MainNav />
           
           <Routes>
             {/* Public routes accessible to all users */}
@@ -141,10 +176,10 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
           
+          <Footer />
           <WebPushNotification />
           <AIChatAssistant />
           <ChatContainer />
-          <LiveChat />
           <ChatterPalScript />
           <AIChatBubble />
           <UIToaster />
