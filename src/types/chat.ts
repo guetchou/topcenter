@@ -1,4 +1,3 @@
-
 export interface MessageType {
   text: string;
   isUser: boolean;
@@ -29,7 +28,7 @@ export interface ChatContextType {
   transferToHuman: () => void;
 }
 
-// Fixed interface for ChatPal options
+// Définition correcte des options de ChatPal
 export interface ChatPalOptions {
   embedId: string;
   remoteBaseUrl: string;
@@ -41,15 +40,15 @@ export interface ChatPalOptions {
   language?: string;
 }
 
-// Fixed class definition
+// Interface de la classe ChatPal
 export interface ChatPal {
   destroy: () => void;
 }
 
-// Fixed global declaration
+// Déclaration globale corrigée
 declare global {
   interface Window {
-    ChatPal: new (options: ChatPalOptions) => ChatPal;
-    chatPal?: ChatPal;
+    ChatPal?: new (options: ChatPalOptions) => ChatPal;
+    chatPal?: InstanceType<typeof Window.ChatPal>;
   }
 }
