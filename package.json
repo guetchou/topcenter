@@ -5,10 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "start": "vite", // Ajouté
+    "build": "vite build", // Déjà présent, conservé
     "build:dev": "vite build --mode development",
+    "serve": "vite preview", // Ajouté
+    "preview": "vite preview", // Déjà présent, conservé
     "lint": "eslint .",
-    "preview": "vite preview"
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "test": "vitest",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -97,6 +102,7 @@
     "globals": "^15.9.0",
     "lovable-tagger": "^1.1.4",
     "postcss": "^8.4.47",
+    "prettier": "^3.2.5",
     "tailwindcss": "^3.4.11",
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
