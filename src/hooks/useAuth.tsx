@@ -20,6 +20,11 @@ export const useAuth = (): {
     impersonatedUser 
   } = authStore();
   
+  // Check user on mount
+  useEffect(() => {
+    authService.checkUser();
+  }, []);
+  
   // Combine state and actions
   return {
     // State

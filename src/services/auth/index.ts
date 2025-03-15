@@ -26,8 +26,7 @@ supabase.auth.onAuthStateChange((event, session) => {
     userService.checkUser();
   } else {
     // Reset auth store when user logs out
-    const { resetAuth } = authStoreService;
-    resetAuth();
+    authStoreService.resetAuth();
   }
 });
 
