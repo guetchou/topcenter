@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -50,6 +51,7 @@ import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { LiveChat } from "@/components/LiveChat";
 import { ElegantNotification } from "@/components/notifications/ElegantNotification";
+import { AIChatBubble } from "@/components/AIChatBubble";
 
 // Ajouter le script ChatterPal
 const ChatterPalScript = () => {
@@ -144,6 +146,7 @@ const App = () => {
           <ChatContainer />
           <LiveChat />
           <ChatterPalScript />
+          <AIChatBubble />
           <UIToaster />
           <Toaster position="bottom-right" richColors />
           <PerformanceMonitor />
