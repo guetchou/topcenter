@@ -16,7 +16,7 @@ export const AboutSection = () => {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    mapboxgl.accessToken = 'VOTRE_CLE_MAPBOX_ICI';
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYW1iYW5ndWUtZ2VuIiwiYSI6ImNtOGFzdHRhNTBzeTcyaXFhajhuZjUyb3YifQ.7Q7th2FU4FmPRfJCzPnuMw';
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
