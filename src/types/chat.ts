@@ -1,4 +1,3 @@
-
 export interface MessageType {
   text: string;
   isUser: boolean;
@@ -29,9 +28,17 @@ export interface ChatContextType {
   transferToHuman: () => void;
 }
 
+export interface ChatPalOptions {
+  language?: string;
+}
+
+export class ChatPal {
+  constructor(options: ChatPalOptions) {}
+}
+
 declare global {
   interface Window {
-    ChatPal?: any;
-    chatPal?: any;
+    ChatPal?: new (options: ChatPalOptions) => ChatPal;
+    chatPal?: ChatPal;
   }
 }
