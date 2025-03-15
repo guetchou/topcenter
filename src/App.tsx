@@ -48,6 +48,25 @@ import { WebPushNotification } from "@/components/notifications/WebPushNotificat
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { LiveChat } from "@/components/LiveChat";
+import { ElegantNotification } from "@/components/notifications/ElegantNotification";
+
+// Ajouter le script ChatterPal
+const ChatterPalScript = () => {
+  React.useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://chatterpal.me/build/js/embed.js';
+    script.async = true;
+    script.crossOrigin = 'anonymous';
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
+  return null;
+};
 
 const App = () => {
   const { user, isAuthenticated } = useAuth();
@@ -123,6 +142,8 @@ const App = () => {
           <WebPushNotification />
           <AIChatAssistant />
           <ChatContainer />
+          <LiveChat />
+          <ChatterPalScript />
           <UIToaster />
           <Toaster position="bottom-right" richColors />
           <PerformanceMonitor />

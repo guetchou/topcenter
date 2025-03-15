@@ -7,33 +7,40 @@ import { DesktopNav } from "./nav/DesktopNav";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu } from "lucide-react";
+import { Menu, Bell } from "lucide-react";
+import { Logo } from "./Logo";
+import { NotificationButton } from "./nav/NotificationButton";
 
 export function MainNav() {
   const { primaryMenuItems } = useMenus();
   const { isAuthenticated, user } = useAuth();
   const [open, setOpen] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    'Notification' in window && Notification.permission === 'granted'
+  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 max-w-screen-2xl items-center">
+      <div className="container flex h-16 max-w-screen-2xl items-center">
         <div className="mr-4 flex">
-          <Link to="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">TopCenter</span>
-          </Link>
+          <Logo className="mr-6" size="md" />
         </div>
 
         <DesktopNav items={primaryMenuItems} />
 
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <nav className="flex items-center">
+          <nav className="flex items-center gap-2">
+            <NotificationButton 
+              notificationsEnabled={notificationsEnabled}
+              setNotificationsEnabled={setNotificationsEnabled}
+            />
             <ThemeToggle />
             {isAuthenticated ? (
-              <Button variant="link" asChild className="px-2">
+              <Button variant="default" asChild className="px-4 bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
             ) : (
-              <Button variant="link" asChild className="px-2">
+              <Button variant="default" asChild className="px-4 bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/login">Se connecter</Link>
               </Button>
             )}
