@@ -14,7 +14,9 @@ interface ChatPal {
   destroy: () => void;
 }
 
-interface Window {
-  ChatPal: new (options: ChatPalOptions) => ChatPal;
-  chatPal?: ChatPal;
+declare global {
+  interface Window {
+    ChatPal: new (options: ChatPalOptions) => ChatPal;
+    chatPal?: ChatPal;
+  }
 }

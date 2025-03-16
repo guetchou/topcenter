@@ -7,17 +7,14 @@ import { DesktopNav } from "./nav/DesktopNav";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, Bell } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Logo } from "./Logo";
-import { NotificationButton } from "./nav/NotificationButton";
+import { FuturisticNotificationBubble } from "./notifications/FuturisticNotificationBubble";
 
 export function MainNav() {
   const { primaryMenuItems } = useMenus();
   const { isAuthenticated, user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(
-    'Notification' in window && Notification.permission === 'granted'
-  );
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -30,10 +27,7 @@ export function MainNav() {
 
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center gap-2">
-            <NotificationButton 
-              notificationsEnabled={notificationsEnabled}
-              setNotificationsEnabled={setNotificationsEnabled}
-            />
+            <FuturisticNotificationBubble />
             <ThemeToggle />
             {isAuthenticated ? (
               <Button variant="default" asChild className="px-4 bg-primary text-primary-foreground hover:bg-primary/90">

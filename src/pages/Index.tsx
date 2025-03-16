@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock, Shield, Globe, Zap, Award, BarChart2, CheckCircle, HelpCircle, ChevronRight } from "lucide-react";
+import { AIChatBubble } from "@/components/AIChatBubble";
 
 // Chargement différé des sections
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
@@ -226,6 +227,9 @@ const Index = () => {
         <SocialMediaSection />
         <CallToActionSection />
       </Suspense>
+
+      {/* Chat Assistant */}
+      <AIChatBubble />
     </div>
   );
 };
