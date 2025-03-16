@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -26,19 +25,19 @@ const sampleEvents = [
     id: 1,
     title: "Formation des agents",
     date: new Date(),
-    type: "formation"
+    type: "formation" as const
   },
   {
     id: 2,
     title: "Séminaire sur l'IA",
     date: new Date(new Date().setDate(new Date().getDate() + 2)),
-    type: "seminaire"
+    type: "seminaire" as const
   },
   {
     id: 3,
     title: "Atelier Service Client",
     date: new Date(new Date().setDate(new Date().getDate() + 5)),
-    type: "atelier"
+    type: "atelier" as const
   }
 ];
 

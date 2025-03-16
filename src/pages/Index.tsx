@@ -6,15 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Phone, Users, HeadsetIcon, Brain, BarChart, MessageSquare, Bot, Clock, Shield, Globe, Zap, Award, BarChart2, CheckCircle, HelpCircle, ChevronRight } from "lucide-react";
 import { AIChatBubble } from "@/components/AIChatBubble";
 
-// Chargement différé des sections
-const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
-const ServicesSection = lazy(() => import("@/components/sections/ServicesSection"));
-const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection"));
-const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection"));
-const BlogSection = lazy(() => import("@/components/sections/BlogSection"));
-const TeamSection = lazy(() => import("@/components/sections/TeamSection"));
-const PartnersSection = lazy(() => import("@/components/sections/PartnersSection"));
-const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection"));
+// Properly typed lazy imports with correct component imports
+const HeroSection = lazy(() => import("@/components/sections/HeroSection").then(module => ({ default: module.HeroSection })));
+const ServicesSection = lazy(() => import("@/components/sections/ServicesSection").then(module => ({ default: module.ServicesSection })));
+const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection").then(module => ({ default: module.CallToActionSection })));
+const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection").then(module => ({ default: module.TestimonialsSection })));
+const BlogSection = lazy(() => import("@/components/sections/BlogSection").then(module => ({ default: module.BlogSection })));
+const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(module => ({ default: module.TeamSection })));
+const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
+const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
 const Index = () => {
   const navigate = useNavigate();
