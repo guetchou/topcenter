@@ -1,3 +1,4 @@
+
 import { useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -58,18 +59,7 @@ const Index = () => {
 
       {/* HeroSection avec image optimisée */}
       <Suspense fallback={<div>Chargement...</div>}>
-        <HeroSection>
-          <picture>
-            <source srcSet="/images/hero-background.webp" type="image/webp" />
-            <source srcSet="/images/hero-background.jpg" type="image/jpeg" />
-            <img
-              src="/images/hero-background.jpg"
-              alt="Background de la section hero"
-              className="absolute inset-0 w-full h-full object-cover z-0"
-              loading="lazy"
-            />
-          </picture>
-        </HeroSection>
+        <HeroSection />
       </Suspense>
 
       {/* Section Nouvelle : Notre Impact */}
@@ -228,7 +218,7 @@ const Index = () => {
         <CallToActionSection />
       </Suspense>
 
-      {/* Chat Assistant */}
+      {/* Chat Assistant - Only include one AI chat bubble */}
       <AIChatBubble />
     </div>
   );

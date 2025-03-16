@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ import { LoyaltySection } from "@/components/sections/LoyaltySection";
 import { EventsCalendarSection } from "@/components/sections/EventsCalendarSection";
 import { TimelineSection } from "@/components/sections/TimelineSection";
 
-// Sample data for events calendar
+// Sample data for events calendar with properly typed literals
 const sampleEvents = [
   {
     id: 1,
@@ -160,19 +161,19 @@ export function FuturisticNotificationBubble() {
         />
       </AnimatePresence>
       
-      {/* Floating content bubbles */}
-      <div className="absolute right-0 top-10 z-50">
+      {/* Floating content bubbles - Redesigned for better desktop and mobile experience */}
+      <div className="fixed bottom-20 right-4 z-40 md:absolute md:right-0 md:top-10 md:z-50">
         <AnimatePresence>
           {contentOptions.map((option, index) => (
             <motion.div
               key={option.id}
-              className="relative"
+              className="relative mb-2 md:mb-0"
               initial={{ opacity: 0, x: 40, scale: 0.8 }}
               animate={{ 
                 opacity: pulseIndex === index ? 1 : 0.6,
                 x: pulseIndex === index ? 0 : 20,
                 scale: pulseIndex === index ? 1 : 0.8,
-                y: index * 50 
+                y: index * 42 // Reduced spacing for better layout
               }}
               transition={{ 
                 duration: 0.5,
@@ -190,7 +191,7 @@ export function FuturisticNotificationBubble() {
                 className={cn(
                   "rounded-full px-3 gap-2 shadow-lg backdrop-blur-sm",
                   "border border-primary/20",
-                  "bg-gradient-to-r from-background/80 to-background/95",
+                  "bg-gradient-to-r from-background/90 to-background/95",
                   "hover:bg-primary/10 hover:border-primary/40 transition-all",
                   pulseIndex === index && "ring-2 ring-primary/30 ring-offset-2 ring-offset-background/20"
                 )}
@@ -198,7 +199,7 @@ export function FuturisticNotificationBubble() {
               >
                 {option.icon}
                 <span className={cn(
-                  "text-xs",
+                  "text-xs truncate max-w-[100px] md:max-w-[150px]",
                   pulseIndex === index ? "block" : "hidden md:block"
                 )}>
                   {option.title}
@@ -209,17 +210,17 @@ export function FuturisticNotificationBubble() {
         </AnimatePresence>
       </div>
       
-      {/* Active content display */}
+      {/* Active content display - Redesigned for better placement */}
       <AnimatePresence>
         {activeContent && (
           <motion.div 
-            className="absolute right-0 top-20 z-40 w-screen max-w-md"
+            className="fixed bottom-24 right-4 z-40 w-screen max-w-md md:absolute md:right-0 md:top-20 md:z-40"
             initial={{ opacity: 0, y: 10, x: 20 }}
             animate={{ opacity: 1, y: 0, x: 0 }}
             exit={{ opacity: 0, y: 10, x: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <Card className="shadow-lg border-primary/10 overflow-hidden backdrop-blur-sm bg-background/95">
+            <Card className="shadow-lg border-primary/10 overflow-hidden backdrop-blur-sm bg-background/95 mr-4 md:mr-0">
               <CardContent className="p-0">
                 {contentOptions.find(option => option.id === activeContent)?.component || (
                   <div className="p-6 text-center">

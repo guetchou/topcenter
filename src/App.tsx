@@ -52,7 +52,6 @@ import { ChatContainer } from "@/components/chat/ChatContainer";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { ElegantNotification } from "@/components/notifications/ElegantNotification";
-import { AIChatBubble } from "@/components/AIChatBubble";
 
 // Ajouter le script ChatterPal directement
 const ChatterPalScript = () => {
@@ -181,7 +180,6 @@ const App = () => {
           <AIChatAssistant />
           <ChatContainer />
           <ChatterPalScript />
-          <AIChatBubble />
           <UIToaster />
           <Toaster position="bottom-right" richColors />
           <PerformanceMonitor />
