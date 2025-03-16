@@ -34,7 +34,7 @@ const Index = () => {
           <ServicesSection />
         </Suspense>
         
-        {/* Nouvelle section d'informations sur l'entreprise */}
+        {/* Section d'informations sur l'entreprise - intégrée directement ici au lieu des bulles flottantes */}
         <CompanyInfoSection />
         
         <Suspense fallback={<div className="min-h-[30vh] flex items-center justify-center"><Spinner /></div>}>

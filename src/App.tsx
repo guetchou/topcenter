@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -176,7 +177,7 @@ const App = () => {
           
           <Footer />
           <WebPushNotification />
-          {/* Utilisation d'un seul composant de chat */}
+          {/* Utilisation d'un seul composant de chat au lieu des doublons */}
           <ChatContainer />
           <ChatterPalScript />
           <UIToaster />
