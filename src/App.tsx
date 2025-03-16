@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -12,6 +11,7 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MainNav } from "@/components/MainNav";
 import { Footer } from "@/components/Footer";
+import { HelmetProvider } from "react-helmet-async";
 
 // Routes
 import Index from "@/pages/Index";
@@ -107,85 +107,87 @@ const App = () => {
   const { user, isAuthenticated } = useAuth();
   
   return (
-    <ThemeProvider attribute="class" defaultTheme="light">
-      <QueryClientProvider client={queryClient}>
-        <NotificationsProvider>
-          <ImpersonationBanner />
-          <NetworkStatus />
-          <MainNav />
-          
-          <Routes>
-            {/* Public routes accessible to all users */}
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/services" element={<Services />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="/devis" element={<Devis />} />
-            <Route path="/blog" element={<BlogIndex />} />
-            <Route path="/blog/:id" element={<BlogPost />} />
-            <Route path="/recruitment" element={<RecruitmentIndex />} />
-            <Route path="/news" element={<News />} />
-            <Route path="/news/:id" element={<NewsDetail />} />
-            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<Terms />} />
+    <HelmetProvider>
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <QueryClientProvider client={queryClient}>
+          <NotificationsProvider>
+            <ImpersonationBanner />
+            <NetworkStatus />
+            <MainNav />
             
-            {/* Auth routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/login" element={<Auth />} />
-            <Route path="/register" element={<Auth />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            <Routes>
+              {/* Public routes accessible to all users */}
+              <Route path="/" element={<Index />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/support" element={<Support />} />
+              <Route path="/devis" element={<Devis />} />
+              <Route path="/blog" element={<BlogIndex />} />
+              <Route path="/blog/:id" element={<BlogPost />} />
+              <Route path="/recruitment" element={<RecruitmentIndex />} />
+              <Route path="/news" element={<News />} />
+              <Route path="/news/:id" element={<NewsDetail />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
+              
+              {/* Auth routes */}
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/login" element={<Auth />} />
+              <Route path="/register" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              
+              {/* Protected client routes */}
+              <Route path="/client" element={
+                <ProtectedRoute>
+                  <ClientPortal />
+                </ProtectedRoute>
+              } />
+              
+              {/* Protected dashboard routes */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              } />
+              
+              {/* Admin routes */}
+              <Route path="/admin" element={
+                <ProtectedRoute requireAdmin={true}>
+                  <CMSLayout />
+                </ProtectedRoute>
+              }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="articles" element={<ArticlesPage />} />
+                <Route path="categories" element={<CategoriesPage />} />
+                <Route path="medias" element={<MediasPage />} />
+                <Route path="menus" element={<MenusPage />} />
+                <Route path="settings" element={<SettingsPage />} />
+                <Route path="users" element={<UserManagement />} />
+              </Route>
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
             
-            {/* Protected client routes */}
-            <Route path="/client" element={
-              <ProtectedRoute>
-                <ClientPortal />
-              </ProtectedRoute>
-            } />
-            
-            {/* Protected dashboard routes */}
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } />
-            
-            {/* Admin routes */}
-            <Route path="/admin" element={
-              <ProtectedRoute requireAdmin={true}>
-                <CMSLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<AdminDashboard />} />
-              <Route path="articles" element={<ArticlesPage />} />
-              <Route path="categories" element={<CategoriesPage />} />
-              <Route path="medias" element={<MediasPage />} />
-              <Route path="menus" element={<MenusPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="users" element={<UserManagement />} />
-            </Route>
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          
-          <Footer />
-          <WebPushNotification />
-          {/* Utilisation d'un seul composant de chat au lieu des doublons */}
-          <ChatContainer />
-          <ChatterPalScript />
-          <UIToaster />
-          <Toaster position="bottom-right" richColors />
-          <PerformanceMonitor />
-        </NotificationsProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+            <Footer />
+            <WebPushNotification />
+            {/* Utilisation d'un seul composant de chat au lieu des doublons */}
+            <ChatContainer />
+            <ChatterPalScript />
+            <UIToaster />
+            <Toaster position="bottom-right" richColors />
+            <PerformanceMonitor />
+          </NotificationsProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   );
 };
 
