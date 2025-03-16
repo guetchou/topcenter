@@ -1,9 +1,9 @@
-
 import { MoveRight, ShieldCheck, Globe2, Star, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { lazy, Suspense, useState } from "react";
+import { useState } from "react";
+import VideoPlayer from "./VideoPlayer"; // Import du nouveau composant VideoPlayer
 
 export const HeroSection = () => {
   const navigate = useNavigate();
@@ -96,17 +96,7 @@ export const HeroSection = () => {
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                 </div>
               )}
-<video 
-  autoPlay 
-  loop 
-  muted 
-  playsInline
-  className={`w-full h-full object-cover ${videoLoaded ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}
-  onLoadedData={() => setVideoLoaded(true)}
->
-  <source src="https://static.videezy.com/system/resources/previews/000/021/810/original/CALLCENTER-CC0.mp4" type="video/mp4" />
-  Votre navigateur ne supporte pas la lecture de vidéos.
-</video>    
+              <VideoPlayer />
             </div>
           </div>
         </div>
