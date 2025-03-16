@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -177,7 +176,7 @@ const App = () => {
           
           <Footer />
           <WebPushNotification />
-          <AIChatAssistant />
+          {/* Utilisation d'un seul composant de chat */}
           <ChatContainer />
           <ChatterPalScript />
           <UIToaster />
