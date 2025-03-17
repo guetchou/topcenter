@@ -1,158 +1,176 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { BarChart, Activity, LineChart, Users, Phone } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from "framer-motion";
+import { Phone, User, Clock, ThumbsUp, BarChart2 } from "lucide-react";
+import { CallVolumeChart } from "./CallVolumeChart";
+
+// Données simulées
+const getRandomData = () => {
+  return {
+    callsHandled: Math.floor(Math.random() * 150) + 50,
+    activeAgents: Math.floor(Math.random() * 20) + 5,
+    averageWaitTime: Math.floor(Math.random() * 120) + 10,
+    satisfactionRate: Math.floor(Math.random() * 30) + 70,
+    callsInQueue: Math.floor(Math.random() * 10)
+  };
+};
 
 export const RealTimeDashboard = () => {
-  const [stats, setStats] = useState({
-    calls: Math.floor(Math.random() * 100) + 50,
-    satisfaction: Math.floor(Math.random() * 20) + 80,
-    response: Math.floor(Math.random() * 30) + 10,
-    agents: Math.floor(Math.random() * 15) + 5,
-  });
+  const [stats, setStats] = useState(getRandomData());
+  const [activeTab, setActiveTab] = useState("current");
 
-  // Mise à jour simulée des statistiques en temps réel
+  // Mise à jour périodique des données
   useEffect(() => {
     const interval = setInterval(() => {
-      setStats({
-        calls: Math.floor(Math.random() * 100) + 50,
-        satisfaction: Math.floor(Math.random() * 20) + 80,
-        response: Math.floor(Math.random() * 30) + 10,
-        agents: Math.floor(Math.random() * 15) + 5,
-      });
+      setStats(getRandomData());
     }, 5000);
-
+    
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="rounded-lg overflow-hidden border border-border shadow-md">
-      <div className="bg-gradient-to-r from-primary/20 to-secondary/20 p-4">
-        <h3 className="text-lg font-semibold">Tableau de bord en temps réel</h3>
-        <p className="text-sm text-muted-foreground">Statistiques opérationnelles</p>
-      </div>
-      
-      <Tabs defaultValue="stats" className="p-4">
-        <TabsList className="grid grid-cols-4 mb-4">
-          <TabsTrigger value="stats" className="text-xs flex items-center gap-1">
-            <Activity className="w-3 h-3" />
-            <span className="hidden sm:inline">Statistiques</span>
-          </TabsTrigger>
-          <TabsTrigger value="calls" className="text-xs flex items-center gap-1">
-            <Phone className="w-3 h-3" />
-            <span className="hidden sm:inline">Appels</span>
-          </TabsTrigger>
-          <TabsTrigger value="perf" className="text-xs flex items-center gap-1">
-            <BarChart className="w-3 h-3" />
-            <span className="hidden sm:inline">Performance</span>
-          </TabsTrigger>
-          <TabsTrigger value="team" className="text-xs flex items-center gap-1">
-            <Users className="w-3 h-3" />
-            <span className="hidden sm:inline">Équipe</span>
-          </TabsTrigger>
+    <div className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-2 mb-4">
+          <TabsTrigger value="current">Temps réel</TabsTrigger>
+          <TabsTrigger value="historical">Historique</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="stats">
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { label: "Appels aujourd'hui", value: stats.calls, color: "bg-blue-500" },
-              { label: "Satisfaction", value: `${stats.satisfaction}%`, color: "bg-green-500" },
-              { label: "Temps de réponse", value: `${stats.response}s`, color: "bg-amber-500" },
-              { label: "Agents actifs", value: stats.agents, color: "bg-purple-500" },
-            ].map((item, i) => (
-              <motion.div
-                key={i}
-                className="bg-card p-3 rounded-md shadow-sm"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <p className="text-xs text-muted-foreground">{item.label}</p>
-                <div className="text-xl font-bold">{item.value}</div>
-                <Progress 
-                  value={Math.random() * 100} 
-                  className="h-1 mt-2" 
-                  indicatorClassName={item.color}
-                />
-              </motion.div>
-            ))}
+
+        <TabsContent value="current">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard 
+              icon={<Phone className="h-5 w-5 text-primary" />}
+              title="Appels traités"
+              value={stats.callsHandled}
+              change={"+12%"}
+              isPositive={true}
+            />
+            
+            <StatCard 
+              icon={<User className="h-5 w-5 text-indigo-500" />}
+              title="Agents actifs"
+              value={stats.activeAgents}
+              change={"+3"}
+              isPositive={true}
+            />
+            
+            <StatCard 
+              icon={<Clock className="h-5 w-5 text-amber-500" />}
+              title="Temps d'attente moyen"
+              value={stats.averageWaitTime}
+              unit="sec"
+              change={"-5%"}
+              isPositive={true}
+            />
+            
+            <StatCard 
+              icon={<ThumbsUp className="h-5 w-5 text-green-500" />}
+              title="Taux de satisfaction"
+              value={stats.satisfactionRate}
+              unit="%"
+              change={"+2%"}
+              isPositive={true}
+            />
+          </div>
+          
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Appels en attente</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="text-2xl font-bold">{stats.callsInQueue}</div>
+                    <div className={`px-2 py-1 rounded-full text-xs ${stats.callsInQueue < 5 ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {stats.callsInQueue < 5 ? 'Normal' : 'Élevé'}
+                    </div>
+                  </div>
+                  <Progress 
+                    value={stats.callsInQueue * 10} 
+                    className="h-2 bg-secondary" 
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Temps de réponse</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-2xl font-bold">{stats.averageWaitTime} sec</div>
+                  <BarChart2 className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <CallVolumeChart />
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
-        <TabsContent value="calls">
-          <Card>
-            <CardContent className="pt-4">
-              <h4 className="text-sm font-medium mb-2">Volume d'appels (dernières 24h)</h4>
-              <div className="h-[150px] flex items-end space-x-2">
-                {Array.from({ length: 24 }).map((_, i) => {
-                  const height = Math.floor(Math.random() * 80) + 20;
-                  return (
-                    <motion.div
-                      key={i}
-                      className="bg-primary/80 rounded-t w-full"
-                      style={{ height: `${height}%` }}
-                      initial={{ height: 0 }}
-                      animate={{ height: `${height}%` }}
-                      transition={{ duration: 0.5, delay: i * 0.02 }}
-                    />
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="perf">
-          <Card>
-            <CardContent className="pt-4">
-              <div className="space-y-3">
-                {[
-                  { label: "Taux de conversion", value: `${Math.floor(Math.random() * 50) + 30}%` },
-                  { label: "Temps moyen d'attente", value: `${Math.floor(Math.random() * 60) + 10}s` },
-                  { label: "Appels abandonnés", value: `${Math.floor(Math.random() * 10)}%` },
-                  { label: "Résolution au premier appel", value: `${Math.floor(Math.random() * 30) + 70}%` }
-                ].map((item, i) => (
-                  <div key={i}>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm">{item.label}</span>
-                      <span className="text-sm font-medium">{item.value}</span>
-                    </div>
-                    <Progress value={parseInt(item.value)} className="h-2" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="team">
-          <div className="space-y-3">
-            {[
-              "Équipe commerciale", 
-              "Support technique", 
-              "Service client", 
-              "Administration"
-            ].map((team, i) => (
-              <motion.div 
-                key={i}
-                className="flex items-center justify-between p-2 bg-background rounded-md border"
-                whileHover={{ scale: 1.01 }}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <span>{team}</span>
-                <span className="px-2 py-1 bg-primary/10 text-primary rounded-full text-xs">
-                  {Math.floor(Math.random() * 10) + 1} agents
-                </span>
-              </motion.div>
-            ))}
+        <TabsContent value="historical">
+          <div className="grid grid-cols-1 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tendances sur 7 jours</CardTitle>
+              </CardHeader>
+              <CardContent className="h-80">
+                <CallVolumeChart />
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
     </div>
+  );
+};
+
+// Composant de carte statistique
+const StatCard = ({ 
+  icon, 
+  title, 
+  value, 
+  unit = "", 
+  change, 
+  isPositive = true 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  value: number; 
+  unit?: string;
+  change?: string;
+  isPositive?: boolean;
+}) => {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between space-x-2">
+          <div className="flex items-center space-x-2">
+            {icon}
+            <span className="text-sm font-medium">{title}</span>
+          </div>
+          {change && (
+            <span className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              {change}
+            </span>
+          )}
+        </div>
+        <div className="mt-3">
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            key={value} // Pour déclencher l'animation à chaque changement
+            transition={{ duration: 0.3 }}
+            className="text-2xl font-bold"
+          >
+            {value}{unit}
+          </motion.div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

@@ -13,7 +13,7 @@ import { FuturisticNotificationBubble } from "./notifications/FuturisticNotifica
 
 export function MainNav() {
   const { primaryMenuItems } = useMenus();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [open, setOpen] = useState(false);
 
   return (

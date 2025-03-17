@@ -49,7 +49,7 @@ export const CompanyInfoSection = () => {
         
         <Tabs defaultValue="loyalty" className="w-full">
           <div className="flex justify-center mb-8">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-1">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-1">
               <TabsTrigger value="loyalty" className="flex gap-2 items-center">
                 <Trophy className="h-4 w-4 text-amber-400" />
                 <span className="hidden md:inline">Programme de fidélité</span>
@@ -73,10 +73,6 @@ export const CompanyInfoSection = () => {
               <TabsTrigger value="solutions" className="flex gap-2 items-center">
                 <Zap className="h-4 w-4 text-orange-500" />
                 <span className="hidden md:inline">Solutions Digitales</span>
-              </TabsTrigger>
-              <TabsTrigger value="stats" className="flex gap-2 items-center">
-                <BarChart2 className="h-4 w-4 text-indigo-500" />
-                <span className="hidden md:inline">Statistiques</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -263,20 +259,6 @@ export const CompanyInfoSection = () => {
                     </Card>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="stats" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BarChart2 className="h-5 w-5 text-indigo-500" />
-                  Statistiques en Temps Réel
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RealTimeStats />
               </CardContent>
             </Card>
           </TabsContent>
