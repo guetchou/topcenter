@@ -1,14 +1,28 @@
+
 import { MoveRight, ShieldCheck, Globe2, Star, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
-import VideoPlayer from "./VideoPlayer"; // Import du nouveau composant VideoPlayer
+import { useState, useEffect } from "react";
+import VideoPlayer from "./VideoPlayer";
+import { LazyImage } from "@/components/ui/lazy-image";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Effet de défilement pour les animations basées sur le scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      setIsScrolled(scrollPosition > 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleCallNow = () => {
     window.location.href = "tel:+242064495353";
@@ -24,6 +38,15 @@ export const HeroSection = () => {
       title: "Demande de devis",
       description: "Remplissez le formulaire pour obtenir un devis personnalisé.",
     });
+  };
+
+  // Fonction pour appliquer des animations en fonction du défilement
+  const getScrollAnimation = (delay = 0) => {
+    return {
+      opacity: isScrolled ? 1 : 0.8,
+      transform: isScrolled ? "translateY(0)" : "translateY(20px)",
+      transition: `all 0.5s ease-out ${delay}s`,
+    };
   };
 
   return (
@@ -99,6 +122,43 @@ export const HeroSection = () => {
               <VideoPlayer />
             </div>
           </div>
+        </div>
+
+        {/* Nouveaux indicateurs interactifs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+          {[
+            { label: "Agents Formés", value: "120+", icon: "👨‍💼" },
+            { label: "Clients Satisfaits", value: "350+", icon: "🏆" },
+            { label: "Appels par Jour", value: "2500+", icon: "📞" },
+            { label: "Solutions IA", value: "15+", icon: "🤖" }
+          ].map((stat, index) => (
+            <div 
+              key={index}
+              className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-primary/10 hover:border-primary/30 transition-all duration-300 hover:transform hover:scale-105"
+              style={{
+                animationDelay: `${index * 0.1}s`,
+                animation: 'fadeInUp 0.5s ease-out forwards',
+              }}
+            >
+              <div className="text-3xl mb-2">{stat.icon}</div>
+              <div className="text-2xl font-bold text-white">{stat.value}</div>
+              <div className="text-white/70">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bannière technologie flottante */}
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-primary/80 to-primary/50 py-2 transform translate-y-0 hover:translate-y-1 transition-transform duration-300 backdrop-blur-sm">
+        <div className="container flex items-center justify-center gap-4 text-white text-sm overflow-x-auto whitespace-nowrap">
+          <span>Powered by:</span>
+          <span className="font-semibold">AI Voice Analytics</span>
+          <span>|</span>
+          <span className="font-semibold">Omnichannel Solution</span>
+          <span>|</span>
+          <span className="font-semibold">Cloud Infrastructure</span>
+          <span>|</span>
+          <span className="font-semibold">Real-time Monitoring</span>
         </div>
       </div>
     </section>

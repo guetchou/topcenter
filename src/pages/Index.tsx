@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
 import { Spinner } from "@/components/ui/spinner";
@@ -8,11 +9,11 @@ import ErrorBoundary from "@/components/ErrorBoundary"; // Importez votre ErrorB
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
 const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection"));
 const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection"));
-const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection"));
-const BlogSection = lazy(() => import("@/components/sections/BlogSection"));
-const TeamSection = lazy(() => import("@/components/sections/TeamSection"));
-const PartnersSection = lazy(() => import("@/components/sections/PartnersSection"));
-const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection"));
+const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection").then(module => ({ default: module.TestimonialsSection })));
+const BlogSection = lazy(() => import("@/components/sections/BlogSection").then(module => ({ default: module.BlogSection })));
+const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(module => ({ default: module.TeamSection })));
+const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
+const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
 // Fallback générique
 const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (

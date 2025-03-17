@@ -21,22 +21,29 @@ export const FeatureCard = ({
   className,
 }: FeatureCardProps) => {
   const [expanded, setExpanded] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <Card 
       className={cn(
-        "transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 overflow-hidden group",
+        "transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 overflow-hidden group cursor-pointer",
         className
       )}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <CardContent className="p-6">
         <div className="relative">
           <div className="flex items-start gap-4">
-            <div className="p-2 bg-primary/10 rounded-lg transition-all duration-300 group-hover:bg-primary/20 group-hover:scale-110">
+            <div className={`p-2 rounded-lg transition-all duration-300 ${
+              isHovered ? "bg-primary/30 scale-110" : "bg-primary/10"
+            }`}>
               {icon}
             </div>
             <div>
-              <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">{title}</h3>
+              <h3 className={`text-xl font-semibold mb-2 transition-colors ${
+                isHovered ? "text-primary" : ""
+              }`}>{title}</h3>
               <p className="text-muted-foreground">{description}</p>
             </div>
           </div>
@@ -46,27 +53,36 @@ export const FeatureCard = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="p-0 h-auto flex items-center text-primary hover:text-primary/80 hover:bg-transparent"
-                onClick={() => setExpanded(!expanded)}
+                className="p-0 h-auto flex items-center text-primary hover:text-primary/80 hover:bg-transparent group"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setExpanded(!expanded);
+                }}
               >
                 <span>En savoir plus</span>
                 {expanded ? (
-                  <ChevronUp className="ml-1 w-4 h-4 transition-transform" />
+                  <ChevronUp className="ml-1 w-4 h-4 transition-transform group-hover:translate-y-[-2px]" />
                 ) : (
-                  <ChevronDown className="ml-1 w-4 h-4 transition-transform" />
+                  <ChevronDown className="ml-1 w-4 h-4 transition-transform group-hover:translate-y-[2px]" />
                 )}
               </Button>
               
               <div 
                 className={cn(
                   "mt-2 overflow-hidden transition-all duration-300 text-muted-foreground",
-                  expanded ? "max-h-40" : "max-h-0"
+                  expanded ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
                 )}
               >
                 {details}
               </div>
             </div>
           )}
+
+          {/* Indicateur visuel pour montrer que la carte est interactive */}
+          <div className={cn(
+            "absolute bottom-0 left-0 w-full h-0.5 bg-primary transform scale-x-0 origin-left transition-transform duration-300",
+            isHovered && "scale-x-100"
+          )} />
         </div>
       </CardContent>
     </Card>
