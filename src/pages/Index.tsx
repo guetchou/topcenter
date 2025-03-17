@@ -3,7 +3,9 @@ import { lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyInfoSection } from "@/components/sections/CompanyInfoSection";
-import ErrorBoundary from "@/components/ErrorBoundary"; // Importez votre ErrorBoundary
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { RealTimeDashboard } from "@/components/RealTimeStats/RealTimeDashboard";
+import { motion } from "framer-motion";
 
 // Lazy loading des sections
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
@@ -55,6 +57,26 @@ const Index = () => {
         </ErrorBoundary>
 
         <CompanyInfoSection />
+
+        {/* Section de statistiques en temps réel */}
+        <motion.section
+          className="py-16 bg-muted/30"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <div className="container">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold mb-3">Tableau de bord opérationnel</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Suivez nos performances en temps réel. Nos équipes sont constamment 
+                sur le terrain pour vous assurer un service de qualité.
+              </p>
+            </div>
+            <RealTimeDashboard />
+          </div>
+        </motion.section>
 
         <ErrorBoundary>
           <Suspense fallback={<Fallback />}>
