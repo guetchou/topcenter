@@ -8,8 +8,7 @@ import {
   HelpCircle, 
   Target, 
   Zap, 
-  Trophy, 
-  BarChart2,
+  Trophy,
   ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -92,12 +91,6 @@ export function FuturisticNotificationBubble() {
       title: "Solutions Digitales Avancées",
       description: "Découvrez nos outils innovants propulsés par l'IA",
       icon: <Zap className="h-5 w-5 text-orange-500" />
-    },
-    {
-      id: "stats",
-      title: "Statistiques en Temps Réel",
-      description: "Visualisez nos performances actuelles",
-      icon: <BarChart2 className="h-5 w-5 text-indigo-500" />
     }
   ]);
   
