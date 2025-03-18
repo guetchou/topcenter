@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,7 @@ export const AIChatAssistant = () => {
   const [isTyping, setIsTyping] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { showNotification } = useNotifications();
+  const { addNotification } = useNotifications();
 
   // Faire défiler vers le bas lorsque de nouveaux messages arrivent
   useEffect(() => {
@@ -91,12 +90,11 @@ export const AIChatAssistant = () => {
       setMessages(prev => [...prev, newBotMessage]);
       setIsTyping(false);
       
-      showNotification({
-        title: "Nouveau message",
-        message: "L'assistant a répondu à votre demande",
-        type: "info",
-        duration: 3000
-      });
+      addNotification(
+        "Nouveau message",
+        "L'assistant a répondu à votre demande",
+        "info"
+      );
     }, 1500);
   };
 
