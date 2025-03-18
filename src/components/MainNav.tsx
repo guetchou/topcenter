@@ -9,6 +9,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Menu } from "lucide-react";
 import { Logo } from "./Logo";
+import { ProfessionalNotifications } from "./nav/ProfessionalNotifications";
 
 export function MainNav() {
   const { primaryMenuItems } = useMenus();
@@ -26,6 +27,7 @@ export function MainNav() {
 
         <div className="flex flex-1 items-center justify-end space-x-2">
           <nav className="flex items-center gap-2">
+            <ProfessionalNotifications />
             <ThemeToggle />
             {isAuthenticated ? (
               <Button variant="default" asChild className="px-4 bg-primary text-primary-foreground hover:bg-primary/90">

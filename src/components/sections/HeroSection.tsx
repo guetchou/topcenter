@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import VideoPlayer from "./VideoPlayer";
 import { LazyImage } from "@/components/ui/lazy-image";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
   // Effet de défilement pour les animations basées sur le scroll
@@ -113,13 +111,18 @@ export const HeroSection = () => {
           </div>
           
           <div className="hidden md:block relative">
-            <div className="rounded-lg overflow-hidden shadow-2xl transform transition-transform duration-500 hover:scale-105 border-2 border-primary/20">
-              {!videoLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-gray-800 to-gray-900">
-                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="relative p-6 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg shadow-2xl border border-primary/30 backdrop-blur-sm transform transition-transform duration-500 hover:scale-105">
+              <LazyImage
+                src="/lovable-uploads/staff-tce.jpg"
+                alt="TopCenter Team"
+                className="w-full h-auto rounded-md shadow-lg"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg flex items-end p-6">
+                <div className="text-white">
+                  <h3 className="text-xl font-semibold mb-2">Notre équipe d'experts</h3>
+                  <p className="text-sm text-white/80">Des professionnels formés pour répondre à tous vos besoins</p>
                 </div>
-              )}
-              <VideoPlayer />
+              </div>
             </div>
           </div>
         </div>

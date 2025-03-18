@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Menu, Search } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
+import { ProfessionalNotifications } from "./ProfessionalNotifications";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -62,6 +63,7 @@ export function DynamicNav() {
             onOpenChange={setIsSearchOpen}
           />
 
+          <ProfessionalNotifications />
           <ThemeToggle />
 
           <UserProfileMenu 
