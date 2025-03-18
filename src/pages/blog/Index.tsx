@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,8 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { NewsSearch } from "@/components/NewsSearch";
 import { NewsGrid } from "@/components/NewsGrid";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RssIcon, Newspaper, TrendingUp, CalendarIcon } from "lucide-react";
+import { RssIcon, Newspaper, TrendingUp, CalendarIcon, Film, Camera } from "lucide-react";
+import VideoPlayer from "@/components/sections/VideoPlayer";
 
 const BlogIndex = () => {
   const navigate = useNavigate();
@@ -107,6 +108,91 @@ const BlogIndex = () => {
                     </p>
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+      
+      {/* Nouvelle section pour la médiathèque */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold mb-6 text-center">Médiathèque TopCenter</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Film className="h-5 w-5 text-primary" />
+                Vidéothèque
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="rounded-lg overflow-hidden h-64 bg-black">
+                <VideoPlayer />
+              </div>
+              <div className="mt-4">
+                <h3 className="font-medium mb-2">Nos vidéos récentes</h3>
+                <div className="space-y-2">
+                  <div className="p-2 bg-muted/30 rounded-lg flex items-center gap-3 hover:bg-muted/50 cursor-pointer">
+                    <Film className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Présentation de nos services</span>
+                  </div>
+                  <div className="p-2 bg-muted/30 rounded-lg flex items-center gap-3 hover:bg-muted/50 cursor-pointer">
+                    <Film className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Témoignages clients</span>
+                  </div>
+                  <div className="p-2 bg-muted/30 rounded-lg flex items-center gap-3 hover:bg-muted/50 cursor-pointer">
+                    <Film className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Formation des agents</span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full mt-4">Voir toutes les vidéos</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-5 w-5 text-primary" />
+                Photothèque
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-2">
+                <img 
+                  src="/lovable-uploads/equipe-topcenter.jpg" 
+                  alt="Équipe TopCenter" 
+                  className="aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                />
+                <img 
+                  src="/lovable-uploads/staff-tce.jpg" 
+                  alt="Staff TopCenter" 
+                  className="aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                />
+                <img 
+                  src="/lovable-uploads/agent-topcenter1.png" 
+                  alt="Agent TopCenter" 
+                  className="aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                />
+                <img 
+                  src="/lovable-uploads/nidda2.png" 
+                  alt="Nidda TopCenter" 
+                  className="aspect-square object-cover rounded-lg hover:opacity-90 transition-opacity cursor-pointer"
+                />
+              </div>
+              <div className="mt-4">
+                <h3 className="font-medium mb-2">Nos albums photos</h3>
+                <div className="space-y-2">
+                  <div className="p-2 bg-muted/30 rounded-lg flex items-center gap-3 hover:bg-muted/50 cursor-pointer">
+                    <Camera className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Équipe et installations</span>
+                  </div>
+                  <div className="p-2 bg-muted/30 rounded-lg flex items-center gap-3 hover:bg-muted/50 cursor-pointer">
+                    <Camera className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Événements d'entreprise</span>
+                  </div>
+                </div>
+                <Button variant="outline" className="w-full mt-4">Voir toutes les photos</Button>
               </div>
             </CardContent>
           </Card>

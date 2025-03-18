@@ -9,13 +9,11 @@ import { ThemeToggle } from "../ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Menu, Search } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
-import { NotificationButton } from "./NotificationButton";
 import { UserProfileMenu } from "./UserProfileMenu";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const { primaryMenuItems } = useMenus();
   const location = useLocation();
   const { user, impersonatedUser, logout, stopImpersonation } = useAuth();
@@ -24,10 +22,6 @@ export function DynamicNav() {
 
   useEffect(() => {
     setIsMenuOpen(false);
-    // Vérifier si les notifications sont déjà activées
-    if ('Notification' in window) {
-      setNotificationsEnabled(Notification.permission === 'granted');
-    }
   }, [location.pathname]);
 
   const handleLogout = async () => {
@@ -66,11 +60,6 @@ export function DynamicNav() {
           <SearchDialog
             open={isSearchOpen}
             onOpenChange={setIsSearchOpen}
-          />
-
-          <NotificationButton 
-            notificationsEnabled={notificationsEnabled}
-            setNotificationsEnabled={setNotificationsEnabled}
           />
 
           <ThemeToggle />
