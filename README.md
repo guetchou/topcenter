@@ -1,68 +1,105 @@
-# Welcome to your Lovable project
 
-## Project info
+# TopCenter - Centre d'Appels Nouvelle Génération
 
-**URL**: https://lovable.dev/projects/f93458aa-ebf4-475a-aa16-55e3891d2cec
+## À propos du projet
 
-## How can I edit this code?
+TopCenter est une solution de centre d'appels de nouvelle génération optimisée pour la relation client, combinant technologie omnicanale et intelligence artificielle.
 
-There are several ways of editing your application.
+## Installation et démarrage du projet en local
 
-**Use Lovable**
+### Prérequis
+- Node.js (v18 ou supérieur)
+- npm (inclus avec Node.js)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f93458aa-ebf4-475a-aa16-55e3891d2cec) and start prompting.
+### Installation
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Suivez ces étapes pour installer et démarrer le projet en local :
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone https://github.com/guetchou/moderne-topcenter-hub.git
-# Step 2: Navigate to the project directory.
-cd <topcenter>
+# 1. Cloner le dépôt
+git clone https://github.com/votre-username/topcenter.git
+cd topcenter
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 2. Installer les dépendances
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Copier le fichier d'environnement d'exemple
+cp .env.example .env
+
+# 4. Configurer les variables d'environnement
+# Modifiez le fichier .env avec vos propres valeurs
+# VITE_SUPABASE_URL=your-supabase-url
+# VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# 5. Démarrer le serveur de développement
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Votre application sera disponible à l'adresse [http://localhost:5173](http://localhost:5173).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Déploiement avec Docker
 
-**Use GitHub Codespaces**
+### Prérequis
+- Docker et Docker Compose installés sur votre machine ou serveur
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Construction et démarrage de l'application
 
-## What technologies are used for this project?
+```sh
+# 1. Créer un fichier .env à la racine du projet
+# Assurez-vous qu'il contient les variables nécessaires:
+# VITE_SUPABASE_URL=your-supabase-url
+# VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-This project is built with .
+# 2. Construire et démarrer les conteneurs Docker
+docker-compose up -d
+
+# 3. Pour vérifier les logs
+docker-compose logs -f
+```
+
+L'application sera disponible à l'adresse [http://localhost:3000](http://localhost:3000).
+
+### Commandes Docker utiles
+
+```sh
+# Arrêter les conteneurs
+docker-compose down
+
+# Reconstruire les conteneurs après des modifications
+docker-compose up -d --build
+
+# Afficher les conteneurs en cours d'exécution
+docker ps
+```
+
+## Structure du projet
+
+- `src/` - Code source de l'application
+  - `components/` - Composants React réutilisables
+  - `hooks/` - Custom React hooks
+  - `pages/` - Pages principales de l'application
+  - `services/` - Services et intégrations
+
+## Technologies utilisées
 
 - Vite
 - TypeScript
 - React
-- shadcn-ui
 - Tailwind CSS
+- shadcn-ui
+- Supabase (backend as a service)
+- Framer Motion (animations)
 
-## How can I deploy this project?
+## Déploiement en production
 
-Simply open [Lovable](https://lovable.dev/projects/f93458aa-ebf4-475a-aa16-55e3891d2cec) and click on Share -> Publish.
+Pour un déploiement en production:
 
-## I want to use a custom domain - is that possible?
+1. Assurez-vous d'avoir configuré les variables d'environnement appropriées
+2. Optimisez les images et autres ressources statiques
+3. Utilisez un service comme Netlify, Vercel, ou votre propre serveur avec Docker
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Contact
+
+TopCenter - [contact@topcenter.com](mailto:contact@topcenter.com)
+
+Site web - [https://topcenter.com](https://topcenter.com)
