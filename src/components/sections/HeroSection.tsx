@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-import { LazyImage } from "@/components/ui/lazy-image";
 
 export const HeroSection = () => {
   const navigate = useNavigate();
@@ -106,22 +105,6 @@ export const HeroSection = () => {
               <div className="flex items-center gap-2 text-white group hover:text-primary transition-colors duration-300">
                 <ShieldCheck className="w-5 h-5 text-primary group-hover:animate-bounce-subtle" />
                 <span>ISO 27001 Certifié</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="hidden md:block relative">
-            <div className="relative p-6 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg shadow-2xl border border-primary/30 backdrop-blur-sm transform transition-transform duration-500 hover:scale-105">
-              <LazyImage
-                src="/lovable-uploads/staff-tce.jpg"
-                alt="TopCenter Team"
-                className="w-full h-auto rounded-md shadow-lg"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg flex items-end p-6">
-                <div className="text-white">
-                  <h3 className="text-xl font-semibold mb-2">Notre équipe d'experts</h3>
-                  <p className="text-sm text-white/80">Des professionnels formés pour répondre à tous vos besoins</p>
-                </div>
               </div>
             </div>
           </div>
