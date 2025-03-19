@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -13,6 +12,8 @@ import { NetworkStatus } from "@/components/NetworkStatus";
 import { MainNav } from "@/components/MainNav";
 import { Footer } from "@/components/Footer";
 import { HelmetProvider } from "react-helmet-async";
+import { ARServicePreview } from "@/components/ARServicePreview";
+import { RealTimeAnalytics } from "@/components/RealTimeAnalytics";
 
 // Routes
 import Index from "@/pages/Index";
@@ -53,6 +54,7 @@ import { ChatContainer } from "@/components/chat/ChatContainer";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { ElegantNotification } from "@/components/notifications/ElegantNotification";
+import { WebPushNotification } from "@/components/notifications/WebPushNotification";
 
 // Ajouter le script ChatterPal directement
 const ChatterPalScript = () => {
@@ -178,8 +180,8 @@ const App = () => {
             </Routes>
             
             <Footer />
-            {/* Suppression du composant WebPushNotification */}
-            {/* Utilisation d'un seul composant de chat au lieu des doublons */}
+            <WebPushNotification />
+            <ARServicePreview />
             <ChatContainer />
             <ChatterPalScript />
             <UIToaster />
