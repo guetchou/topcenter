@@ -56,6 +56,36 @@ if (featureFlags.isEnabled('FEATURE_ANALYTICS')) {
   logger.info('Analytics feature enabled');
 }
 
+if (featureFlags.isEnabled('FEATURE_TRANSLATION')) {
+  const translationRoutes = require('./routes/translation');
+  app.use('/api/translation', translationRoutes);
+  logger.info('Translation feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_PREDICTIVE_ANALYTICS')) {
+  const predictiveRoutes = require('./routes/predictive');
+  app.use('/api/predictive', predictiveRoutes);
+  logger.info('Predictive analytics feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_CRM_INTEGRATION')) {
+  const crmRoutes = require('./routes/crm');
+  app.use('/api/crm', crmRoutes);
+  logger.info('CRM integration feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_APPOINTMENT_SYSTEM')) {
+  const appointmentRoutes = require('./routes/appointments');
+  app.use('/api/appointments', appointmentRoutes);
+  logger.info('Appointment system feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_ADMIN_DASHBOARD')) {
+  const adminRoutes = require('./routes/admin');
+  app.use('/api/admin', adminRoutes);
+  logger.info('Admin dashboard feature enabled');
+}
+
 // Servir les fichiers statiques du frontend
 app.use(express.static(path.join(__dirname, '../public')));
 

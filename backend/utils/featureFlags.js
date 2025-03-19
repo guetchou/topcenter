@@ -4,7 +4,12 @@ const logger = require('./logger');
 // Liste des feature flags supportés
 const SUPPORTED_FLAGS = [
   'FEATURE_CHATBOT',
-  'FEATURE_ANALYTICS'
+  'FEATURE_ANALYTICS',
+  'FEATURE_TRANSLATION',
+  'FEATURE_PREDICTIVE_ANALYTICS',
+  'FEATURE_CRM_INTEGRATION',
+  'FEATURE_APPOINTMENT_SYSTEM',
+  'FEATURE_ADMIN_DASHBOARD'
 ];
 
 // Fonction pour vérifier si un feature flag est activé
