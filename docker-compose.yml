@@ -10,9 +10,40 @@ services:
         - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
         - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     ports:
-      - "3000:3000"
+      - "3000:3000"  # Frontend
+      - "4000:4000"  # Backend API
     environment:
       - NODE_ENV=production
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - DB_HOST=mysql
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DB_PORT=3306
+      - PORT=4000
+      - FEATURE_CHATBOT=${FEATURE_CHATBOT:-true}
+      - FEATURE_ANALYTICS=${FEATURE_ANALYTICS:-true}
     restart: unless-stopped
+    depends_on:
+      - mysql
+    volumes:
+      - ./backend/logs:/app/logs
+
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/db-init:/docker-entrypoint-initdb.d
+
+volumes:
+  mysql-data:

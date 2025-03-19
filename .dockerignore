@@ -40,3 +40,7 @@ docker-compose.yml
 # OS files
 .DS_Store
 Thumbs.db
+
+# Backend logs
+backend/logs/*
+!backend/logs/.gitkeep

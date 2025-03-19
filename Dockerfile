@@ -1,48 +1,61 @@
 
+# Stage de base 
 FROM node:18-alpine AS base
 
-# Install dependencies only when needed
+# Installation des dépendances
 FROM base AS deps
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copie des fichiers package.json
 COPY package.json package-lock.json* ./
 RUN npm ci
 
-# Rebuild the source code only when needed
-FROM base AS builder
+# Construction du frontend
+FROM base AS frontend-builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Set environment variables for build
+# Variables d'environnement pour le build
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
 ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
 
-# Build the application
+# Construction de l'application frontend
 RUN npm run build
 
-# Production image, copy all the files and run
+# Configuration du backend
+FROM base AS backend-builder
+WORKDIR /app
+
+# Copier les fichiers du backend
+COPY ./backend/package.json ./backend/package-lock.json* ./
+RUN npm ci --production
+COPY ./backend ./
+
+# Image finale
 FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Create a non-root user to run the app
+# Création d'un utilisateur non-root
 RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 reactapp
-USER reactapp
+RUN adduser --system --uid 1001 appuser
+USER appuser
 
-# Copy the build output and static files
-COPY --from=builder /app/dist /app/dist
+# Copie des fichiers frontend et backend
+COPY --from=frontend-builder /app/dist /app/public
+COPY --from=backend-builder /app/node_modules /app/node_modules
+COPY --from=backend-builder /app/*.js /app/
 
-# Install serve to run the application
-RUN npm install -g serve
+# Installation de PM2 pour la gestion des processus
+RUN npm install -g pm2
 
-# Expose the port the app will run on
-EXPOSE 3000
+# Exposition des ports
+EXPOSE 3000 
+EXPOSE 4000
 
-# Start the application
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Démarrage de l'application avec PM2
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]
