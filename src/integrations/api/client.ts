@@ -6,338 +6,253 @@
 
 import api from '@/services/api';
 
+// Fonction utilitaire pour gérer les réponses d'API de manière cohérente
+const processResponse = async (promise) => {
+  try {
+    const response = await promise;
+    return { data: response.data, error: null };
+  } catch (error) {
+    console.error(`Erreur API:`, error);
+    return { data: null, error };
+  }
+};
+
 // Fonction utilitaire pour simuler la structure de l'ancien client Supabase
 // mais utilisant le nouveau service API basé sur axios
 export const apiClient = {
   // Méthodes pour récupérer des données
   from: (table: string) => ({
-    select: (fields: string = '*') => ({
-      order: (column: string, { ascending = true } = {}) => ({
-        limit: (limit: number) => ({
-          // Simulation de la méthode d'exécution de requête
-          execute: async () => {
-            try {
-              const response = await api.get(`/directus/${table}`, {
+    select: (fields: string = '*') => {
+      const baseSelect = {
+        order: (column: string, { ascending = true } = {}) => {
+          const orderObj = {
+            limit: (limit: number) => {
+              const limitObj = {
+                execute: async () => {
+                  return processResponse(api.get(`/directus/${table}`, {
+                    params: {
+                      fields,
+                      sort: `${ascending ? '' : '-'}${column}`,
+                      limit
+                    }
+                  }));
+                },
+                eq: (column: string, value: any) => ({
+                  execute: async () => {
+                    return processResponse(api.get(`/directus/${table}`, {
+                      params: {
+                        fields,
+                        sort: `${ascending ? '' : '-'}${column}`,
+                        limit,
+                        filter: { [column]: { _eq: value } }
+                      }
+                    }));
+                  }
+                }),
+                single: async () => {
+                  return processResponse(api.get(`/directus/${table}/first`, {
+                    params: {
+                      fields,
+                      sort: `${ascending ? '' : '-'}${column}`,
+                      limit: 1
+                    }
+                  }));
+                }
+              };
+              return limitObj;
+            },
+            eq: (column: string, value: any) => {
+              const eqObj = {
+                execute: async () => {
+                  return processResponse(api.get(`/directus/${table}`, {
+                    params: {
+                      fields,
+                      sort: `${ascending ? '' : '-'}${column}`,
+                      filter: { [column]: { _eq: value } }
+                    }
+                  }));
+                },
+                order: (innerColumn: string, { ascending: innerAscending = true } = {}) => ({
+                  execute: async () => {
+                    return processResponse(api.get(`/directus/${table}`, {
+                      params: {
+                        fields,
+                        filter: { [column]: { _eq: value } },
+                        sort: `${innerAscending ? '' : '-'}${innerColumn}`
+                      }
+                    }));
+                  },
+                  limit: (limit: number) => ({
+                    execute: async () => {
+                      return processResponse(api.get(`/directus/${table}`, {
+                        params: {
+                          fields,
+                          filter: { [column]: { _eq: value } },
+                          sort: `${innerAscending ? '' : '-'}${innerColumn}`,
+                          limit
+                        }
+                      }));
+                    }
+                  })
+                }),
+                single: async () => {
+                  return processResponse(api.get(`/directus/${table}/first`, {
+                    params: {
+                      fields,
+                      filter: { [column]: { _eq: value } }
+                    }
+                  }));
+                }
+              };
+              return eqObj;
+            },
+            execute: async () => {
+              return processResponse(api.get(`/directus/${table}`, {
                 params: {
                   fields,
-                  sort: `${ascending ? '' : '-'}${column}`,
-                  limit
+                  sort: `${ascending ? '' : '-'}${column}`
                 }
-              });
-              return { data: response.data, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-              return { data: null, error };
-            }
-          },
-          eq: (column: string, value: any) => ({
-            execute: async () => {
-              try {
-                const response = await api.get(`/directus/${table}`, {
-                  params: {
-                    fields,
-                    sort: `${ascending ? '' : '-'}${column}`,
-                    limit,
-                    filter: { [column]: { _eq: value } }
-                  }
-                });
-                return { data: response.data, error: null };
-              } catch (error) {
-                console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-                return { data: null, error };
-              }
-            }
-          }),
-          // Ajout d'une méthode single pour obtenir un seul enregistrement
-          single: async () => {
-            try {
-              const response = await api.get(`/directus/${table}/first`, {
+              }));
+            },
+            single: async () => {
+              return processResponse(api.get(`/directus/${table}/first`, {
                 params: {
                   fields,
                   sort: `${ascending ? '' : '-'}${column}`,
                   limit: 1
                 }
-              });
-              return { data: response.data && response.data.length > 0 ? response.data[0] : null, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération d'un enregistrement de ${table}:`, error);
-              return { data: null, error };
+              }));
             }
-          }
-        }),
-        eq: (column: string, value: any) => ({
-          execute: async () => {
-            try {
-              const response = await api.get(`/directus/${table}`, {
+          };
+          return orderObj;
+        },
+        eq: (column: string, value: any) => {
+          const eqObj = {
+            execute: async () => {
+              return processResponse(api.get(`/directus/${table}`, {
                 params: {
                   fields,
-                  sort: `${ascending ? '' : '-'}${column}`,
                   filter: { [column]: { _eq: value } }
                 }
-              });
-              return { data: response.data, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-              return { data: null, error };
-            }
-          },
-          // Ajout d'une méthode order pour chaîner les requêtes
-          order: (innerColumn: string, { ascending: innerAscending = true } = {}) => ({
-            execute: async () => {
-              try {
-                const response = await api.get(`/directus/${table}`, {
+              }));
+            },
+            order: (innerColumn: string, { ascending: innerAscending = true } = {}) => ({
+              execute: async () => {
+                return processResponse(api.get(`/directus/${table}`, {
                   params: {
                     fields,
                     filter: { [column]: { _eq: value } },
                     sort: `${innerAscending ? '' : '-'}${innerColumn}`
                   }
-                });
-                return { data: response.data, error: null };
-              } catch (error) {
-                console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-                return { data: null, error };
-              }
-            }
-          }),
-          // Ajout d'une méthode single pour obtenir un seul enregistrement avec condition
-          single: async () => {
-            try {
-              const response = await api.get(`/directus/${table}/first`, {
+                }));
+              },
+              limit: (limit: number) => ({
+                execute: async () => {
+                  return processResponse(api.get(`/directus/${table}`, {
+                    params: {
+                      fields,
+                      filter: { [column]: { _eq: value } },
+                      sort: `${innerAscending ? '' : '-'}${innerColumn}`,
+                      limit
+                    }
+                  }));
+                }
+              })
+            }),
+            single: async () => {
+              return processResponse(api.get(`/directus/${table}/first`, {
                 params: {
                   fields,
                   filter: { [column]: { _eq: value } }
                 }
-              });
-              return { data: response.data && response.data.length > 0 ? response.data[0] : null, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération d'un enregistrement de ${table}:`, error);
-              return { data: null, error };
+              }));
             }
-          }
-        }),
-        execute: async () => {
-          try {
-            const response = await api.get(`/directus/${table}`, {
-              params: {
-                fields,
-                sort: `${ascending ? '' : '-'}${column}`
-              }
-            });
-            return { data: response.data, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-            return { data: null, error };
-          }
+          };
+          return eqObj;
         },
-        // Ajout d'une méthode single pour obtenir un seul enregistrement
-        single: async () => {
-          try {
-            const response = await api.get(`/directus/${table}/first`, {
-              params: {
-                fields,
-                sort: `${ascending ? '' : '-'}${column}`,
-                limit: 1
-              }
-            });
-            return { data: response.data && response.data.length > 0 ? response.data[0] : null, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la récupération d'un enregistrement de ${table}:`, error);
-            return { data: null, error };
-          }
-        }
-      }),
-      eq: (column: string, value: any) => ({
-        execute: async () => {
-          try {
-            const response = await api.get(`/directus/${table}`, {
-              params: {
-                fields,
-                filter: { [column]: { _eq: value } }
-              }
-            });
-            return { data: response.data, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-            return { data: null, error };
-          }
-        },
-        order: (innerColumn: string, { ascending: innerAscending = true } = {}) => ({
-          execute: async () => {
-            try {
-              const response = await api.get(`/directus/${table}`, {
+        limit: (limit: number) => {
+          const limitObj = {
+            execute: async () => {
+              return processResponse(api.get(`/directus/${table}`, {
                 params: {
                   fields,
-                  filter: { [column]: { _eq: value } },
-                  sort: `${innerAscending ? '' : '-'}${innerColumn}`
+                  limit
                 }
-              });
-              return { data: response.data, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-              return { data: null, error };
-            }
-          },
-          limit: (limit: number) => ({
-            execute: async () => {
-              try {
-                const response = await api.get(`/directus/${table}`, {
+              }));
+            },
+            eq: (column: string, value: any) => ({
+              execute: async () => {
+                return processResponse(api.get(`/directus/${table}`, {
                   params: {
                     fields,
-                    filter: { [column]: { _eq: value } },
-                    sort: `${innerAscending ? '' : '-'}${innerColumn}`,
-                    limit
+                    limit,
+                    filter: { [column]: { _eq: value } }
                   }
-                });
-                return { data: response.data, error: null };
-              } catch (error) {
-                console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-                return { data: null, error };
+                }));
               }
+            }),
+            order: (column: string, { ascending = true } = {}) => ({
+              execute: async () => {
+                return processResponse(api.get(`/directus/${table}`, {
+                  params: {
+                    fields,
+                    limit,
+                    sort: `${ascending ? '' : '-'}${column}`
+                  }
+                }));
+              }
+            }),
+            single: async () => {
+              return processResponse(api.get(`/directus/${table}/first`, {
+                params: {
+                  fields,
+                  limit: 1
+                }
+              }));
             }
-          })
-        }),
-        // Ajout d'une méthode single pour obtenir un seul enregistrement
-        single: async () => {
-          try {
-            const response = await api.get(`/directus/${table}/first`, {
-              params: {
-                fields,
-                filter: { [column]: { _eq: value } }
-              }
-            });
-            return { data: response.data && response.data.length > 0 ? response.data[0] : null, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la récupération d'un enregistrement de ${table}:`, error);
-            return { data: null, error };
-          }
-        }
-      }),
-      limit: (limit: number) => ({
-        execute: async () => {
-          try {
-            const response = await api.get(`/directus/${table}`, {
-              params: {
-                fields,
-                limit
-              }
-            });
-            return { data: response.data, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-            return { data: null, error };
-          }
+          };
+          return limitObj;
         },
-        eq: (column: string, value: any) => ({
-          execute: async () => {
-            try {
-              const response = await api.get(`/directus/${table}`, {
-                params: {
-                  fields,
-                  limit,
-                  filter: { [column]: { _eq: value } }
-                }
-              });
-              return { data: response.data, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-              return { data: null, error };
-            }
-          }
-        }),
-        order: (column: string, { ascending = true } = {}) => ({
-          execute: async () => {
-            try {
-              const response = await api.get(`/directus/${table}`, {
-                params: {
-                  fields,
-                  limit,
-                  sort: `${ascending ? '' : '-'}${column}`
-                }
-              });
-              return { data: response.data, error: null };
-            } catch (error) {
-              console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-              return { data: null, error };
-            }
-          }
-        })
-      }),
-      execute: async () => {
-        try {
-          const response = await api.get(`/directus/${table}`, {
+        execute: async () => {
+          return processResponse(api.get(`/directus/${table}`, {
             params: { fields }
-          });
-          return { data: response.data, error: null };
-        } catch (error) {
-          console.error(`Erreur lors de la récupération des données de ${table}:`, error);
-          return { data: null, error };
-        }
-      },
-      // Ajout d'une méthode single pour obtenir un seul enregistrement
-      single: async () => {
-        try {
-          const response = await api.get(`/directus/${table}/first`, {
+          }));
+        },
+        single: async () => {
+          return processResponse(api.get(`/directus/${table}/first`, {
             params: {
               fields,
               limit: 1
             }
-          });
-          return { data: response.data && response.data.length > 0 ? response.data[0] : null, error: null };
-        } catch (error) {
-          console.error(`Erreur lors de la récupération d'un enregistrement de ${table}:`, error);
-          return { data: null, error };
+          }));
         }
-      }
-    }),
+      };
+      return baseSelect;
+    },
     insert: (data: any) => ({
       execute: async () => {
-        try {
-          const response = await api.post(`/directus/${table}`, data);
-          return { data: response.data, error: null };
-        } catch (error) {
-          console.error(`Erreur lors de l'insertion de données dans ${table}:`, error);
-          return { data: null, error };
-        }
+        return processResponse(api.post(`/directus/${table}`, data));
       }
     }),
     update: (data: any) => ({
       eq: (column: string, value: any) => ({
         execute: async () => {
-          try {
-            const response = await api.patch(`/directus/${table}/${value}`, data);
-            return { data: response.data, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la mise à jour des données dans ${table}:`, error);
-            return { data: null, error };
-          }
+          return processResponse(api.patch(`/directus/${table}/${value}`, data));
         }
       })
     }),
     upsert: (data: any) => ({
       execute: async () => {
-        try {
-          const response = await api.post(`/directus/${table}/upsert`, data);
-          return { data: response.data, error: null };
-        } catch (error) {
-          console.error(`Erreur lors de l'upsert de données dans ${table}:`, error);
-          return { data: null, error };
-        }
+        return processResponse(api.post(`/directus/${table}/upsert`, data));
       }
     }),
     delete: () => ({
       eq: (column: string, value: any) => ({
         execute: async () => {
-          try {
-            const response = await api.delete(`/directus/${table}/${value}`);
-            return { data: response.data, error: null };
-          } catch (error) {
-            console.error(`Erreur lors de la suppression de données dans ${table}:`, error);
-            return { data: null, error };
-          }
+          return processResponse(api.delete(`/directus/${table}/${value}`));
         }
       })
     }),
-    // Ajout d'une méthode select directe pour utilisation simplifiée
     count: (column: string = '*') => ({
       execute: async () => {
         try {
@@ -356,13 +271,7 @@ export const apiClient = {
   // Authentification
   auth: {
     signUp: async (credentials: { email: string; password: string }) => {
-      try {
-        const response = await api.post('/auth/register', credentials);
-        return { data: response.data, error: null };
-      } catch (error) {
-        console.error('Erreur lors de l\'inscription:', error);
-        return { data: null, error };
-      }
+      return processResponse(api.post('/auth/register', credentials));
     },
     signIn: async (credentials: { email: string; password: string }) => {
       try {
@@ -386,15 +295,8 @@ export const apiClient = {
       }
     },
     resetPasswordForEmail: async (email: string) => {
-      try {
-        const response = await api.post('/auth/reset-password', { email });
-        return { data: response.data, error: null };
-      } catch (error) {
-        console.error('Erreur lors de la réinitialisation du mot de passe:', error);
-        return { data: null, error };
-      }
+      return processResponse(api.post('/auth/reset-password', { email }));
     },
-    // Ajout de fonctions supplémentaires d'authentification
     getSession: async () => {
       try {
         const token = localStorage.getItem('auth_token');
@@ -422,33 +324,17 @@ export const apiClient = {
       }
     },
     updateUser: async (updates: any) => {
-      try {
-        const response = await api.patch('/auth/user', updates);
-        return { data: response.data, error: null };
-      } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
-        return { data: null, error };
-      }
+      return processResponse(api.patch('/auth/user', updates));
     },
     admin: {
-      // Ajout de fonctions d'administration
       createUser: async (userData: any) => {
-        try {
-          const response = await api.post('/admin/users', userData);
-          return { data: response.data, error: null };
-        } catch (error) {
-          console.error('Erreur lors de la création d\'utilisateur:', error);
-          return { data: null, error };
-        }
+        return processResponse(api.post('/admin/users', userData));
       },
       deleteUser: async (userId: string) => {
-        try {
-          const response = await api.delete(`/admin/users/${userId}`);
-          return { data: response.data, error: null };
-        } catch (error) {
-          console.error('Erreur lors de la suppression d\'utilisateur:', error);
-          return { data: null, error };
-        }
+        return processResponse(api.delete(`/admin/users/${userId}`));
+      },
+      listUsers: async () => {
+        return processResponse(api.get('/admin/users'));
       }
     }
   },

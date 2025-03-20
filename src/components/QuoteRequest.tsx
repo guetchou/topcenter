@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +24,7 @@ export const QuoteRequest = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("quote_requests").insert([formData]);
+      const { error } = await supabase.from("quote_requests").insert([formData]).execute();
 
       if (error) throw error;
 

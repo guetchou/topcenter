@@ -100,26 +100,27 @@ export const NewsGrid = () => {
     queryKey: ['blog-posts'],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
+        const result = await supabase
           .from('blog_posts')
           .select('*')
           .eq('status', 'published')
           .order('published_at', { ascending: false })
-          .limit(6);
+          .limit(6)
+          .execute();
 
-        if (error) {
-          console.error("Error fetching blog posts:", error);
-          handleError(error);
-          throw error;
+        if (result.error) {
+          console.error("Error fetching blog posts:", result.error);
+          handleError(result.error);
+          throw result.error;
         }
 
         // If no data from Supabase or in development mode, use mock data
-        if (!data || data.length === 0) {
+        if (!result.data || result.data.length === 0) {
           console.log("Using mock blog posts data");
           return mockBlogPosts;
         }
 
-        return data;
+        return result.data;
       } catch (error) {
         console.error("Error in query function:", error);
         // Return mock data in case of error
