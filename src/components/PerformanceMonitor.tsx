@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocation } from "react-router-dom";
@@ -49,7 +50,7 @@ export const PerformanceMonitor = () => {
             model_version: "1.0",
             user_id: session.user.id,
           },
-        ]);
+        ]).execute();
 
         if (error) {
           console.error("Error inserting performance metrics:", error);

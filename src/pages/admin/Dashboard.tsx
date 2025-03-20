@@ -9,19 +9,28 @@ export const AdminDashboard = () => {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['cms-stats'],
     queryFn: async () => {
-      const [articles, categories, medias, menus] = await Promise.all([
-        supabase.from('blog_posts').select('id', { count: 'exact' }),
-        supabase.from('content_categories').select('id', { count: 'exact' }),
-        supabase.from('media_library').select('id', { count: 'exact' }),
-        supabase.from('menus').select('id', { count: 'exact' })
-      ]);
+      try {
+        // Exécuter les requêtes en parallèle
+        const articles = await supabase.from('blog_posts').count().execute();
+        const categories = await supabase.from('content_categories').count().execute();
+        const medias = await supabase.from('media_library').count().execute();
+        const menus = await supabase.from('menus').count().execute();
 
-      return {
-        articles: articles.count || 0,
-        categories: categories.count || 0,
-        medias: medias.count || 0,
-        menus: menus.count || 0
-      };
+        return {
+          articles: articles.count || 0,
+          categories: categories.count || 0,
+          medias: medias.count || 0,
+          menus: menus.count || 0
+        };
+      } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques:", error);
+        return {
+          articles: 0,
+          categories: 0,
+          medias: 0,
+          menus: 0
+        };
+      }
     }
   });
 
