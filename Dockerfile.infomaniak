@@ -1,0 +1,73 @@
+
+# Stage de base 
+FROM node:18-alpine AS base
+
+# Installation des dépendances
+FROM base AS deps
+WORKDIR /app
+
+# Copie des fichiers package.json
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Construction du frontend
+FROM base AS frontend-builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Variables d'environnement pour le build
+ARG API_BASE_URL
+ENV VITE_API_BASE_URL=$API_BASE_URL
+
+# Construction de l'application frontend avec optimisation pour production
+RUN npm run build
+
+# Configuration du backend
+FROM base AS backend-builder
+WORKDIR /app
+
+# Copier les fichiers du backend
+COPY ./backend/package.json ./backend/package-lock.json* ./
+RUN npm ci --production
+COPY ./backend ./
+
+# Image finale
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Création d'un utilisateur non-root pour plus de sécurité
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 appuser
+
+# Création des dossiers nécessaires et attribution des permissions
+RUN mkdir -p /app/public /app/logs && \
+    chown -R appuser:nodejs /app
+
+USER appuser
+
+# Copie des fichiers frontend et backend
+COPY --from=frontend-builder --chown=appuser:nodejs /app/dist /app/public
+COPY --from=backend-builder --chown=appuser:nodejs /app/node_modules /app/node_modules
+COPY --from=backend-builder --chown=appuser:nodejs /app/*.js /app/
+
+# Installation de PM2 pour la gestion des processus
+RUN npm install -g pm2
+
+# Exposition des ports (adaptez selon la configuration Infomaniak)
+EXPOSE 9000
+
+# Configuration pour démarrage automatique
+COPY --from=backend-builder --chown=appuser:nodejs /app/ecosystem.config.js /app/
+
+# Créer un script de démarrage spécifique à Infomaniak
+RUN echo '#!/bin/sh\n\
+cd /app\n\
+pm2-runtime start ecosystem.config.js --env production\n\
+' > /app/start.sh && \
+chmod +x /app/start.sh
+
+# Point d'entrée pour le démarrage
+CMD ["/app/start.sh"]

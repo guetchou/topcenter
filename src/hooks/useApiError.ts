@@ -1,18 +1,29 @@
 
-import { useToast } from "@/hooks/use-toast";
+import { useState, useCallback } from 'react';
+import { toast } from 'sonner';
 
 export const useApiError = () => {
-  const { toast } = useToast();
+  const [error, setError] = useState<Error | null>(null);
 
-  const handleError = (error: Error) => {
-    console.error("API Error:", error);
-    
-    toast({
-      title: "Erreur",
-      description: "Une erreur est survenue. Veuillez réessayer.",
-      variant: "destructive",
-    });
+  const handleError = useCallback((err: Error) => {
+    console.error('API Error:', err);
+    setError(err);
+
+    // Afficher un toast avec le message d'erreur
+    toast.error(err.message || 'Une erreur est survenue');
+
+    return err;
+  }, []);
+
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
+  return {
+    error,
+    handleError,
+    clearError,
   };
-
-  return { handleError };
 };
+
+export default useApiError;
