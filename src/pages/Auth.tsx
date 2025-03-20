@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,7 @@ import { Logo } from '@/components/Logo';
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { signIn, signUp, signInWithGoogle, user, loading } = useAuth();
+  const { login, loginWithGoogle, register, user, isLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,10 +27,10 @@ const Auth = () => {
 
   useEffect(() => {
     // Si l'utilisateur est déjà connecté, rediriger vers la page de destination
-    if (user && !loading) {
+    if (user && !isLoading) {
       navigate(from, { replace: true });
     }
-  }, [user, loading, navigate, from]);
+  }, [user, isLoading, navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,19 +38,21 @@ const Auth = () => {
 
     try {
       if (isLogin) {
-        await signIn(formData.email, formData.password);
+        await login(formData.email, formData.password);
       } else {
-        await signUp(formData.email, formData.password, formData.fullName);
+        await register(formData.email, formData.password, formData.fullName);
         // Pour le processus d'inscription, ne pas naviguer tout de suite
         // car l'utilisateur doit d'abord confirmer son email
         setIsLogin(true);
         setFormData(prev => ({ ...prev, fullName: '' }));
+        toast.success("Compte créé avec succès. Vous pouvez maintenant vous connecter.");
         setFormLoading(false);
         return;
       }
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Erreur d'authentification:", error);
+      toast.error(error.response?.data?.message || "Erreur d'authentification");
     } finally {
       setFormLoading(false);
     }
@@ -59,16 +61,17 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     try {
       setFormLoading(true);
-      await signInWithGoogle();
+      await loginWithGoogle();
       // Note: La redirection est gérée par OAuth et AuthCallback component
     } catch (error: any) {
       console.error("Erreur de connexion avec Google:", error);
+      toast.error("Erreur de connexion avec Google");
     } finally {
       setFormLoading(false);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

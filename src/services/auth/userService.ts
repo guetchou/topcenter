@@ -3,9 +3,9 @@ import api from "../api";
 import { authStoreService } from "./authStore";
 import { UserRole, AuthUser } from "@/types/auth";
 
-// Service pour les opérations sur les données utilisateur
+// Service pour les opérations sur les données utilisateur avec NestJS
 export const userService = {
-  // Récupérer les données utilisateur, y compris le rôle et le profil
+  // Récupérer les données utilisateur
   fetchUserData: async (userId: string): Promise<AuthUser | null> => {
     try {
       const response = await api.get(`/users/${userId}`);

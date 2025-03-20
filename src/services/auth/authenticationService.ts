@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { AuthUser } from "@/types/auth";
 import { authStoreService } from "./authStore";
 
-// Service pour les opérations d'authentification de base
+// Service pour les opérations d'authentification avec NestJS et JWT
 export const authenticationService = {
   // Connexion avec email et mot de passe
   login: async (email: string, password: string) => {
@@ -25,10 +25,9 @@ export const authenticationService = {
     }
   },
 
-  // Connexion avec Google OAuth (redirection à implémenter côté serveur)
+  // Connexion avec Google OAuth
   loginWithGoogle: async () => {
     try {
-      // Rediriger vers l'endpoint Google OAuth du serveur
       window.location.href = `${api.defaults.baseURL}/auth/google`;
     } catch (error) {
       console.error("Erreur de connexion avec Google:", error);
@@ -64,6 +63,7 @@ export const authenticationService = {
   resetPassword: async (email: string) => {
     try {
       await api.post('/auth/reset-password', { email });
+      toast.success("Instructions de réinitialisation envoyées à votre email");
     } catch (error) {
       console.error("Erreur de réinitialisation de mot de passe:", error);
       throw error;
@@ -71,12 +71,10 @@ export const authenticationService = {
   },
 
   // Mise à jour du mot de passe
-  updatePassword: async (password: string, token: string) => {
+  updatePassword: async (password: string) => {
     try {
-      await api.post('/auth/update-password', {
-        password,
-        token
-      });
+      await api.post('/auth/update-password', { password });
+      toast.success("Mot de passe mis à jour avec succès");
     } catch (error) {
       console.error("Erreur de mise à jour du mot de passe:", error);
       throw error;
@@ -94,7 +92,6 @@ export const authenticationService = {
       console.error("Erreur lors de la déconnexion:", error);
       localStorage.removeItem('auth_token');
       authStoreService.resetAuth();
-      toast.error("Échec de la déconnexion");
     }
   },
 

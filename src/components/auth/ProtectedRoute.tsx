@@ -1,6 +1,6 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,10 +13,10 @@ export const ProtectedRoute = ({
   requireAdmin = false, 
   requireSuperAdmin = false 
 }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin, isSuperAdmin } = useAuth();
+  const { user, isLoading } = useAuth();
   const location = useLocation();
   
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -29,11 +29,11 @@ export const ProtectedRoute = ({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (requireSuperAdmin && !isSuperAdmin) {
+  if (requireSuperAdmin && user.role !== 'super_admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
+  if (requireAdmin && !['admin', 'super_admin'].includes(user.role || '')) {
     return <Navigate to="/dashboard" replace />;
   }
 

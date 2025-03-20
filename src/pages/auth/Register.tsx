@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Lock, User, Loader2, Eye, EyeOff } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const Register = () => {
   const [fullName, setFullName] = useState("");
@@ -16,6 +16,7 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,30 +33,18 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
+      await register(email, password, fullName);
+
+      toast({
+        title: "Inscription réussie",
+        description: "Votre compte a été créé avec succès.",
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        toast({
-          title: "Inscription réussie",
-          description: "Votre compte a été créé avec succès.",
-        });
-        
-        navigate("/");
-      }
+      
+      navigate("/");
     } catch (error: any) {
       console.error("Erreur d'inscription:", error);
       
-      if (error.message.includes("already registered")) {
+      if (error.message?.includes("already registered")) {
         toast({
           title: "Email déjà utilisé",
           description: "Cet email est déjà associé à un compte. Veuillez vous connecter.",

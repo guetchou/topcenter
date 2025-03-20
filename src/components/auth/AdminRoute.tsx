@@ -14,7 +14,7 @@ export const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!isAuthenticated || !user || !['admin', 'super_admin'].includes(user.role)) {
+  if (!isAuthenticated || !user || !['admin', 'super_admin'].includes(user.role || '')) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 

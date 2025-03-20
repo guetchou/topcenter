@@ -1,11 +1,12 @@
 
 import axios from 'axios';
+import { toast } from 'sonner';
 
 // Création d'une instance axios avec la configuration de base
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
     ? '/api' 
-    : 'http://localhost:4000/api',
+    : 'http://localhost:3000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -30,6 +31,11 @@ api.interceptors.response.use(
       localStorage.removeItem('auth_token');
       window.location.href = '/auth';
     }
+    
+    // Afficher les erreurs avec toast
+    const errorMessage = error.response?.data?.message || 'Une erreur est survenue';
+    toast.error(errorMessage);
+    
     return Promise.reject(error);
   }
 );

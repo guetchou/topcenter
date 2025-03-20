@@ -1,74 +1,61 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import api from "../api";
 import { authStoreService } from "./authStore";
 import { userService } from "./userService";
-import { DbUserRole } from "@/types/auth";
+import { toast } from "sonner";
 
-// Service for admin operations
+// Service pour les opérations d'administration
 export const adminService = {
-  // Impersonate another user
+  // Impersonner un utilisateur (pour les administrateurs)
   impersonateUser: async (userId: string) => {
-    const { user } = authStoreService.getState();
-    
-    if (!user || user.role !== 'super_admin') {
-      throw new Error("Seuls les super administrateurs peuvent usurper l'identité des utilisateurs");
-    }
-    
     try {
-      const impersonatedUser = await userService.fetchUserData(userId);
+      const response = await api.post('/admin/impersonate', { userId });
+      const { token, user } = response.data;
       
-      if (!impersonatedUser) {
-        throw new Error("Impossible de récupérer les données de l'utilisateur");
+      if (!user) {
+        toast.error("Utilisateur non trouvé");
+        return;
       }
       
-      authStoreService.setImpersonatedUser(impersonatedUser);
-      console.log(`Super admin impersonnifie l'utilisateur: ${userId}`);
+      // Stocker les données d'origine
+      const currentUser = authStoreService.getState().user;
+      if (currentUser) {
+        // Stocker l'utilisateur actuel comme utilisateur impersonné
+        authStoreService.setImpersonatedUser(user);
+        
+        // Utiliser le nouveau token pour les requêtes API
+        localStorage.setItem('impersonation_token', token);
+        
+        toast.success(`Impersonnification en tant que ${user.email}`);
+      }
     } catch (error) {
       console.error("Erreur lors de l'impersonnification:", error);
-      throw error;
+      toast.error("Impossible d'impersonner cet utilisateur");
     }
   },
   
-  // Stop impersonating user
+  // Arrêter l'impersonnification
   stopImpersonation: () => {
+    // Supprimer le token d'impersonnification
+    localStorage.removeItem('impersonation_token');
+    
+    // Réinitialiser l'utilisateur impersonné
     authStoreService.setImpersonatedUser(null);
+    
+    // Rafraîchir les données utilisateur
+    userService.checkUser();
+    
+    toast.success("Impersonnification terminée");
   },
   
-  // Promote user to super admin
+  // Promouvoir un utilisateur en super admin
   promoteToSuperAdmin: async (userId: string) => {
-    const { user } = authStoreService.getState();
-    
-    if (!user || user.role !== 'super_admin') {
-      throw new Error("Seuls les super administrateurs peuvent promouvoir d'autres utilisateurs");
-    }
-    
     try {
-      // Check if user already has a role
-      const { data: existingRole } = await supabase
-        .from('user_roles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-        
-      const roleValue: DbUserRole = 'super_admin';
-        
-      if (existingRole) {
-        // Update existing role
-        await supabase
-          .from('user_roles')
-          .update({ role: roleValue })
-          .eq('user_id', userId);
-      } else {
-        // Create new role
-        await supabase
-          .from('user_roles')
-          .insert({ user_id: userId, role: roleValue });
-      }
-      
-      console.log(`L'utilisateur ${userId} a été promu super admin`);
+      await api.post('/admin/promote', { userId, role: 'super_admin' });
+      toast.success("Utilisateur promu en super administrateur");
     } catch (error) {
       console.error("Erreur lors de la promotion:", error);
-      throw error;
+      toast.error("Impossible de promouvoir cet utilisateur");
     }
   }
 };
