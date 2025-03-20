@@ -1,75 +1,47 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import api from "../api";
 import { authStoreService } from "./authStore";
-import { UserRole, DbUserRole, AuthUser } from "@/types/auth";
+import { UserRole, AuthUser } from "@/types/auth";
 
-// Service for user data operations
+// Service pour les opérations sur les données utilisateur
 export const userService = {
-  // Fetch user data including role and profile
+  // Récupérer les données utilisateur, y compris le rôle et le profil
   fetchUserData: async (userId: string): Promise<AuthUser | null> => {
     try {
-      // Get user role
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      // Get user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-        
-      // Get auth user email
-      const { data: userData, error } = await supabase.auth.admin.getUserById(userId);
-      
-      if (error) throw error;
-      
-      return {
-        id: userId,
-        email: userData.user.email,
-        role: (roleData?.role as UserRole) || 'client',
-        profile
-      };
+      const response = await api.get(`/users/${userId}`);
+      return response.data.user;
     } catch (error) {
-      console.error("Error fetching user data:", error);
+      console.error("Erreur lors de la récupération des données utilisateur:", error);
       return null;
     }
   },
   
-  // Check and update current user state
+  // Vérifier et mettre à jour l'état de l'utilisateur actuel
   checkUser: async () => {
     try {
       authStoreService.setLoading(true);
       
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
         authStoreService.setUser(null);
         authStoreService.setLoading(false);
         return;
       }
 
-      // Fetch user data including role and profile
-      const { data: roleData } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle();
-
-      authStoreService.setUser({
-        id: session.user.id,
-        email: session.user.email,
-        role: (roleData?.role as UserRole) || 'client',
-        profile
-      });
+      // Récupérer les informations utilisateur du serveur
+      const response = await api.get('/auth/me');
+      const userData = response.data.user;
+      
+      if (userData) {
+        authStoreService.setUser({
+          id: userData.id,
+          email: userData.email,
+          role: userData.role as UserRole,
+          profile: userData.profile
+        });
+      } else {
+        authStoreService.setUser(null);
+      }
       
       authStoreService.setLoading(false);
     } catch (error) {

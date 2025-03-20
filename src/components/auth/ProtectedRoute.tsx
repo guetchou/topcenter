@@ -1,6 +1,6 @@
 
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,15 +13,10 @@ export const ProtectedRoute = ({
   requireAdmin = false, 
   requireSuperAdmin = false 
 }: ProtectedRouteProps) => {
-  const { user, isLoading, impersonatedUser } = useAuth();
+  const { user, loading, isAdmin, isSuperAdmin } = useAuth();
   const location = useLocation();
   
-  // Get the active user (either the impersonated user or the actual user)
-  const activeUser = impersonatedUser || user;
-  const isAdmin = activeUser?.role === 'admin' || activeUser?.role === 'super_admin';
-  const isSuperAdmin = activeUser?.role === 'super_admin';
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -29,7 +24,7 @@ export const ProtectedRoute = ({
     );
   }
 
-  if (!activeUser) {
+  if (!user) {
     // Redirect to login page with current location
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }

@@ -5,14 +5,14 @@ import { authService } from '@/services/auth';
 import { AuthUser } from '@/types/auth';
 import { AuthActions } from '@/types/authStore';
 
-// Hook combining auth store and auth service actions
+// Hook combinant le store d'authentification et les actions du service d'authentification
 export const useAuth = (): {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   impersonatedUser: AuthUser | null;
 } & AuthActions => {
-  // Get state from store
+  // Récupérer l'état du store
   const { 
     user, 
     isAuthenticated, 
@@ -20,14 +20,14 @@ export const useAuth = (): {
     impersonatedUser 
   } = authStore();
   
-  // Check user on mount
+  // Vérifier l'utilisateur au montage
   useEffect(() => {
     authService.checkUser();
   }, []);
   
-  // Combine state and actions
+  // Combiner l'état et les actions
   return {
-    // State
+    // État
     user,
     isAuthenticated,
     isLoading,

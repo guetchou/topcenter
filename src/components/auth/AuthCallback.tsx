@@ -1,41 +1,61 @@
 
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useNavigate, useLocation } from 'react-router-dom';
+import api from '@/services/api';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const AuthCallback = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Si l'utilisateur est déjà connecté, rediriger vers le dashboard
+    if (user) {
+      navigate('/dashboard');
+      return;
+    }
+
     const handleAuthCallback = async () => {
       try {
-        // Récupérer la session après redirection OAuth
-        const { data, error } = await supabase.auth.getSession();
+        // Récupérer le token depuis l'URL
+        const params = new URLSearchParams(location.search);
+        const token = params.get('token');
         
-        if (error) {
-          throw error;
+        if (!token) {
+          throw new Error("Token non trouvé dans l'URL");
         }
         
-        if (data.session) {
+        // Stocker le token
+        localStorage.setItem('auth_token', token);
+        
+        // Vérifier si le token est valide
+        const response = await api.get('/auth/me');
+        if (response.data && response.data.user) {
           // Authentification réussie
           toast.success('Connexion réussie!');
           navigate('/dashboard');
         } else {
           // Pas de session valide
-          navigate('/auth');
+          throw new Error("Session non valide");
         }
       } catch (err: any) {
         console.error('Erreur lors de la récupération de la session:', err);
         setError(err.message || 'Échec de l\'authentification');
         toast.error('Échec de l\'authentification');
+        
+        // Retirer le token invalide
+        localStorage.removeItem('auth_token');
+        
+        // Redirection vers la page de connexion après un délai
         setTimeout(() => navigate('/auth'), 3000);
       }
     };
 
     handleAuthCallback();
-  }, [navigate]);
+  }, [navigate, location, user]);
 
   return (
     <div className="flex items-center justify-center min-h-screen">

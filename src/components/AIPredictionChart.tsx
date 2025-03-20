@@ -1,43 +1,39 @@
+
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { supabase } from "@/integrations/supabase/client";
+import api from "@/services/api";
 
 export const AIPredictionChart = () => {
   const [predictions, setPredictions] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchPredictions = async () => {
-      const { data, error } = await supabase
-        .from('ai_analytics')
-        .select('*')
-        .order('created_at', { ascending: true })
-        .limit(10);
-
-      if (error) {
+      try {
+        const response = await api.get('/analytics/predictions');
+        if (response.data && Array.isArray(response.data)) {
+          setPredictions(response.data);
+        }
+      } catch (error) {
         console.error('Error fetching predictions:', error);
-        return;
       }
-
-      setPredictions(data);
     };
 
     fetchPredictions();
 
-    // Subscribe to real-time updates
-    const channel = supabase
-      .channel('ai_analytics_changes')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'ai_analytics' },
-        (payload) => {
-          setPredictions(current => [...current.slice(-9), payload.new]);
-        }
-      )
-      .subscribe();
+    // Simuler les mises à jour en temps réel toutes les 10 secondes
+    const intervalId = setInterval(() => {
+      const newPrediction = {
+        id: Date.now(),
+        created_at: new Date().toISOString(),
+        metric_value: Math.random() * 100
+      };
+      
+      setPredictions(current => [...current.slice(-9), newPrediction]);
+    }, 10000);
 
     return () => {
-      supabase.removeChannel(channel);
+      clearInterval(intervalId);
     };
   }, []);
 

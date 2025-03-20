@@ -1,74 +1,114 @@
 
-import { supabase } from "@/integrations/supabase/client";
-import { authStoreService } from "./authStore";
+import api from "../api";
 import { toast } from "sonner";
+import { AuthUser } from "@/types/auth";
+import { authStoreService } from "./authStore";
 
-// Service for basic authentication operations
+// Service pour les opérations d'authentification de base
 export const authenticationService = {
-  // Login with email and password
+  // Connexion avec email et mot de passe
   login: async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (error) throw error;
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user } = response.data;
+      
+      // Stocker le token dans le localStorage
+      localStorage.setItem('auth_token', token);
+      
+      // Mettre à jour le store avec les informations utilisateur
+      authStoreService.setUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error("Erreur de connexion:", error);
+      throw error;
+    }
   },
 
-  // Login with Google OAuth
+  // Connexion avec Google OAuth (redirection à implémenter côté serveur)
   loginWithGoogle: async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
-      }
-    });
-    
-    if (error) throw error;
+    try {
+      // Rediriger vers l'endpoint Google OAuth du serveur
+      window.location.href = `${api.defaults.baseURL}/auth/google`;
+    } catch (error) {
+      console.error("Erreur de connexion avec Google:", error);
+      throw error;
+    }
   },
 
-  // Register new user
+  // Inscription d'un nouvel utilisateur
   register: async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
-    });
-    
-    if (error) throw error;
+    try {
+      const response = await api.post('/auth/register', {
+        email,
+        password,
+        fullName
+      });
+      
+      const { token, user } = response.data;
+      
+      // Stocker le token dans le localStorage
+      localStorage.setItem('auth_token', token);
+      
+      // Mettre à jour le store avec les informations utilisateur
+      authStoreService.setUser(user);
+      
+      return user;
+    } catch (error) {
+      console.error("Erreur d'inscription:", error);
+      throw error;
+    }
   },
 
-  // Request password reset
+  // Demande de réinitialisation de mot de passe
   resetPassword: async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/new-password`,
-    });
-    
-    if (error) throw error;
+    try {
+      await api.post('/auth/reset-password', { email });
+    } catch (error) {
+      console.error("Erreur de réinitialisation de mot de passe:", error);
+      throw error;
+    }
   },
 
-  // Update user password
-  updatePassword: async (password: string) => {
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-    
-    if (error) throw error;
+  // Mise à jour du mot de passe
+  updatePassword: async (password: string, token: string) => {
+    try {
+      await api.post('/auth/update-password', {
+        password,
+        token
+      });
+    } catch (error) {
+      console.error("Erreur de mise à jour du mot de passe:", error);
+      throw error;
+    }
   },
 
-  // Logout user
+  // Déconnexion de l'utilisateur
   logout: async () => {
     try {
-      await supabase.auth.signOut();
+      await api.post('/auth/logout');
+      localStorage.removeItem('auth_token');
       authStoreService.resetAuth();
       toast.success("Déconnexion réussie");
     } catch (error) {
       console.error("Erreur lors de la déconnexion:", error);
+      localStorage.removeItem('auth_token');
+      authStoreService.resetAuth();
       toast.error("Échec de la déconnexion");
+    }
+  },
+
+  // Vérification du token
+  checkAuthToken: async (): Promise<AuthUser | null> => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return null;
+      
+      const response = await api.get('/auth/me');
+      return response.data.user;
+    } catch (error) {
+      localStorage.removeItem('auth_token');
+      return null;
     }
   }
 };

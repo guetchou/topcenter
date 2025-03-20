@@ -1,12 +1,11 @@
 
-import { supabase } from "@/integrations/supabase/client";
 import { authenticationService } from "./authenticationService";
 import { userService } from "./userService";
 import { adminService } from "./adminService";
 import { AuthServiceInterface } from "./types";
 import { authStoreService } from "./authStore";
 
-// Combine all auth services into a single exported service
+// Combiner tous les services d'authentification en un seul service exporté
 export const authService: AuthServiceInterface = {
   checkUser: userService.checkUser,
   login: authenticationService.login,
@@ -20,14 +19,9 @@ export const authService: AuthServiceInterface = {
   promoteToSuperAdmin: adminService.promoteToSuperAdmin
 };
 
-// Set up auth state change listener
-supabase.auth.onAuthStateChange((event, session) => {
-  if (session) {
-    userService.checkUser();
-  } else {
-    // Reset auth store when user logs out
-    authStoreService.resetAuth();
-  }
+// Vérifier l'état d'authentification au chargement
+window.addEventListener('load', () => {
+  userService.checkUser();
 });
 
 export default authService;

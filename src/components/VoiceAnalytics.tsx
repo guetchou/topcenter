@@ -3,19 +3,35 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, Activity } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import api from "@/services/api";
 
 export const VoiceAnalytics = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [sentiment, setSentiment] = useState(0);
 
-  const toggleRecording = () => {
+  const toggleRecording = async () => {
     setIsRecording(!isRecording);
+    
     if (!isRecording) {
-      // Simulate sentiment analysis
-      const interval = setInterval(() => {
-        setSentiment((prev) => Math.min(prev + 10, 100));
-      }, 500);
-      setTimeout(() => clearInterval(interval), 5000);
+      try {
+        // Au lieu de simuler, nous allons réellement appeler notre API
+        // Mais pour l'instant, conservons une simulation similaire
+        const interval = setInterval(() => {
+          setSentiment((prev) => Math.min(prev + 10, 100));
+        }, 500);
+        
+        setTimeout(() => {
+          clearInterval(interval);
+          
+          // Une fois la simulation terminée, on pourrait envoyer les données au serveur
+          // api.post('/analytics/voice', { sentiment: sentiment });
+        }, 5000);
+      } catch (error) {
+        console.error("Erreur lors de l'analyse vocale:", error);
+      }
+    } else {
+      // Si on arrête l'enregistrement, on pourrait envoyer les données finales
+      // api.post('/analytics/voice/stop', { sentiment: sentiment });
     }
   };
 

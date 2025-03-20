@@ -1,10 +1,11 @@
+
 import { useToast } from "@/hooks/use-toast";
 
-export const useSupabaseError = () => {
+export const useApiError = () => {
   const { toast } = useToast();
 
   const handleError = (error: Error) => {
-    console.error("Supabase Error:", error);
+    console.error("API Error:", error);
     
     toast({
       title: "Erreur",

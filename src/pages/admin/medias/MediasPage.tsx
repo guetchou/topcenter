@@ -1,11 +1,11 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import api from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Image as ImageIcon, File, Trash2 } from "lucide-react";
+import { Upload, File, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface MediaFile {
@@ -25,13 +25,8 @@ export const MediasPage = () => {
   const { data: medias, isLoading, refetch } = useQuery({
     queryKey: ['medias'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('media_library')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data as MediaFile[];
+      const response = await api.get('/admin/media');
+      return response.data as MediaFile[];
     }
   });
 
@@ -47,32 +42,21 @@ export const MediasPage = () => {
 
     setIsUploading(true);
     try {
-      // Upload du fichier vers le storage
-      const fileExt = fileToUpload.name.split('.').pop();
-      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+      // Créer un FormData pour l'upload de fichier
+      const formData = new FormData();
+      formData.append('file', fileToUpload);
+      formData.append('fileName', fileToUpload.name);
+      formData.append('fileType', fileToUpload.type);
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('media')
-        .upload(filePath, fileToUpload);
+      // Configurer les headers pour multipart/form-data
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      };
 
-      if (uploadError) throw uploadError;
-
-      // Récupération de l'URL publique
-      const { data: { publicUrl } } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-
-      // Enregistrement des métadonnées dans la base
-      const { error: dbError } = await supabase
-        .from('media_library')
-        .insert({
-          file_name: fileToUpload.name,
-          file_type: fileToUpload.type,
-          file_size: fileToUpload.size,
-          url: publicUrl
-        });
-
-      if (dbError) throw dbError;
+      // Envoyer au serveur
+      await api.post('/admin/media/upload', formData, config);
 
       toast.success("Fichier uploadé avec succès");
       setFileToUpload(null);
@@ -85,23 +69,9 @@ export const MediasPage = () => {
     }
   };
 
-  const handleDelete = async (id: string, fileName: string) => {
+  const handleDelete = async (id: string) => {
     try {
-      // Suppression du fichier dans le storage
-      const { error: storageError } = await supabase.storage
-        .from('media')
-        .remove([fileName]);
-
-      if (storageError) throw storageError;
-
-      // Suppression des métadonnées
-      const { error: dbError } = await supabase
-        .from('media_library')
-        .delete()
-        .eq('id', id);
-
-      if (dbError) throw dbError;
-
+      await api.delete(`/admin/media/${id}`);
       toast.success("Fichier supprimé avec succès");
       refetch();
     } catch (error) {
@@ -159,7 +129,7 @@ export const MediasPage = () => {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDelete(media.id, media.file_name)}
+                        onClick={() => handleDelete(media.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -172,7 +142,7 @@ export const MediasPage = () => {
                       <Button
                         variant="destructive"
                         size="sm"
-                        onClick={() => handleDelete(media.id, media.file_name)}
+                        onClick={() => handleDelete(media.id)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
