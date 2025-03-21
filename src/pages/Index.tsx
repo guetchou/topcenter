@@ -4,9 +4,10 @@ import { Helmet } from "react-helmet-async";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyInfoSection } from "@/components/sections/CompanyInfoSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import { motion } from "framer-motion";
+import { shouldUseNewDesign } from "@/lib/designUtils";
+import { DesignToggle } from "@/components/DesignToggle";
 
-// Lazy loading des sections
+// Lazy loading des sections originales
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
 const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection"));
 const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection"));
@@ -16,6 +17,18 @@ const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(
 const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
 const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
+// Lazy loading des nouvelles sections (à implémenter progressivement)
+const NewHeroSection = lazy(() => import("@/pages/HomeNew").then(module => {
+  // Extrait uniquement la section Hero du HomeNew pour réutilisation
+  return { 
+    default: () => {
+      const HomeNewComponent = module.default;
+      // Rendu conditionnel pour extraire uniquement la section Hero
+      return <HomeNewComponent sectionOnly="hero" />;
+    } 
+  };
+}));
+
 // Fallback générique
 const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (
   <div className={`min-h-[50vh] flex items-center justify-center`}>
@@ -24,6 +37,11 @@ const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (
 );
 
 const Index = () => {
+  // Déterminer quelles sections utiliser (ancien ou nouveau design)
+  const useNewHero = shouldUseNewDesign('hero');
+  const useNewServices = shouldUseNewDesign('services');
+  const useNewTestimonials = shouldUseNewDesign('testimonials');
+
   return (
     <>
       <Helmet>
@@ -45,7 +63,7 @@ const Index = () => {
       <main>
         <ErrorBoundary>
           <Suspense fallback={<Fallback size="lg" />}>
-            <HeroSection />
+            {useNewHero ? <NewHeroSection /> : <HeroSection />}
           </Suspense>
         </ErrorBoundary>
 
@@ -92,6 +110,9 @@ const Index = () => {
             <SocialMediaSection />
           </Suspense>
         </ErrorBoundary>
+        
+        {/* Toggle de design pour le développement */}
+        {process.env.NODE_ENV !== 'production' && <DesignToggle />}
       </main>
     </>
   );

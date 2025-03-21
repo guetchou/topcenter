@@ -17,14 +17,15 @@ const processResponse = async (promise) => {
   }
 };
 
-// Function to make all methods chainable and return proper data/error structure
-const createChainableMethod = (executeMethod) => {
-  const method = async () => {
+// Function to make the response object chainable (based on the Supabase API pattern)
+const createChainableResponse = (executeMethod) => {
+  // Return a function that will execute the method when called
+  const chainableMethod = async () => {
     return await executeMethod();
   };
   
-  // Add data and error properties to the method
-  Object.defineProperties(method, {
+  // Add properties and methods to the chainable function
+  Object.defineProperties(chainableMethod, {
     data: {
       get: async function() {
         const result = await executeMethod();
@@ -39,11 +40,10 @@ const createChainableMethod = (executeMethod) => {
     }
   });
   
-  return method;
+  return chainableMethod;
 };
 
 // Fonction utilitaire pour simuler la structure de l'ancien client Supabase
-// mais utilisant le nouveau service API basé sur axios
 export const apiClient = {
   // Méthodes pour récupérer des données
   from: (table: string) => ({
@@ -73,17 +73,7 @@ export const apiClient = {
                           filter: { [column]: { _eq: value } }
                         }
                       }));
-                    },
-                    ...createChainableMethod(async () => {
-                      return processResponse(api.get(`/directus/${table}`, {
-                        params: {
-                          fields,
-                          sort: `${ascending ? '' : '-'}${column}`,
-                          limit,
-                          filter: { [column]: { _eq: value } }
-                        }
-                      }));
-                    })
+                    }
                   };
                 },
                 single: async () => {
@@ -94,17 +84,25 @@ export const apiClient = {
                       limit: 1
                     }
                   }));
-                },
-                ...createChainableMethod(async () => {
-                  return processResponse(api.get(`/directus/${table}`, {
-                    params: {
-                      fields,
-                      sort: `${ascending ? '' : '-'}${column}`,
-                      limit
-                    }
-                  }));
-                })
+                }
               };
+              
+              // Add data and error properties
+              Object.defineProperties(limitObj, {
+                data: {
+                  get: async function() {
+                    const result = await this.execute();
+                    return result.data;
+                  }
+                },
+                error: {
+                  get: async function() {
+                    const result = await this.execute();
+                    return result.error;
+                  }
+                }
+              });
+              
               return limitObj;
             },
             eq: (column: string, value: any) => {
@@ -140,28 +138,9 @@ export const apiClient = {
                               limit
                             }
                           }));
-                        },
-                        ...createChainableMethod(async () => {
-                          return processResponse(api.get(`/directus/${table}`, {
-                            params: {
-                              fields,
-                              filter: { [column]: { _eq: value } },
-                              sort: `${innerAscending ? '' : '-'}${innerColumn}`,
-                              limit
-                            }
-                          }));
-                        })
-                      };
-                    },
-                    ...createChainableMethod(async () => {
-                      return processResponse(api.get(`/directus/${table}`, {
-                        params: {
-                          fields,
-                          filter: { [column]: { _eq: value } },
-                          sort: `${innerAscending ? '' : '-'}${innerColumn}`
                         }
-                      }));
-                    })
+                      };
+                    }
                   };
                 },
                 single: async () => {
@@ -171,17 +150,25 @@ export const apiClient = {
                       filter: { [column]: { _eq: value } }
                     }
                   }));
-                },
-                ...createChainableMethod(async () => {
-                  return processResponse(api.get(`/directus/${table}`, {
-                    params: {
-                      fields,
-                      sort: `${ascending ? '' : '-'}${column}`,
-                      filter: { [column]: { _eq: value } }
-                    }
-                  }));
-                })
+                }
               };
+              
+              // Add data and error properties
+              Object.defineProperties(eqObj, {
+                data: {
+                  get: async function() {
+                    const result = await this.execute();
+                    return result.data;
+                  }
+                },
+                error: {
+                  get: async function() {
+                    const result = await this.execute();
+                    return result.error;
+                  }
+                }
+              });
+              
               return eqObj;
             },
             execute: async () => {
@@ -200,16 +187,25 @@ export const apiClient = {
                   limit: 1
                 }
               }));
-            },
-            ...createChainableMethod(async () => {
-              return processResponse(api.get(`/directus/${table}`, {
-                params: {
-                  fields,
-                  sort: `${ascending ? '' : '-'}${column}`
-                }
-              }));
-            })
+            }
           };
+          
+          // Add data and error properties
+          Object.defineProperties(orderObj, {
+            data: {
+              get: async function() {
+                const result = await this.execute();
+                return result.data;
+              }
+            },
+            error: {
+              get: async function() {
+                const result = await this.execute();
+                return result.error;
+              }
+            }
+          });
+          
           return orderObj;
         },
         eq: (column: string, value: any) => {
@@ -244,28 +240,9 @@ export const apiClient = {
                           limit
                         }
                       }));
-                    },
-                    ...createChainableMethod(async () => {
-                      return processResponse(api.get(`/directus/${table}`, {
-                        params: {
-                          fields,
-                          filter: { [column]: { _eq: value } },
-                          sort: `${innerAscending ? '' : '-'}${innerColumn}`,
-                          limit
-                        }
-                      }));
-                    })
-                  };
-                },
-                ...createChainableMethod(async () => {
-                  return processResponse(api.get(`/directus/${table}`, {
-                    params: {
-                      fields,
-                      filter: { [column]: { _eq: value } },
-                      sort: `${innerAscending ? '' : '-'}${innerColumn}`
                     }
-                  }));
-                })
+                  };
+                }
               };
             },
             single: async () => {
@@ -275,16 +252,25 @@ export const apiClient = {
                   filter: { [column]: { _eq: value } }
                 }
               }));
-            },
-            ...createChainableMethod(async () => {
-              return processResponse(api.get(`/directus/${table}`, {
-                params: {
-                  fields,
-                  filter: { [column]: { _eq: value } }
-                }
-              }));
-            })
+            }
           };
+          
+          // Add data and error properties
+          Object.defineProperties(eqObj, {
+            data: {
+              get: async function() {
+                const result = await this.execute();
+                return result.data;
+              }
+            },
+            error: {
+              get: async function() {
+                const result = await this.execute();
+                return result.error;
+              }
+            }
+          });
+          
           return eqObj;
         },
         limit: (limit: number) => {
@@ -307,16 +293,7 @@ export const apiClient = {
                       filter: { [column]: { _eq: value } }
                     }
                   }));
-                },
-                ...createChainableMethod(async () => {
-                  return processResponse(api.get(`/directus/${table}`, {
-                    params: {
-                      fields,
-                      limit,
-                      filter: { [column]: { _eq: value } }
-                    }
-                  }));
-                })
+                }
               };
             },
             order: (column: string, { ascending = true } = {}) => {
@@ -329,16 +306,7 @@ export const apiClient = {
                       sort: `${ascending ? '' : '-'}${column}`
                     }
                   }));
-                },
-                ...createChainableMethod(async () => {
-                  return processResponse(api.get(`/directus/${table}`, {
-                    params: {
-                      fields,
-                      limit,
-                      sort: `${ascending ? '' : '-'}${column}`
-                    }
-                  }));
-                })
+                }
               };
             },
             single: async () => {
@@ -348,16 +316,25 @@ export const apiClient = {
                   limit: 1
                 }
               }));
-            },
-            ...createChainableMethod(async () => {
-              return processResponse(api.get(`/directus/${table}`, {
-                params: {
-                  fields,
-                  limit
-                }
-              }));
-            })
+            }
           };
+          
+          // Add data and error properties
+          Object.defineProperties(limitObj, {
+            data: {
+              get: async function() {
+                const result = await this.execute();
+                return result.data;
+              }
+            },
+            error: {
+              get: async function() {
+                const result = await this.execute();
+                return result.error;
+              }
+            }
+          });
+          
           return limitObj;
         },
         execute: async () => {
@@ -372,13 +349,25 @@ export const apiClient = {
               limit: 1
             }
           }));
-        },
-        ...createChainableMethod(async () => {
-          return processResponse(api.get(`/directus/${table}`, {
-            params: { fields }
-          }));
-        })
+        }
       };
+      
+      // Add data and error properties
+      Object.defineProperties(baseSelect, {
+        data: {
+          get: async function() {
+            const result = await this.execute();
+            return result.data;
+          }
+        },
+        error: {
+          get: async function() {
+            const result = await this.execute();
+            return result.error;
+          }
+        }
+      });
+      
       return baseSelect;
     },
     insert: (data: any) => ({
@@ -389,47 +378,26 @@ export const apiClient = {
         execute: async () => {
           const result = await processResponse(api.post(`/directus/${table}`, data));
           return result;
-        },
-        ...createChainableMethod(async () => {
-          return processResponse(api.post(`/directus/${table}`, data));
-        })
-      }),
-      ...createChainableMethod(async () => {
-        return processResponse(api.post(`/directus/${table}`, data));
+        }
       })
     }),
     update: (data: any) => ({
       eq: (column: string, value: any) => ({
         execute: async () => {
           return processResponse(api.patch(`/directus/${table}/${value}`, data));
-        },
-        ...createChainableMethod(async () => {
-          return processResponse(api.patch(`/directus/${table}/${value}`, data));
-        })
-      }),
-      ...createChainableMethod(async () => {
-        return processResponse(api.patch(`/directus/${table}`, data));
+        }
       })
     }),
     upsert: (data: any, options?: any) => ({
       execute: async () => {
         return processResponse(api.post(`/directus/${table}/upsert`, { data, options }));
-      },
-      ...createChainableMethod(async () => {
-        return processResponse(api.post(`/directus/${table}/upsert`, { data, options }));
-      })
+      }
     }),
     delete: () => ({
       eq: (column: string, value: any) => ({
         execute: async () => {
           return processResponse(api.delete(`/directus/${table}/${value}`));
-        },
-        ...createChainableMethod(async () => {
-          return processResponse(api.delete(`/directus/${table}/${value}`));
-        })
-      }),
-      ...createChainableMethod(async () => {
-        return processResponse(api.delete(`/directus/${table}`));
+        }
       })
     }),
     count: (column: string = '*') => ({
@@ -443,18 +411,7 @@ export const apiClient = {
           console.error(`Erreur lors du comptage des données de ${table}:`, error);
           return { count: 0, error };
         }
-      },
-      ...createChainableMethod(async () => {
-        try {
-          const response = await api.get(`/directus/${table}/count`, {
-            params: { fields: column }
-          });
-          return { count: response.data.count || 0, error: null };
-        } catch (error) {
-          console.error(`Erreur lors du comptage des données de ${table}:`, error);
-          return { count: 0, error };
-        }
-      })
+      }
     })
   }),
   

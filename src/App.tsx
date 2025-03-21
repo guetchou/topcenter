@@ -5,7 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { NotificationsProvider } from "@/components/notifications/NotificationsProvider";
-import { Toaster as UIToaster } from "@/components/ui/sonner";
+import { UIToaster } from "@/components/ui/sonner";
 import { Toaster } from "sonner";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { NetworkStatus } from "@/components/NetworkStatus";
@@ -16,9 +16,12 @@ import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { WebPushNotification } from "@/components/notifications/WebPushNotification";
 import { ChatContainer } from "@/components/chat/ChatContainer";
+import { DesignToggle } from "@/components/DesignToggle";
+import { shouldUseNewDesign } from "@/lib/designUtils";
 
 // Pages
 import Index from "@/pages/Index";
+import HomeNew from "@/pages/HomeNew"; // Ajout de la nouvelle page
 import About from "@/pages/About";
 import Services from "@/pages/Services";
 import Contact from "@/pages/Contact";
@@ -87,6 +90,7 @@ const ChatPalScript = () => {
 
 const App = () => {
   const { user, isAuthenticated } = useAuth();
+  const useNewNavigation = shouldUseNewDesign('navigation');
   
   return (
     <HelmetProvider>
@@ -95,11 +99,12 @@ const App = () => {
           <NotificationsProvider>
             <ImpersonationBanner />
             <NetworkStatus />
-            <MainNav />
+            <MainNav useNewDesign={useNewNavigation} />
             
             <Routes>
               {/* Public routes accessible to all users */}
               <Route path="/" element={<Index />} />
+              <Route path="/home-new" element={<HomeNew />} /> {/* Nouvelle route pour tester */}
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/contact" element={<Contact />} />
@@ -165,6 +170,9 @@ const App = () => {
             <UIToaster />
             <Toaster position="bottom-right" richColors />
             <PerformanceMonitor />
+            
+            {/* Afficher le toggle de design uniquement en environnement de développement */}
+            {process.env.NODE_ENV !== 'production' && <DesignToggle />}
           </NotificationsProvider>
         </QueryClientProvider>
       </ThemeProvider>
