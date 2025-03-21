@@ -19,6 +19,7 @@ const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaS
 
 // Lazy loading des nouvelles sections (à implémenter progressivement)
 const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection"));
+// Nous pouvons ajouter plus de nouvelles sections ici au fur et à mesure
 
 // Fallback générique
 const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (
