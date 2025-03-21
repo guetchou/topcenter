@@ -1,54 +1,10 @@
 
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useMenus } from "@/hooks/useMenus";
-import { MobileMenu } from "./nav/MobileMenu";
-import { DesktopNav } from "./nav/DesktopNav";
-import { Button } from "./ui/button";
-import { ThemeToggle } from "./ThemeToggle";
-import { useAuth } from "@/hooks/useAuth";
-import { Menu } from "lucide-react";
-import { Logo } from "./Logo";
+import { DynamicNav } from "./nav/DynamicNav";
 
+/**
+ * MainNav is a wrapper around DynamicNav to maintain backward compatibility
+ * This avoids duplicating navigation logic and keeps the codebase clean
+ */
 export function MainNav() {
-  const { primaryMenuItems } = useMenus();
-  const { isAuthenticated } = useAuth();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-md border-b border-border/10 bg-background/80">
-      <div className="container flex h-16 max-w-screen-2xl items-center">
-        <div className="mr-4 flex">
-          <Logo className="mr-6" size="md" />
-        </div>
-
-        <DesktopNav items={primaryMenuItems} />
-
-        <div className="flex flex-1 items-center justify-end space-x-2">
-          <nav className="flex items-center gap-4">
-            <ThemeToggle />
-            {isAuthenticated ? (
-              <Button variant="default" asChild className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link to="/dashboard">Dashboard</Link>
-              </Button>
-            ) : (
-              <Button variant="default" asChild className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link to="/login">Se connecter</Link>
-              </Button>
-            )}
-          </nav>
-          <Button
-            variant="ghost"
-            className="md:hidden"
-            size="icon"
-            onClick={() => setOpen(!open)}
-          >
-            <Menu className="h-5 w-5" />
-            <span className="sr-only">Toggle Menu</span>
-          </Button>
-        </div>
-      </div>
-      <MobileMenu open={open} setOpen={setOpen} items={primaryMenuItems} />
-    </header>
-  );
+  return <DynamicNav />;
 }

@@ -1,11 +1,13 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Camera } from "lucide-react";
+
+/**
+ * Ce composant est complètement désactivé pour optimiser les performances.
+ * Les références à ce composant sont conservées pour maintenir la compatibilité,
+ * mais il ne rend rien.
+ */
 
 export const ARServicePreview = () => {
-  // Component is disabled, but we'll keep the structure
-  const [isActive, setIsActive] = useState(false);
-
-  // Return an empty div instead of the actual component
-  return <div className="hidden"></div>;
+  // Return null to not render anything
+  return null;
 };
+
+export default ARServicePreview;

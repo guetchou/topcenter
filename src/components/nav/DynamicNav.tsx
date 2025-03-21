@@ -1,8 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { DesktopNav } from "./DesktopNav";
-import { MobileMenu } from "./MobileMenu";
 import { SearchDialog } from "./SearchDialog";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../ThemeToggle";
@@ -11,10 +9,13 @@ import { Menu, Search } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { ProfessionalNotifications } from "./ProfessionalNotifications";
+import { MobileMenu } from "./MobileMenu";
+import { DesktopNav } from "./DesktopNav";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { primaryMenuItems } = useMenus();
   const location = useLocation();
   const { user, impersonatedUser, logout, stopImpersonation } = useAuth();
@@ -25,6 +26,15 @@ export function DynamicNav() {
     setIsMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleLogout = async () => {
     if (impersonatedUser) {
       stopImpersonation();
@@ -34,10 +44,14 @@ export function DynamicNav() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/70 backdrop-blur">
+    <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${
+      scrolled 
+        ? 'bg-background/95 backdrop-blur shadow-sm' 
+        : 'bg-background/50 backdrop-blur-sm'
+    }`}>
       <div className="container flex h-16 items-center justify-between py-4">
         <div className="flex items-center gap-2">
-          <Link to="/" className="hidden items-center space-x-2 md:flex">
+          <Link to="/" className="flex items-center space-x-2">
             <img
               src="/lovable-uploads/logo-topcenter.png"
               alt="TopCenter Logo"
@@ -53,7 +67,7 @@ export function DynamicNav() {
             size="icon"
             aria-label="Rechercher"
             onClick={() => setIsSearchOpen(true)}
-            className="mr-1"
+            className="text-foreground/70 hover:text-foreground hover:bg-accent/50"
           >
             <Search className="h-5 w-5" />
             <span className="sr-only">Rechercher</span>
@@ -75,7 +89,7 @@ export function DynamicNav() {
             variant="ghost"
             size="icon"
             aria-label="Menu"
-            className="md:hidden"
+            className="md:hidden text-foreground/70 hover:text-foreground hover:bg-accent/50"
             onClick={() => setIsMenuOpen(true)}
           >
             <Menu className="h-5 w-5" />

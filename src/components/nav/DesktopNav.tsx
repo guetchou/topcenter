@@ -1,6 +1,7 @@
 
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { ChevronDown } from "lucide-react";
 
 interface NavItem {
   title: string;
@@ -28,7 +29,7 @@ export function DesktopNav({ items }: DesktopNavProps) {
             <Link
               key={item.title}
               to={item.path}
-              className="text-sm font-medium transition-colors hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full"
             >
               {item.title}
             </Link>
@@ -40,33 +41,23 @@ export function DesktopNav({ items }: DesktopNavProps) {
           <div key={item.title} className="relative group">
             <Link
               to={item.path}
-              className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all group-hover:after:w-full"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground flex items-center gap-1 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all group-hover:after:w-full"
             >
               {item.title}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="transition-transform group-hover:rotate-180"
-              >
-                <polyline points="6 9 12 15 18 9"></polyline>
-              </svg>
+              <ChevronDown 
+                size={14} 
+                className="transition-transform duration-200 group-hover:rotate-180" 
+              />
             </Link>
             
             {/* Menu déroulant */}
-            <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-background shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all backdrop-blur-sm border border-border/10">
+            <div className="absolute left-0 z-10 mt-2 w-48 rounded-md bg-background shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 backdrop-blur-sm border border-border/10">
               <div className="py-1 rounded-md bg-background/90">
                 {item.children?.map((child) => (
                   <Link
                     key={child.title}
                     to={child.path}
-                    className="block px-4 py-2 text-sm text-foreground hover:bg-primary/5 hover:text-primary transition-colors"
+                    className="block px-4 py-2 text-sm text-foreground/70 hover:bg-accent hover:text-foreground transition-colors"
                   >
                     {child.title}
                   </Link>

@@ -1,4 +1,16 @@
 
+/**
+ * Ce composant est déprécié, utilisez ProtectedRoute avec requireAdmin=true
+ * directement dans App.tsx
+ * 
+ * Exemple:
+ * <Route path="/admin" element={
+ *   <ProtectedRoute requireAdmin={true}>
+ *     <CMSLayout />
+ *   </ProtectedRoute>
+ * }>
+ */
+
 import { Navigate, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from '@/pages/Dashboard';
@@ -26,3 +38,5 @@ export const AdminRoutes = () => {
     </Routes>
   );
 };
+
+export default AdminRoutes;

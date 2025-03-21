@@ -14,25 +14,25 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    /* Soft orange primary color (Adjusted to match TopCenter branding but more subtle) */
-    --primary: 24 75% 55%;
+    /* Muted orange primary color */
+    --primary: 24 70% 50%;
     --primary-foreground: 0 0% 100%;
  
     --secondary: 30 30% 97%;
-    --secondary-foreground: 24 75% 35%;
+    --secondary-foreground: 24 60% 30%;
  
     --muted: 30 10% 96.1%;
     --muted-foreground: 25 5% 46.9%;
  
     --accent: 30 30% 97%;
-    --accent-foreground: 24 75% 45%;
+    --accent-foreground: 24 60% 40%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 24 5% 90%;
     --input: 24 5% 90%;
-    --ring: 24 75% 55%;
+    --ring: 24 60% 50%;
  
     --radius: 0.5rem;
   }
@@ -47,8 +47,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 0 0% 98%;
  
-    /* Soft orange primary color in dark mode */
-    --primary: 24 70% 50%;
+    /* Muted orange primary color in dark mode */
+    --primary: 24 60% 50%;
     --primary-foreground: 0 0% 100%;
  
     --secondary: 24 30% 17.5%;
@@ -65,7 +65,7 @@
  
     --border: 24 30% 17.5%;
     --input: 24 30% 17.5%;
-    --ring: 24 70% 50%;
+    --ring: 24 60% 45%;
   }
 }
  
@@ -100,7 +100,7 @@ button:not(header button)[class*="notification"] {
     @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
   }
   .hover-glow {
-    @apply hover:shadow-[0_0_15px_rgba(255,159,67,0.3)] transition-shadow duration-300;
+    @apply hover:shadow-[0_0_15px_rgba(255,159,67,0.25)] transition-shadow duration-300;
   }
 }
 

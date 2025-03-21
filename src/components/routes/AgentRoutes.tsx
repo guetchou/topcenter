@@ -1,4 +1,16 @@
 
+/**
+ * Ce composant est déprécié, utilisez ProtectedRoute avec le composant Dashboard
+ * directement dans App.tsx
+ * 
+ * Exemple:
+ * <Route path="/dashboard" element={
+ *   <ProtectedRoute>
+ *     <Dashboard />
+ *   </ProtectedRoute>
+ * } />
+ */
+
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from '@/pages/Dashboard';

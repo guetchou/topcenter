@@ -4,19 +4,20 @@ import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
-import { Toaster } from "sonner";
 import { NotificationsProvider } from "@/components/notifications/NotificationsProvider";
 import { Toaster as UIToaster } from "@/components/ui/sonner";
-import { AIChatAssistant } from "@/components/AIChatAssistant";
+import { Toaster } from "sonner";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { NetworkStatus } from "@/components/NetworkStatus";
 import { MainNav } from "@/components/MainNav";
 import { Footer } from "@/components/Footer";
 import { HelmetProvider } from "react-helmet-async";
-import { ARServicePreview } from "@/components/ARServicePreview";
-import { RealTimeAnalytics } from "@/components/RealTimeAnalytics";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
+import { PerformanceMonitor } from "@/components/PerformanceMonitor";
+import { WebPushNotification } from "@/components/notifications/WebPushNotification";
+import { ChatContainer } from "@/components/chat/ChatContainer";
 
-// Routes
+// Pages
 import Index from "@/pages/Index";
 import About from "@/pages/About";
 import Services from "@/pages/Services";
@@ -50,13 +51,7 @@ import SettingsPage from "@/pages/admin/settings/SettingsPage";
 import UserManagement from "@/pages/admin/UserManagement";
 import { useAuth } from "@/hooks/useAuth";
 
-import { ChatContainer } from "@/components/chat/ChatContainer";
-import { PerformanceMonitor } from "@/components/PerformanceMonitor";
-import { ImpersonationBanner } from "@/components/ImpersonationBanner";
-import { ElegantNotification } from "@/components/notifications/ElegantNotification";
-import { WebPushNotification } from "@/components/notifications/WebPushNotification";
-
-// Ajouter le script ChatPal directement
+// Chat Pal Script Integration
 const ChatPalScript = () => {
   React.useEffect(() => {
     // Supprimer l'instance précédente si elle existe
@@ -165,7 +160,6 @@ const App = () => {
             
             <Footer />
             <WebPushNotification />
-            {/* AR Service Preview is now disabled */}
             <ChatContainer />
             <ChatPalScript />
             <UIToaster />
