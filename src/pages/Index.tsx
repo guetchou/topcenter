@@ -18,16 +18,7 @@ const PartnersSection = lazy(() => import("@/components/sections/PartnersSection
 const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
 // Lazy loading des nouvelles sections (à implémenter progressivement)
-const NewHeroSection = lazy(() => import("@/pages/HomeNew").then(module => {
-  // Extrait uniquement la section Hero du HomeNew pour réutilisation
-  return { 
-    default: () => {
-      const HomeNewComponent = module.default;
-      // Rendu conditionnel pour extraire uniquement la section Hero
-      return <HomeNewComponent sectionOnly="hero" />;
-    } 
-  };
-}));
+const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection"));
 
 // Fallback générique
 const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (
