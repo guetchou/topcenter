@@ -43,8 +43,8 @@ export const AIChatBubble = ({ initialMessage = "Bonjour, comment puis-je vous a
 
             // Initialiser une nouvelle instance
             window.chatPal = new window.ChatPal({
-              embedId: '2yyMeBsp8GxX', // Remplacer par votre ID ChatterPal
-              remoteBaseUrl: 'https://chatterpal.me/',
+              embedId: 'v8HfNRZjDyZ3', // Nouvel embedId
+              remoteBaseUrl: 'https://chatappdemo.com/',
               version: '8.3',
               containerSelector: '#chatterpal-container',
               position: 'internal',

@@ -43,8 +43,8 @@ export const ChatContainer = () => {
         
         // Configurer la nouvelle instance
         window.chatPal = new window.ChatPal({
-          embedId: '2yyMeBsp8GxX',
-          remoteBaseUrl: 'https://chatterpal.me/',
+          embedId: 'v8HfNRZjDyZ3',
+          remoteBaseUrl: 'https://chatappdemo.com/',
           version: '8.3',
           containerSelector: '#chatterpal-container',
           position: 'internal',

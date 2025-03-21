@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -40,7 +41,7 @@ import AuthCallback from "@/components/auth/AuthCallback";
 
 // Admin
 import { CMSLayout } from "@/pages/admin/CMSLayout";
-import AdminDashboard from "@/pages/admin/Dashboard";
+import { AdminDashboard } from "@/pages/admin/Dashboard";
 import ArticlesPage from "@/pages/admin/articles/ArticlesPage";
 import CategoriesPage from "@/pages/admin/categories/CategoriesPage";
 import MediasPage from "@/pages/admin/medias/MediasPage";
@@ -56,8 +57,8 @@ import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { ElegantNotification } from "@/components/notifications/ElegantNotification";
 import { WebPushNotification } from "@/components/notifications/WebPushNotification";
 
-// Ajouter le script ChatterPal directement
-const ChatterPalScript = () => {
+// Ajouter le script ChatPal directement
+const ChatPalScript = () => {
   React.useEffect(() => {
     // Supprimer l'instance précédente si elle existe
     if (window.chatPal) {
@@ -68,25 +69,12 @@ const ChatterPalScript = () => {
       }
     }
     
-    // Ajouter le script ChatterPal
-    const script = document.createElement('script');
-    script.src = 'https://chatterpal.me/build/js/chatpal.js?8.3';
-    script.async = true;
-    script.integrity = "sha384-+YIWcPZjPZYuhrEm13vJJg76TIO/g7y5B14VE35zhQdrojfD9dPemo7q6vnH44FR";
-    script.crossOrigin = "anonymous";
-    script.setAttribute('data-cfasync', 'false');
-    
-    // Ajouter le script au body
-    document.body.appendChild(script);
-    
-    // Initialiser ChatterPal après chargement du script
-    script.onload = () => {
-      window.chatPal = new window.ChatPal({
-        embedId: '2yyMeBsp8GxX',
-        remoteBaseUrl: 'https://chatterpal.me/',
-        version: '8.3'
-      });
-    };
+    // Initialiser ChatPal
+    window.chatPal = new window.ChatPal({
+      embedId: 'v8HfNRZjDyZ3',
+      remoteBaseUrl: 'https://chatappdemo.com/',
+      version: '8.3'
+    });
 
     return () => {
       // Nettoyer lors du démontage du composant
@@ -96,9 +84,6 @@ const ChatterPalScript = () => {
         } catch (err) {
           console.log("Error destroying ChatPal instance:", err);
         }
-      }
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
       }
     };
   }, []);
@@ -183,7 +168,7 @@ const App = () => {
             <WebPushNotification />
             <ARServicePreview />
             <ChatContainer />
-            <ChatterPalScript />
+            <ChatPalScript />
             <UIToaster />
             <Toaster position="bottom-right" richColors />
             <PerformanceMonitor />
