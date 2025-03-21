@@ -3,7 +3,11 @@ import React, { useState, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { 
   designConfig, 
   enableNewDesignGlobally, 
@@ -12,11 +16,11 @@ import {
   disableNewDesign,
   resetDesignConfig
 } from "@/lib/designUtils";
-import { X, RotateCcw } from "lucide-react";
+import { Paintbrush, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 export function DesignToggle() {
-  // State pour suivre l'état actuel des toggles
+  // State to track current toggle states
   const [isGlobalEnabled, setIsGlobalEnabled] = useState(designConfig.useNewDesign);
   const [componentToggles, setComponentToggles] = useState({
     navigation: designConfig.components.navigation,
@@ -25,9 +29,9 @@ export function DesignToggle() {
     testimonials: designConfig.components.testimonials,
     footer: designConfig.components.footer,
   });
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
 
-  // Synchroniser l'état avec le designConfig
+  // Sync state with designConfig
   useEffect(() => {
     setIsGlobalEnabled(designConfig.useNewDesign);
     setComponentToggles({
@@ -39,7 +43,7 @@ export function DesignToggle() {
     });
   }, [designConfig.useNewDesign, designConfig.components]);
 
-  // Gestionnaire pour le toggle global
+  // Handler for global toggle
   const handleGlobalToggle = (checked: boolean) => {
     setIsGlobalEnabled(checked);
     if (checked) {
@@ -53,11 +57,11 @@ export function DesignToggle() {
       { duration: 2000 }
     );
     
-    // Recharger la page pour appliquer les changements
+    // Reload page to apply changes
     setTimeout(() => window.location.reload(), 500);
   };
 
-  // Gestionnaire pour les toggles individuels
+  // Handler for individual component toggles
   const handleComponentToggle = (
     component: keyof typeof designConfig.components, 
     checked: boolean
@@ -75,91 +79,76 @@ export function DesignToggle() {
       toast.success(`Design original restauré pour: ${String(component)}`, { duration: 2000 });
     }
     
-    // Recharger la page pour appliquer les changements
+    // Reload page to apply changes
     setTimeout(() => window.location.reload(), 500);
   };
 
-  // Réinitialiser toutes les options
+  // Reset all options
   const handleReset = () => {
     resetDesignConfig();
     toast.success("Configuration de design réinitialisée", { duration: 2000 });
     setTimeout(() => window.location.reload(), 500);
   };
 
-  if (!isOpen) {
-    return (
-      <Button 
-        className="fixed bottom-4 right-4 z-50" 
-        variant="outline" 
-        size="sm"
-        onClick={() => setIsOpen(true)}
-      >
-        Design Options
-      </Button>
-    );
-  }
-
   return (
-    <Card className="fixed bottom-4 right-4 z-50 shadow-lg w-72">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">Options de Design</CardTitle>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6" 
-            onClick={() => setIsOpen(false)}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-8 gap-1">
+          <Paintbrush className="h-4 w-4" />
+          Design
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-0">
+        <div className="p-3 border-b">
+          <h3 className="text-sm font-medium">Options de Design</h3>
         </div>
-      </CardHeader>
-      
-      <CardContent className="px-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between py-1 gap-2">
-            <Label htmlFor="design-toggle-global" className="text-sm font-medium">
-              Nouveau design (global)
-            </Label>
-            <Switch 
-              id="design-toggle-global" 
-              checked={isGlobalEnabled}
-              onCheckedChange={handleGlobalToggle}
-            />
-          </div>
-          
-          <div className="border-t my-2"></div>
-          
-          <div className="text-xs font-medium mb-1 text-muted-foreground">Composants spécifiques</div>
-          
-          {Object.entries(componentToggles).map(([key, value]) => (
-            <div key={key} className="flex items-center justify-between py-1 gap-2">
-              <Label htmlFor={`design-toggle-${key}`} className="text-sm">
-                {key.charAt(0).toUpperCase() + key.slice(1)}
+        
+        <div className="p-3">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between py-1 gap-2">
+              <Label htmlFor="design-toggle-global" className="text-sm font-medium">
+                Nouveau design (global)
               </Label>
               <Switch 
-                id={`design-toggle-${key}`} 
-                checked={value}
-                onCheckedChange={(checked) => 
-                  handleComponentToggle(key as keyof typeof designConfig.components, checked)
-                }
+                id="design-toggle-global" 
+                checked={isGlobalEnabled}
+                onCheckedChange={handleGlobalToggle}
               />
             </div>
-          ))}
+            
+            <div className="border-t my-2"></div>
+            
+            <div className="text-xs font-medium mb-1 text-muted-foreground">Composants spécifiques</div>
+            
+            {Object.entries(componentToggles).map(([key, value]) => (
+              <div key={key} className="flex items-center justify-between py-1 gap-2">
+                <Label htmlFor={`design-toggle-${key}`} className="text-sm">
+                  {key.charAt(0).toUpperCase() + key.slice(1)}
+                </Label>
+                <Switch 
+                  id={`design-toggle-${key}`} 
+                  checked={value}
+                  onCheckedChange={(checked) => 
+                    handleComponentToggle(key as keyof typeof designConfig.components, checked)
+                  }
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      </CardContent>
-      
-      <CardFooter className="bg-muted/50 py-2 flex justify-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleReset}
-          className="text-xs h-8"
-        >
-          <RotateCcw className="h-3 w-3 mr-1" />
-          Réinitialiser
-        </Button>
-      </CardFooter>
-    </Card>
+        
+        <div className="bg-muted/50 p-2 flex justify-center border-t">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="text-xs h-8"
+          >
+            <RotateCcw className="h-3 w-3 mr-1" />
+            Réinitialiser
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

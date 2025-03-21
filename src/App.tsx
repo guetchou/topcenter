@@ -1,9 +1,9 @@
+
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
-import { NotificationsProvider } from "@/components/notifications/NotificationsProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { UIToaster } from "@/components/ui/UIToaster";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
@@ -13,14 +13,12 @@ import { Footer } from "@/components/Footer";
 import { HelmetProvider } from "react-helmet-async";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
-import { WebPushNotification } from "@/components/notifications/WebPushNotification";
 import { ChatContainer } from "@/components/chat/ChatContainer";
-import { DesignToggle } from "@/components/DesignToggle";
 import { shouldUseNewDesign } from "@/lib/designUtils";
 
 // Pages
 import Index from "@/pages/Index";
-import HomeNew from "@/pages/HomeNew"; // Ajout de la nouvelle page
+import HomeNew from "@/pages/HomeNew"; 
 import About from "@/pages/About";
 import Services from "@/pages/Services";
 import Contact from "@/pages/Contact";
@@ -56,7 +54,7 @@ import { useAuth } from "@/hooks/useAuth";
 // Chat Pal Script Integration
 const ChatPalScript = () => {
   React.useEffect(() => {
-    // Supprimer l'instance précédente si elle existe
+    // Remove previous instance if it exists
     if (window.chatPal) {
       try {
         window.chatPal.destroy();
@@ -65,7 +63,7 @@ const ChatPalScript = () => {
       }
     }
     
-    // Initialiser ChatPal
+    // Initialize ChatPal
     window.chatPal = new window.ChatPal({
       embedId: 'v8HfNRZjDyZ3',
       remoteBaseUrl: 'https://chatappdemo.com/',
@@ -73,7 +71,7 @@ const ChatPalScript = () => {
     });
 
     return () => {
-      // Nettoyer lors du démontage du composant
+      // Clean up when component unmounts
       if (window.chatPal) {
         try {
           window.chatPal.destroy();
@@ -95,7 +93,6 @@ const App = () => {
     <HelmetProvider>
       <ThemeProvider attribute="class" defaultTheme="light">
         <QueryClientProvider client={queryClient}>
-          <NotificationsProvider>
             <ImpersonationBanner />
             <NetworkStatus />
             <MainNav useNewDesign={useNewNavigation} />
@@ -103,7 +100,7 @@ const App = () => {
             <Routes>
               {/* Public routes accessible to all users */}
               <Route path="/" element={<Index />} />
-              <Route path="/home-new" element={<HomeNew />} /> {/* Nouvelle route pour tester */}
+              <Route path="/home-new" element={<HomeNew />} />
               <Route path="/about" element={<About />} />
               <Route path="/services" element={<Services />} />
               <Route path="/contact" element={<Contact />} />
@@ -163,16 +160,11 @@ const App = () => {
             </Routes>
             
             <Footer />
-            <WebPushNotification />
             <ChatContainer />
             <ChatPalScript />
             <UIToaster />
             <Toaster position="bottom-right" richColors />
             <PerformanceMonitor />
-            
-            {/* Afficher le toggle de design uniquement en environnement de développement */}
-            {process.env.NODE_ENV !== 'production' && <DesignToggle />}
-          </NotificationsProvider>
         </QueryClientProvider>
       </ThemeProvider>
     </HelmetProvider>

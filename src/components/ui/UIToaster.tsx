@@ -7,5 +7,5 @@ import { Toaster } from "sonner";
  * Provides a consistent interface across the application
  */
 export const UIToaster = () => {
-  return <Toaster position="bottom-right" richColors />;
+  return <Toaster position="bottom-right" richColors closeButton />;
 };

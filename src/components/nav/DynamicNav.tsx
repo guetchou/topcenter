@@ -8,9 +8,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Menu, Search } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
-import { ProfessionalNotifications } from "./ProfessionalNotifications";
 import { MobileMenu } from "./MobileMenu";
 import { DesktopNav } from "./DesktopNav";
+import { DesignToggle } from "../DesignToggle";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,8 +77,10 @@ export function DynamicNav() {
             onOpenChange={setIsSearchOpen}
           />
 
-          <ProfessionalNotifications />
           <ThemeToggle />
+          
+          {/* Only show design toggle in development mode */}
+          {process.env.NODE_ENV !== 'production' && <DesignToggle />}
 
           <UserProfileMenu 
             activeUser={activeUser}
