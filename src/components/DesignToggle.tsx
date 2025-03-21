@@ -13,6 +13,7 @@ import {
   resetDesignConfig
 } from "@/lib/designUtils";
 import { X, RotateCcw } from "lucide-react";
+import { toast } from "sonner";
 
 export function DesignToggle() {
   // State pour suivre l'état actuel des toggles
@@ -46,8 +47,14 @@ export function DesignToggle() {
     } else {
       disableNewDesignGlobally();
     }
+    
+    toast.success(
+      checked ? "Nouveau design activé globalement" : "Nouveau design désactivé globalement",
+      { duration: 2000 }
+    );
+    
     // Recharger la page pour appliquer les changements
-    window.location.reload();
+    setTimeout(() => window.location.reload(), 500);
   };
 
   // Gestionnaire pour les toggles individuels
@@ -62,17 +69,21 @@ export function DesignToggle() {
     
     if (checked) {
       enableNewDesign(component);
+      toast.success(`Nouveau design activé pour: ${component}`, { duration: 2000 });
     } else {
       disableNewDesign(component);
+      toast.success(`Design original restauré pour: ${component}`, { duration: 2000 });
     }
+    
     // Recharger la page pour appliquer les changements
-    window.location.reload();
+    setTimeout(() => window.location.reload(), 500);
   };
 
   // Réinitialiser toutes les options
   const handleReset = () => {
     resetDesignConfig();
-    window.location.reload();
+    toast.success("Configuration de design réinitialisée", { duration: 2000 });
+    setTimeout(() => window.location.reload(), 500);
   };
 
   if (!isOpen) {

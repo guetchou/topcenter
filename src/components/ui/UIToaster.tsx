@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Toaster } from "./sonner";
+import { Toaster } from "sonner";
 
 /**
  * UIToaster - Wrapper component for the Toaster from sonner

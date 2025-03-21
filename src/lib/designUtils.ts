@@ -6,8 +6,11 @@
 // Récupérer les paramètres de design du localStorage si disponibles
 const getStoredDesignConfig = () => {
   try {
-    const storedConfig = localStorage.getItem('designConfig');
-    return storedConfig ? JSON.parse(storedConfig) : null;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const storedConfig = localStorage.getItem('designConfig');
+      return storedConfig ? JSON.parse(storedConfig) : null;
+    }
+    return null;
   } catch (e) {
     console.error('Error reading design config from localStorage:', e);
     return null;
@@ -38,7 +41,9 @@ export const designConfig = {
 // Sauvegarder les modifications dans localStorage
 const saveDesignConfig = () => {
   try {
-    localStorage.setItem('designConfig', JSON.stringify(designConfig));
+    if (typeof window !== 'undefined' && window.localStorage) {
+      localStorage.setItem('designConfig', JSON.stringify(designConfig));
+    }
   } catch (e) {
     console.error('Error saving design config to localStorage:', e);
   }

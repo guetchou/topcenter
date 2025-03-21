@@ -1,28 +1,25 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { MoveRight, PhoneCall, Award, Users } from "lucide-react";
+import { MoveRight, PhoneCall, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const NewHeroSection = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleCallNow = () => {
     // Simuler un appel ou demande de contact
-    toast({
-      title: "Demande de contact",
-      description: "Un membre de notre équipe vous contactera bientôt.",
+    toast.success("Demande de contact", {
+      description: "Un membre de notre équipe vous contactera bientôt."
     });
     navigate("/contact");
   };
 
   const handleQuoteRequest = () => {
     navigate("/devis");
-    toast({
-      title: "Demande de devis",
-      description: "Remplissez le formulaire pour obtenir un devis personnalisé.",
+    toast.success("Demande de devis", {
+      description: "Remplissez le formulaire pour obtenir un devis personnalisé."
     });
   };
 

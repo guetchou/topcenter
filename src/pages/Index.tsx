@@ -17,9 +17,8 @@ const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(
 const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
 const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
-// Lazy loading des nouvelles sections (à implémenter progressivement)
+// Lazy loading des nouvelles sections
 const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection"));
-// Nous pouvons ajouter plus de nouvelles sections ici au fur et à mesure
 
 // Fallback générique
 const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (
