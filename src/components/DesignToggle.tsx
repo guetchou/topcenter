@@ -69,10 +69,10 @@ export function DesignToggle() {
     
     if (checked) {
       enableNewDesign(component);
-      toast.success(`Nouveau design activé pour: ${component}`, { duration: 2000 });
+      toast.success(`Nouveau design activé pour: ${String(component)}`, { duration: 2000 });
     } else {
       disableNewDesign(component);
-      toast.success(`Design original restauré pour: ${component}`, { duration: 2000 });
+      toast.success(`Design original restauré pour: ${String(component)}`, { duration: 2000 });
     }
     
     // Recharger la page pour appliquer les changements
