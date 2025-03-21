@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -68,9 +67,8 @@ const TrainingContent = () => {
           material_id: material.id,
           completion_status: 'in_progress',
           last_accessed_at: new Date().toISOString()
-        }, {
-          onConflict: 'enrollment_id,material_id'
-        });
+        })
+        .execute();
 
       if (error) {
         toast({
@@ -115,9 +113,8 @@ const TrainingContent = () => {
         completion_status: 'completed',
         completed_at: new Date().toISOString(),
         last_accessed_at: new Date().toISOString()
-      }, {
-        onConflict: 'enrollment_id,material_id'
-      });
+      })
+      .execute();
 
     if (error) {
       toast({

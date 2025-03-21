@@ -24,9 +24,9 @@ export const QuoteRequest = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase.from("quote_requests").insert([formData]).execute();
+      const response = await supabase.from("quote_requests").insert([formData]).execute();
 
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       toast({
         title: "Demande envoyée !",

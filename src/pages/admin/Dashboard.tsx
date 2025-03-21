@@ -11,16 +11,16 @@ export const AdminDashboard = () => {
     queryFn: async () => {
       try {
         // Exécuter les requêtes en parallèle
-        const articles = await supabase.from('blog_posts').count().execute();
-        const categories = await supabase.from('content_categories').count().execute();
-        const medias = await supabase.from('media_library').count().execute();
-        const menus = await supabase.from('menus').count().execute();
+        const articlesResponse = await supabase.from('blog_posts').count().execute();
+        const categoriesResponse = await supabase.from('content_categories').count().execute();
+        const mediasResponse = await supabase.from('media_library').count().execute();
+        const menusResponse = await supabase.from('menus').count().execute();
 
         return {
-          articles: articles.count || 0,
-          categories: categories.count || 0,
-          medias: medias.count || 0,
-          menus: menus.count || 0
+          articles: articlesResponse.count || 0,
+          categories: categoriesResponse.count || 0,
+          medias: mediasResponse.count || 0,
+          menus: menusResponse.count || 0
         };
       } catch (error) {
         console.error("Erreur lors de la récupération des statistiques:", error);
@@ -56,7 +56,7 @@ export const AdminDashboard = () => {
               {isLoading ? (
                 <Skeleton className="h-7 w-16" />
               ) : (
-                <div className="text-2xl font-bold">{stat.value}</div>
+                <div className="text-2xl font-bold">{stat.value || 0}</div>
               )}
             </CardContent>
           </Card>
@@ -65,5 +65,3 @@ export const AdminDashboard = () => {
     </div>
   );
 };
-
-export default AdminDashboard;

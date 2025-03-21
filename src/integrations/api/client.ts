@@ -17,6 +17,15 @@ const processResponse = async (promise) => {
   }
 };
 
+// Wrapper pour assurer que les méthodes de chaînage retournent correctement data et error
+const chainableQueryBuilder = (baseQuery) => {
+  return async () => {
+    const result = await baseQuery.execute();
+    // Retourner directement l'objet result pour être compatible avec le client Supabase
+    return result;
+  };
+};
+
 // Fonction utilitaire pour simuler la structure de l'ancien client Supabase
 // mais utilisant le nouveau service API basé sur axios
 export const apiClient = {
@@ -57,7 +66,9 @@ export const apiClient = {
                       limit: 1
                     }
                   }));
-                }
+                },
+                // Ajoute les propriétés data et error directement
+                ...chainableQueryBuilder(limitObj)
               };
               return limitObj;
             },
@@ -92,6 +103,29 @@ export const apiClient = {
                           limit
                         }
                       }));
+                    },
+                    ...chainableQueryBuilder({
+                      execute: async () => {
+                        return processResponse(api.get(`/directus/${table}`, {
+                          params: {
+                            fields,
+                            filter: { [column]: { _eq: value } },
+                            sort: `${innerAscending ? '' : '-'}${innerColumn}`,
+                            limit
+                          }
+                        }));
+                      }
+                    })
+                  }),
+                  ...chainableQueryBuilder({
+                    execute: async () => {
+                      return processResponse(api.get(`/directus/${table}`, {
+                        params: {
+                          fields,
+                          filter: { [column]: { _eq: value } },
+                          sort: `${innerAscending ? '' : '-'}${innerColumn}`
+                        }
+                      }));
                     }
                   })
                 }),
@@ -102,7 +136,8 @@ export const apiClient = {
                       filter: { [column]: { _eq: value } }
                     }
                   }));
-                }
+                },
+                ...chainableQueryBuilder(eqObj)
               };
               return eqObj;
             },
@@ -122,7 +157,17 @@ export const apiClient = {
                   limit: 1
                 }
               }));
-            }
+            },
+            ...chainableQueryBuilder({
+              execute: async () => {
+                return processResponse(api.get(`/directus/${table}`, {
+                  params: {
+                    fields,
+                    sort: `${ascending ? '' : '-'}${column}`
+                  }
+                }));
+              }
+            })
           };
           return orderObj;
         },
@@ -156,6 +201,29 @@ export const apiClient = {
                       limit
                     }
                   }));
+                },
+                ...chainableQueryBuilder({
+                  execute: async () => {
+                    return processResponse(api.get(`/directus/${table}`, {
+                      params: {
+                        fields,
+                        filter: { [column]: { _eq: value } },
+                        sort: `${innerAscending ? '' : '-'}${innerColumn}`,
+                        limit
+                      }
+                    }));
+                  }
+                })
+              }),
+              ...chainableQueryBuilder({
+                execute: async () => {
+                  return processResponse(api.get(`/directus/${table}`, {
+                    params: {
+                      fields,
+                      filter: { [column]: { _eq: value } },
+                      sort: `${innerAscending ? '' : '-'}${innerColumn}`
+                    }
+                  }));
                 }
               })
             }),
@@ -166,7 +234,8 @@ export const apiClient = {
                   filter: { [column]: { _eq: value } }
                 }
               }));
-            }
+            },
+            ...chainableQueryBuilder(eqObj)
           };
           return eqObj;
         },
@@ -189,7 +258,18 @@ export const apiClient = {
                     filter: { [column]: { _eq: value } }
                   }
                 }));
-              }
+              },
+              ...chainableQueryBuilder({
+                execute: async () => {
+                  return processResponse(api.get(`/directus/${table}`, {
+                    params: {
+                      fields,
+                      limit,
+                      filter: { [column]: { _eq: value } }
+                    }
+                  }));
+                }
+              })
             }),
             order: (column: string, { ascending = true } = {}) => ({
               execute: async () => {
@@ -200,7 +280,18 @@ export const apiClient = {
                     sort: `${ascending ? '' : '-'}${column}`
                   }
                 }));
-              }
+              },
+              ...chainableQueryBuilder({
+                execute: async () => {
+                  return processResponse(api.get(`/directus/${table}`, {
+                    params: {
+                      fields,
+                      limit,
+                      sort: `${ascending ? '' : '-'}${column}`
+                    }
+                  }));
+                }
+              })
             }),
             single: async () => {
               return processResponse(api.get(`/directus/${table}/first`, {
@@ -209,7 +300,8 @@ export const apiClient = {
                   limit: 1
                 }
               }));
-            }
+            },
+            ...chainableQueryBuilder(limitObj)
           };
           return limitObj;
         },
@@ -225,32 +317,65 @@ export const apiClient = {
               limit: 1
             }
           }));
-        }
+        },
+        ...chainableQueryBuilder({
+          execute: async () => {
+            return processResponse(api.get(`/directus/${table}`, {
+              params: { fields }
+            }));
+          }
+        })
       };
       return baseSelect;
     },
     insert: (data: any) => ({
       execute: async () => {
         return processResponse(api.post(`/directus/${table}`, data));
-      }
+      },
+      select: () => ({
+        execute: async () => {
+          const result = await processResponse(api.post(`/directus/${table}`, data));
+          return result;
+        }
+      }),
+      ...chainableQueryBuilder({
+        execute: async () => {
+          return processResponse(api.post(`/directus/${table}`, data));
+        }
+      })
     }),
     update: (data: any) => ({
       eq: (column: string, value: any) => ({
         execute: async () => {
           return processResponse(api.patch(`/directus/${table}/${value}`, data));
-        }
+        },
+        ...chainableQueryBuilder({
+          execute: async () => {
+            return processResponse(api.patch(`/directus/${table}/${value}`, data));
+          }
+        })
       })
     }),
-    upsert: (data: any) => ({
+    upsert: (data: any, options?: any) => ({
       execute: async () => {
-        return processResponse(api.post(`/directus/${table}/upsert`, data));
-      }
+        return processResponse(api.post(`/directus/${table}/upsert`, { data, options }));
+      },
+      ...chainableQueryBuilder({
+        execute: async () => {
+          return processResponse(api.post(`/directus/${table}/upsert`, { data, options }));
+        }
+      })
     }),
     delete: () => ({
       eq: (column: string, value: any) => ({
         execute: async () => {
           return processResponse(api.delete(`/directus/${table}/${value}`));
-        }
+        },
+        ...chainableQueryBuilder({
+          execute: async () => {
+            return processResponse(api.delete(`/directus/${table}/${value}`));
+          }
+        })
       })
     }),
     count: (column: string = '*') => ({

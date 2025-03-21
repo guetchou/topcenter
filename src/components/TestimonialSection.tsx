@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,17 +10,18 @@ export const TestimonialSection = () => {
   const { data: testimonials, isLoading } = useQuery({
     queryKey: ['testimonials'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const response = await supabase
         .from('testimonials')
         .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching testimonials:", error);
-        throw error;
+        .order('created_at', { ascending: false })
+        .execute();
+        
+      if (response.error) {
+        console.error("Error fetching testimonials:", response.error);
+        throw response.error;
       }
 
-      return data;
+      return response.data;
     }
   });
 

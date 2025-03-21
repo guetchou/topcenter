@@ -9,14 +9,15 @@ export const useTrainingMaterials = (sessionId: string) => {
     queryFn: async () => {
       if (!sessionId) return [];
       
-      const { data, error } = await supabase
+      const response = await supabase
         .from('training_materials')
         .select('*')
         .eq('session_id', sessionId)
-        .order('order_index', { ascending: true });
+        .order('order_index', { ascending: true })
+        .execute();
 
-      if (error) throw error;
-      return data as TrainingMaterial[];
+      if (response.error) throw response.error;
+      return response.data as TrainingMaterial[];
     },
     enabled: !!sessionId
   });

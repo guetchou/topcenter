@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,17 +44,18 @@ const NewsAdmin = () => {
       try {
         setIsLoading(true);
         
-        const { data, error } = await supabase
+        const response = await supabase
           .from('blog_posts')
           .select('*')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .execute();
         
-        if (error) {
-          throw error;
+        if (response.error) {
+          throw response.error;
         }
         
-        if (data) {
-          setArticles(data as BlogPost[]);
+        if (response.data) {
+          setArticles(response.data as BlogPost[]);
         }
       } catch (error) {
         console.error("Erreur lors du chargement des articles:", error);
@@ -104,12 +104,13 @@ const NewsAdmin = () => {
     
     try {
       setIsSubmitting(true);
-      const { error } = await supabase
+      const response = await supabase
         .from('blog_posts')
         .delete()
-        .eq('id', deleteId);
+        .eq('id', deleteId)
+        .execute();
       
-      if (error) throw error;
+      if (response.error) throw response.error;
       
       setArticles(prev => prev.filter(article => article.id !== deleteId));
       
@@ -158,14 +159,13 @@ const NewsAdmin = () => {
       
       if (currentArticle.id) {
         // Update
-        const { data, error } = await supabase
+        const response = await supabase
           .from('blog_posts')
           .update(articleData)
           .eq('id', currentArticle.id)
-          .select();
+          .execute();
         
-        if (error) throw error;
-        result = data;
+        if (response.error) throw response.error;
         
         setArticles(prev => prev.map(article => 
           article.id === currentArticle.id ? { ...article, ...articleData } as BlogPost : article
@@ -177,16 +177,16 @@ const NewsAdmin = () => {
         });
       } else {
         // Create
-        const { data, error } = await supabase
+        const response = await supabase
           .from('blog_posts')
           .insert(articleData)
-          .select();
+          .execute();
         
-        if (error) throw error;
-        result = data;
+        if (response.error) throw response.error;
+        result = response.data;
         
-        if (data && data[0]) {
-          setArticles(prev => [data[0] as BlogPost, ...prev]);
+        if (response.data && response.data[0]) {
+          setArticles(prev => [response.data[0] as BlogPost, ...prev]);
         }
         
         toast({
@@ -238,15 +238,16 @@ const NewsAdmin = () => {
     try {
       setIsSubmitting(true);
       
-      const { error } = await supabase
+      const response = await supabase
         .from('blog_posts')
         .update({ 
           status, 
           published_at: status === 'published' ? new Date().toISOString() : null 
         })
-        .eq('id', id);
+        .eq('id', id)
+        .execute();
       
-      if (error) throw error;
+      if (response.error) throw response.error;
       
       setArticles(prev => prev.map(article => 
         article.id === id ? {...article, status} as BlogPost : article
