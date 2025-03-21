@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -13,25 +14,25 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
  
-    /* Orange primary color (Adjusted to match TopCenter branding) */
-    --primary: 24 95% 55%;
+    /* Soft orange primary color (Adjusted to match TopCenter branding but more subtle) */
+    --primary: 24 75% 55%;
     --primary-foreground: 0 0% 100%;
  
-    --secondary: 30 100% 97%;
-    --secondary-foreground: 24 95% 35%;
+    --secondary: 30 30% 97%;
+    --secondary-foreground: 24 75% 35%;
  
     --muted: 30 10% 96.1%;
     --muted-foreground: 25 5% 46.9%;
  
-    --accent: 30 100% 97%;
-    --accent-foreground: 24 95% 45%;
+    --accent: 30 30% 97%;
+    --accent-foreground: 24 75% 45%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
     --border: 24 5% 90%;
     --input: 24 5% 90%;
-    --ring: 24 95% 55%;
+    --ring: 24 75% 55%;
  
     --radius: 0.5rem;
   }
@@ -46,8 +47,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 0 0% 98%;
  
-    /* Orange primary color in dark mode */
-    --primary: 24 90% 50%;
+    /* Soft orange primary color in dark mode */
+    --primary: 24 70% 50%;
     --primary-foreground: 0 0% 100%;
  
     --secondary: 24 30% 17.5%;
@@ -64,7 +65,7 @@
  
     --border: 24 30% 17.5%;
     --input: 24 30% 17.5%;
-    --ring: 24 90% 50%;
+    --ring: 24 70% 50%;
   }
 }
  
@@ -94,9 +95,6 @@ button:not(header button)[class*="notification"] {
   }
   .animate-float {
     animation: float 15s ease-in-out infinite;
-  }
-  .animate-shine {
-    animation: shine 2s linear infinite;
   }
   .hover-lift {
     @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
@@ -147,14 +145,5 @@ button:not(header button)[class*="notification"] {
   }
   75% {
     transform: translateY(10px) translateX(10px);
-  }
-}
-
-@keyframes shine {
-  from {
-    background-position: -200% center;
-  }
-  to {
-    background-position: 200% center;
   }
 }

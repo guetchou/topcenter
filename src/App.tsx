@@ -50,7 +50,6 @@ import SettingsPage from "@/pages/admin/settings/SettingsPage";
 import UserManagement from "@/pages/admin/UserManagement";
 import { useAuth } from "@/hooks/useAuth";
 
-// Suppression de l'import du composant WebPushNotification
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ImpersonationBanner } from "@/components/ImpersonationBanner";
@@ -166,7 +165,7 @@ const App = () => {
             
             <Footer />
             <WebPushNotification />
-            <ARServicePreview />
+            {/* AR Service Preview is now disabled */}
             <ChatContainer />
             <ChatPalScript />
             <UIToaster />

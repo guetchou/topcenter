@@ -1,5 +1,5 @@
 
-import { MoveRight, ShieldCheck, Globe2, Star, FileText } from "lucide-react";
+import { MoveRight, ShieldCheck, Globe2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -37,15 +37,6 @@ export const HeroSection = () => {
     });
   };
 
-  // Fonction pour appliquer des animations en fonction du défilement
-  const getScrollAnimation = (delay = 0) => {
-    return {
-      opacity: isScrolled ? 1 : 0.8,
-      transform: isScrolled ? "translateY(0)" : "translateY(20px)",
-      transition: `all 0.5s ease-out ${delay}s`,
-    };
-  };
-
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-r from-[#1A1F2C] to-[#2C3345]">
       <div 
@@ -60,11 +51,6 @@ export const HeroSection = () => {
       <div className="container relative z-10 py-20">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 text-primary mb-6 animate-pulse-subtle">
-              <Star className="w-4 h-4 mr-2" />
-              Leader du marché au Congo
-            </div>
-            
             <h1 className="text-5xl lg:text-6xl font-bold leading-tight text-white">
               Centre d'Appels <br />
               <span className="text-primary">Nouvelle Génération</span>
@@ -78,39 +64,37 @@ export const HeroSection = () => {
               <Button 
                 size="lg" 
                 variant="default"
-                className="group relative overflow-hidden"
+                className="relative overflow-hidden"
                 onClick={handleCallNow}
               >
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 transform translate-x-[-100%] hover:translate-x-[100%] transition-transform duration-700"></span>
                 Démarrer maintenant
-                <MoveRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                <MoveRight className="w-4 h-4 ml-2 transition-transform" />
               </Button>
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="relative overflow-hidden group border-2 border-white bg-transparent text-white hover:bg-white/10 transition-all duration-300 shadow-lg"
+                className="border-2 border-white bg-transparent text-white hover:bg-white/10 transition-all duration-300"
                 onClick={handleQuoteRequest}
               >
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
                 Demander un devis
-                <FileText className="w-5 h-5 ml-2 text-primary group-hover:rotate-12 transition-transform" />
+                <FileText className="w-5 h-5 ml-2 text-primary" />
               </Button>
             </div>
 
             <div className="flex items-center gap-8 pt-8 mt-8 border-t border-white/10">
-              <div className="flex items-center gap-2 text-white group hover:text-primary transition-colors duration-300">
-                <Globe2 className="w-5 h-5 text-primary group-hover:animate-bounce-subtle" />
+              <div className="flex items-center gap-2 text-white">
+                <Globe2 className="w-5 h-5 text-primary" />
                 <span>Couverture nationale</span>
               </div>
-              <div className="flex items-center gap-2 text-white group hover:text-primary transition-colors duration-300">
-                <ShieldCheck className="w-5 h-5 text-primary group-hover:animate-bounce-subtle" />
+              <div className="flex items-center gap-2 text-white">
+                <ShieldCheck className="w-5 h-5 text-primary" />
                 <span>ISO 27001 Certifié</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Nouveaux indicateurs interactifs */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
           {[
             { label: "Agents Formés", value: "120+", icon: "👨‍💼" },
@@ -120,11 +104,7 @@ export const HeroSection = () => {
           ].map((stat, index) => (
             <div 
               key={index}
-              className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-primary/10 hover:border-primary/30 transition-all duration-300 hover:transform hover:scale-105"
-              style={{
-                animationDelay: `${index * 0.1}s`,
-                animation: 'fadeInUp 0.5s ease-out forwards',
-              }}
+              className="bg-white/5 backdrop-blur-sm p-4 rounded-lg border border-primary/10"
             >
               <div className="text-3xl mb-2">{stat.icon}</div>
               <div className="text-2xl font-bold text-white">{stat.value}</div>
@@ -134,8 +114,7 @@ export const HeroSection = () => {
         </div>
       </div>
 
-      {/* Bannière technologie flottante */}
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-primary/80 to-primary/50 py-2 transform translate-y-0 hover:translate-y-1 transition-transform duration-300 backdrop-blur-sm">
+      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-primary/80 to-primary/50 py-2 backdrop-blur-sm">
         <div className="container flex items-center justify-center gap-4 text-white text-sm overflow-x-auto whitespace-nowrap">
           <span>Powered by:</span>
           <span className="font-semibold">AI Voice Analytics</span>

@@ -9,7 +9,6 @@ import { ThemeToggle } from "./ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { Menu } from "lucide-react";
 import { Logo } from "./Logo";
-import { ProfessionalNotifications } from "./nav/ProfessionalNotifications";
 
 export function MainNav() {
   const { primaryMenuItems } = useMenus();
@@ -17,7 +16,7 @@ export function MainNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full backdrop-blur-md border-b border-border/10 bg-background/80">
       <div className="container flex h-16 max-w-screen-2xl items-center">
         <div className="mr-4 flex">
           <Logo className="mr-6" size="md" />
@@ -26,15 +25,14 @@ export function MainNav() {
         <DesktopNav items={primaryMenuItems} />
 
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <nav className="flex items-center gap-2">
-            <ProfessionalNotifications />
+          <nav className="flex items-center gap-4">
             <ThemeToggle />
             {isAuthenticated ? (
-              <Button variant="default" asChild className="px-4 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button variant="default" asChild className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/dashboard">Dashboard</Link>
               </Button>
             ) : (
-              <Button variant="default" asChild className="px-4 bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button variant="default" asChild className="rounded-full px-4 bg-primary text-primary-foreground hover:bg-primary/90">
                 <Link to="/login">Se connecter</Link>
               </Button>
             )}
