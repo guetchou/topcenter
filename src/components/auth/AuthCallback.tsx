@@ -12,7 +12,7 @@ export const AuthCallback = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    // Si l'utilisateur est déjà connecté, rediriger vers le dashboard
+    // If user is already logged in, redirect to dashboard
     if (user) {
       navigate('/dashboard');
       return;
@@ -20,36 +20,36 @@ export const AuthCallback = () => {
 
     const handleAuthCallback = async () => {
       try {
-        // Récupérer le token depuis l'URL
+        // Get token from URL
         const params = new URLSearchParams(location.search);
         const token = params.get('token');
         
         if (!token) {
-          throw new Error("Token non trouvé dans l'URL");
+          throw new Error("Token not found in URL");
         }
         
-        // Stocker le token
+        // Store the token
         localStorage.setItem('auth_token', token);
         
-        // Vérifier si le token est valide
+        // Verify if token is valid
         const response = await api.get('/auth/me');
-        if (response.data && response.data.user) {
-          // Authentification réussie
-          toast.success('Connexion réussie!');
+        if (response.data && response.data.user && response.data.user.id) {
+          // Authentication successful
+          toast.success('Authentication successful!');
           navigate('/dashboard');
         } else {
-          // Pas de session valide
-          throw new Error("Session non valide");
+          // No valid session
+          throw new Error("Invalid session");
         }
       } catch (err: any) {
-        console.error('Erreur lors de la récupération de la session:', err);
-        setError(err.message || 'Échec de l\'authentification');
-        toast.error('Échec de l\'authentification');
+        console.error('Error retrieving session:', err);
+        setError(err.message || 'Authentication failed');
+        toast.error('Authentication failed');
         
-        // Retirer le token invalide
+        // Remove invalid token
         localStorage.removeItem('auth_token');
         
-        // Redirection vers la page de connexion après un délai
+        // Redirect to login page after a delay
         setTimeout(() => navigate('/auth'), 3000);
       }
     };
@@ -66,16 +66,16 @@ export const AuthCallback = () => {
               <svg className="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Erreur d'authentification
+              Authentication Error
             </div>
             <p className="text-muted-foreground">{error}</p>
-            <p className="mt-2">Redirection vers la page de connexion...</p>
+            <p className="mt-2">Redirecting to login page...</p>
           </>
         ) : (
           <>
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-            <h2 className="mt-4 text-xl font-semibold">Authentification en cours...</h2>
-            <p className="text-muted-foreground mt-2">Veuillez patienter pendant que nous finalisons votre connexion</p>
+            <h2 className="mt-4 text-xl font-semibold">Authenticating...</h2>
+            <p className="text-muted-foreground mt-2">Please wait while we complete your login</p>
           </>
         )}
       </div>

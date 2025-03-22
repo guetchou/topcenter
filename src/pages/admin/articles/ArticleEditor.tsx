@@ -1,297 +1,441 @@
-import React, { useState, useEffect, useCallback } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import RichTextEditor from '@/components/RichTextEditor';
-import { useToast } from "@/components/ui/use-toast";
-import { News } from '@/types/news';
-import { supabase } from '@/integrations/supabase/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import api from '@/services/api';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
+import RichTextEditor from '@/components/RichTextEditor';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Textarea } from '@/components/ui/textarea';
+import { MediaUpload } from '../medias/MediaUpload';
+
+const formSchema = z.object({
+  title: z.string().min(3, { message: 'Title must be at least 3 characters' }),
+  slug: z.string().min(3, { message: 'Slug must be at least 3 characters' }),
+  excerpt: z.string().optional(),
+  content: z.string(),
+  category_id: z.string().optional(),
+  published: z.boolean().default(false),
+  featured_image: z.string().optional(),
+  meta_title: z.string().optional(),
+  meta_description: z.string().optional(),
+  author_id: z.string().optional(),
+  status: z.enum(['draft', 'published', 'archived']).default('draft'),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 const ArticleEditor = () => {
-  const [title, setTitle] = useState('');
-  const [summary, setSummary] = useState('');
-  const [content, setContent] = useState('');
-  const [status, setStatus] = useState<'published' | 'draft'>('draft');
-  const [imageUrl, setImageUrl] = useState('');
-  const [isFeatured, setIsFeatured] = useState(false);
-  const [seoTitle, setSeoTitle] = useState('');
-  const [seoDescription, setSeoDescription] = useState('');
-  const [publishedAt, setPublishedAt] = useState<Date | undefined>(undefined);
-  const [isSaving, setIsSaving] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [authors, setAuthors] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [isPublished, setIsPublished] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { id: articleId } = useParams<{ id: string }>();
+  const { id } = useParams();
 
-  const formatDate = (date: Date | undefined): string => {
-    return date ? format(date, "yyyy-MM-dd") : "";
-  };
-
-  const fetchArticle = useCallback(async () => {
-    if (articleId) {
-      const { data, error } = await supabase
-        .from('news')
-        .select('*')
-        .eq('id', articleId)
-        .single();
-
-      if (error) {
-        toast({
-          title: 'Error fetching article',
-          description: error.message,
-          variant: 'destructive',
-        });
-      }
-
-      if (data) {
-        setTitle(data.title);
-        setSummary(data.summary);
-        setContent(data.content);
-        setStatus(data.status);
-        setImageUrl(data.image_url || '');
-        setIsFeatured(data.featured || false);
-        setSeoTitle(data.seo_title || '');
-        setSeoDescription(data.seo_description || '');
-        setPublishedAt(data.published_at ? new Date(data.published_at) : undefined);
-      }
-    }
-  }, [articleId, toast]);
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: '',
+      slug: '',
+      excerpt: '',
+      content: '',
+      category_id: '',
+      published: false,
+      featured_image: '',
+      meta_title: '',
+      meta_description: '',
+      author_id: '',
+      status: 'draft',
+    },
+  });
 
   useEffect(() => {
-    fetchArticle();
-  }, [fetchArticle]);
-
-  const handleSave = async (newStatus: News['status']) => {
-    setIsSaving(true);
-
-    const articleData = {
-      title,
-      summary,
-      content,
-      status: newStatus,
-      image_url: imageUrl,
-      featured: isFeatured,
-      seo_title: seoTitle,
-      seo_description: seoDescription,
-      published_at: formatDate(publishedAt),
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get('/admin/categories');
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        toast.error('Failed to load categories');
+      }
     };
 
-    try {
-      if (articleId) {
-        const { error } = await supabase
-          .from('news')
-          .update(articleData)
-          .eq('id', articleId);
-
-        if (error) {
-          throw error;
-        }
-
-        toast({
-          title: 'Article mis à jour',
-          description: 'L\'article a été mis à jour avec succès.',
-        });
-      } else {
-        const { error } = await supabase
-          .from('news')
-          .insert([articleData]);
-
-        if (error) {
-          throw error;
-        }
-
-        toast({
-          title: 'Article créé',
-          description: 'L\'article a été créé avec succès.',
-        });
+    const fetchAuthors = async () => {
+      try {
+        const response = await api.get('/admin/authors');
+        setAuthors(response.data);
+      } catch (error) {
+        console.error('Error fetching authors:', error);
+        toast.error('Failed to load authors');
       }
+    };
 
-      navigate('/admin/news');
-    } catch (error: any) {
-      toast({
-        title: 'Erreur lors de l\'enregistrement',
-        description: error.message,
-        variant: 'destructive',
-      });
+    const fetchArticle = async () => {
+      if (!id) return;
+      
+      try {
+        setIsLoading(true);
+        const response = await api.get(`/admin/articles/${id}`);
+        const article = response.data;
+        
+        form.reset({
+          title: article.title,
+          slug: article.slug,
+          excerpt: article.excerpt || '',
+          content: article.content || '',
+          category_id: article.category_id || '',
+          published: article.published || false,
+          featured_image: article.featured_image || '',
+          meta_title: article.meta_title || '',
+          meta_description: article.meta_description || '',
+          author_id: article.author_id || '',
+          status: article.status || 'draft',
+        });
+        
+        setIsPublished(article.published || false);
+        setImageUrl(article.featured_image || null);
+      } catch (error) {
+        console.error('Error fetching article:', error);
+        toast.error('Failed to load article data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategories();
+    fetchAuthors();
+    fetchArticle();
+  }, [id, form]);
+
+  const onSubmit = async (values: FormValues) => {
+    try {
+      setIsLoading(true);
+      
+      if (imageUrl) {
+        values.featured_image = imageUrl;
+      }
+      
+      if (id) {
+        await api.put(`/admin/articles/${id}`, values);
+        toast.success('Article updated successfully');
+      } else {
+        await api.post('/admin/articles', values);
+        toast.success('Article created successfully');
+      }
+      
+      navigate('/admin/articles');
+    } catch (error) {
+      console.error('Error saving article:', error);
+      toast.error('Failed to save article');
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
   };
 
-  const handlePublish = () => handleSave('published');
-  const handleSaveAsDraft = () => handleSave('draft');
+  const generateSlug = () => {
+    const title = form.getValues('title');
+    if (!title) return;
+    
+    const slug = title
+      .toLowerCase()
+      .replace(/[^\w\s]/gi, '')
+      .replace(/\s+/g, '-');
+    
+    form.setValue('slug', slug);
+  };
 
   return (
-    <div className="container py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">{articleId ? 'Modifier l\'article' : 'Nouvel article'}</h1>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/admin/news')}
-          >
-            Annuler
-          </Button>
-          <Button 
-            onClick={handleSaveAsDraft}
-            variant="secondary"
-            disabled={isSaving}
-          >
-            Enregistrer comme brouillon
-          </Button>
-          <Button 
-            onClick={handlePublish}
-            disabled={isSaving}
-          >
-            {isSaving ? 'Enregistrement...' : 'Publier'}
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="md:col-span-2">
             <CardHeader>
-              <CardTitle>Contenu de l'article</CardTitle>
+              <CardTitle>{id ? 'Edit Article' : 'Create New Article'}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="title">Titre</Label>
-                <Input 
-                  id="title" 
-                  value={title} 
-                  onChange={(e) => setTitle(e.target.value)} 
-                  placeholder="Titre de l'article"
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter article title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={generateSlug}
+                      className="mt-2"
+                    >
+                      Generate Slug
+                    </Button>
+                  </FormItem>
+                )}
+              />
               
-              <div>
-                <Label htmlFor="summary">Résumé</Label>
-                <Textarea 
-                  id="summary" 
-                  value={summary} 
-                  onChange={(e) => setSummary(e.target.value)} 
-                  placeholder="Bref résumé de l'article"
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug</FormLabel>
+                    <FormControl>
+                      <Input placeholder="article-slug" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
-              <div>
-                <Label>Contenu</Label>
-                <RichTextEditor 
-                  value={content} 
-                  onChange={setContent} 
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="excerpt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Excerpt</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Brief description of the article" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Content</FormLabel>
+                    <FormControl>
+                      <RichTextEditor value={field.value} onChange={field.onChange} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
           
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres SEO</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="seo-title">SEO Title</Label>
-                <Input
-                  id="seo-title"
-                  value={seoTitle}
-                  onChange={(e) => setSeoTitle(e.target.value)}
-                  placeholder="Titre SEO de l'article"
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Publishing Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="draft" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Draft</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="published" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Published</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="archived" />
+                            </FormControl>
+                            <FormLabel className="font-normal">Archived</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div>
-                <Label htmlFor="seo-description">SEO Description</Label>
-                <Textarea
-                  id="seo-description"
-                  value={seoDescription}
-                  onChange={(e) => setSeoDescription(e.target.value)}
-                  placeholder="Description SEO de l'article"
+                
+                <FormField
+                  control={form.control}
+                  name="published"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                      <FormControl>
+                        <Checkbox 
+                          checked={field.value} 
+                          onCheckedChange={(checked) => {
+                            if (typeof checked === 'boolean') {
+                              setIsPublished(checked);
+                              field.onChange(checked);
+                            }
+                          }} 
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Published</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Make this article publicly visible
+                        </p>
+                      </div>
+                    </FormItem>
+                  )}
                 />
-              </div>
-            </CardContent>
-          </Card>
+                
+                <FormField
+                  control={form.control}
+                  name="category_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {categories.map(category => (
+                            <SelectItem key={category.id} value={category.id}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="author_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Author</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an author" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {authors.map(author => (
+                            <SelectItem key={author.id} value={author.id}>
+                              {author.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Featured Image</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="featured_image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <MediaUpload
+                          value={imageUrl || ''}
+                          onChange={(url) => {
+                            setImageUrl(url);
+                            field.onChange(url);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>SEO Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="meta_title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meta Title</FormLabel>
+                      <FormControl>
+                        <Input placeholder="SEO title" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="meta_description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Meta Description</FormLabel>
+                      <FormControl>
+                        <Textarea placeholder="SEO description" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </div>
         </div>
         
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="status">Statut</Label>
-                <Select value={status} onValueChange={(value) => setStatus(value as 'published' | 'draft')}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Sélectionner un statut" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Brouillon</SelectItem>
-                    <SelectItem value="published">Publié</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="image-url">URL de l'image</Label>
-                <Input
-                  id="image-url"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="URL de l'image"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="featured"
-                  checked={isFeatured}
-                  onCheckedChange={(checked) => setIsFeatured(checked || false)}
-                />
-                <Label htmlFor="featured">Article mis en avant</Label>
-              </div>
-
-              <div>
-                <Label>Date de publication</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !publishedAt && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {publishedAt ? format(publishedAt, "PPP") : <span>Choisir une date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="center">
-                    <Calendar
-                      mode="single"
-                      selected={publishedAt}
-                      onSelect={setPublishedAt}
-                      disabled={(date) =>
-                        date > new Date()
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+        <CardFooter className="flex justify-between">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => navigate('/admin/articles')}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <span className="animate-spin mr-2">⟳</span> Saving...
+              </>
+            ) : id ? (
+              'Update Article'
+            ) : (
+              'Create Article'
+            )}
+          </Button>
+        </CardFooter>
+      </form>
+    </Form>
   );
 };
 

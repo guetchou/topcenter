@@ -6,14 +6,14 @@ import { AuthUser } from '@/types/auth';
 import { AuthActions } from '@/types/authStore';
 import { useApiError } from './useApiError';
 
-// Hook combinant le store d'authentification et les actions du service d'authentification
+// Hook combining the auth store and the auth service actions
 export const useAuth = (): {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   impersonatedUser: AuthUser | null;
 } & AuthActions => {
-  // Récupérer l'état du store
+  // Get the store state
   const { 
     user, 
     isAuthenticated, 
@@ -23,7 +23,7 @@ export const useAuth = (): {
   
   const { handleError } = useApiError();
   
-  // Vérifier l'utilisateur au montage
+  // Check user auth on mount
   useEffect(() => {
     const checkUserAuth = async () => {
       try {
@@ -36,9 +36,9 @@ export const useAuth = (): {
     checkUserAuth();
   }, []);
   
-  // Combiner l'état et les actions
+  // Combine state and actions
   return {
-    // État
+    // State
     user,
     isAuthenticated,
     isLoading,

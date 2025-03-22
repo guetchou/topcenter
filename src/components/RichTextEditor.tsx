@@ -3,6 +3,8 @@ import React from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import TextAlign from '@tiptap/extension-text-align';
 import { Button } from '@/components/ui/button';
 import { 
   Bold, 
@@ -10,7 +12,7 @@ import {
   List, 
   ListOrdered, 
   Image as ImageIcon, 
-  Link, 
+  Link as LinkIcon, 
   AlignLeft, 
   AlignCenter, 
   AlignRight
@@ -30,7 +32,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Image
+      Image,
+      Link.configure({
+        openOnClick: false,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+        alignments: ['left', 'center', 'right'],
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -113,7 +122,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           className={editor.isActive('link') ? 'bg-muted' : ''}
           type="button"
         >
-          <Link className="h-4 w-4" />
+          <LinkIcon className="h-4 w-4" />
         </Button>
         <Button
           variant="ghost"

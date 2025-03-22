@@ -15,7 +15,7 @@ export const ProtectedRoute = ({
   requireSuperAdmin = false,
   requireMasterAdmin = false
 }: ProtectedRouteProps) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isAuthenticated } = useAuth();
   const location = useLocation();
   
   if (isLoading) {
@@ -26,11 +26,12 @@ export const ProtectedRoute = ({
     );
   }
 
-  if (!user) {
-    // Redirect to login page with current location
+  if (!isAuthenticated || !user) {
+    // Save the current location to redirect back after login
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
+  // Role-based access checks
   if (requireMasterAdmin && user.role !== 'master_admin') {
     return <Navigate to="/dashboard" replace />;
   }

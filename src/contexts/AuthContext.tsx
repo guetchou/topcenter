@@ -35,21 +35,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialisation de la session
+    // Initialize the session
     const initSession = async () => {
       setLoading(true);
       try {
         const token = localStorage.getItem('auth_token');
         if (token) {
-          const response = await api.get('/auth/me');
-          const userData = response.data.user;
-          
-          setUser(userData);
-          setProfile(userData.profile);
-          setUserRole(userData.role as UserRole);
+          try {
+            const response = await api.get('/auth/me');
+            const userData = response.data.user;
+            
+            if (userData && userData.id) {
+              setUser(userData);
+              setProfile(userData.profile || null);
+              setUserRole(userData.role as UserRole || null);
+            } else {
+              // Invalid user data
+              localStorage.removeItem('auth_token');
+              setUser(null);
+            }
+          } catch (error) {
+            console.error("Error initializing session:", error);
+            localStorage.removeItem('auth_token');
+            setUser(null);
+          }
         }
       } catch (error) {
-        console.error("Erreur lors de l'initialisation de la session:", error);
+        console.error("Error initializing session:", error);
         localStorage.removeItem('auth_token');
       } finally {
         setLoading(false);
@@ -62,16 +74,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     try {
       const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      const { token, user: userData } = response.data;
+      
+      if (!userData || !userData.id) {
+        throw new Error("Invalid user data received");
+      }
       
       localStorage.setItem('auth_token', token);
-      setUser(user);
-      setProfile(user.profile);
-      setUserRole(user.role);
+      setUser(userData);
+      setProfile(userData.profile || null);
+      setUserRole(userData.role || null);
       
       toast.success("Connexion réussie");
     } catch (error: any) {
-      console.error("Erreur de connexion:", error);
+      console.error("Login error:", error);
       toast.error(error.response?.data?.message || "Impossible de se connecter");
       throw error;
     }
@@ -81,7 +97,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       window.location.href = `${api.defaults.baseURL}/auth/google`;
     } catch (error: any) {
-      console.error("Erreur de connexion avec Google:", error);
+      console.error("Google login error:", error);
       toast.error("Impossible de se connecter avec Google");
       throw error;
     }
@@ -95,16 +111,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         fullName
       });
       
-      const { token, user } = response.data;
+      const { token, user: userData } = response.data;
+      
+      if (!userData || !userData.id) {
+        throw new Error("Invalid user data received");
+      }
       
       localStorage.setItem('auth_token', token);
-      setUser(user);
-      setProfile(user.profile);
-      setUserRole(user.role);
+      setUser(userData);
+      setProfile(userData.profile || null);
+      setUserRole(userData.role || null);
       
       toast.success("Compte créé avec succès");
     } catch (error: any) {
-      console.error("Erreur d'inscription:", error);
+      console.error("Registration error:", error);
       toast.error(error.response?.data?.message || "Impossible de créer le compte");
       throw error;
     }
@@ -115,7 +135,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await api.post('/auth/reset-password', { email });
       toast.success("Email de réinitialisation envoyé");
     } catch (error: any) {
-      console.error("Erreur de réinitialisation:", error);
+      console.error("Password reset error:", error);
       toast.error(error.response?.data?.message || "Impossible d'envoyer l'email de réinitialisation");
       throw error;
     }
@@ -130,7 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       
       toast.success("Mot de passe mis à jour");
     } catch (error: any) {
-      console.error("Erreur de mise à jour du mot de passe:", error);
+      console.error("Password update error:", error);
       toast.error(error.response?.data?.message || "Impossible de mettre à jour le mot de passe");
       throw error;
     }
@@ -145,7 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserRole(null);
       toast.success("Déconnexion réussie");
     } catch (error: any) {
-      console.error("Erreur de déconnexion:", error);
+      console.error("Logout error:", error);
       localStorage.removeItem('auth_token');
       setUser(null);
       setProfile(null);
@@ -155,6 +175,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  // Safe check for admin roles
   const isAdmin = userRole === 'admin' || userRole === 'super_admin';
   const isSuperAdmin = userRole === 'super_admin';
 
