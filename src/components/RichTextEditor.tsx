@@ -14,8 +14,8 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 
-interface RichTextEditorProps {
-  content: string;
+export interface RichTextEditorProps {
+  initialContent: string;
   onChange: (content: string) => void;
 }
 
@@ -101,13 +101,13 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
   );
 };
 
-export const RichTextEditor = ({ content, onChange }: RichTextEditorProps) => {
+export const RichTextEditor = ({ initialContent, onChange }: RichTextEditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Image
     ],
-    content,
+    content: initialContent,
     onUpdate: ({ editor }) => {
       onChange(editor.getHTML());
     },

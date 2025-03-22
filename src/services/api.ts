@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// Création d'une instance axios avec la configuration de base
+// Create an axios instance with base configuration
 const api = axios.create({
   baseURL: process.env.NODE_ENV === 'production' 
     ? '/api' 
@@ -13,22 +13,22 @@ const api = axios.create({
   }
 });
 
-// Cache pour les vérifications de disponibilité du serveur
+// Cache for server availability checks
 let lastServerCheck = 0;
 let lastServerStatus = true;
-const SERVER_CHECK_INTERVAL = 30000; // 30 secondes
+const SERVER_CHECK_INTERVAL = 30000; // 30 seconds
 
-// Fonction utilitaire pour vérifier si le serveur est accessible
+// Utility function to check if the server is accessible
 const checkServerAvailability = async (force = false) => {
   const now = Date.now();
   
-  // Utiliser le résultat en cache si la dernière vérification est récente
+  // Use cached result if the last check was recent
   if (!force && now - lastServerCheck < SERVER_CHECK_INTERVAL) {
     return lastServerStatus;
   }
   
   try {
-    // Requête HEAD vers une ressource statique qui devrait toujours être disponible
+    // HEAD request to a static resource that should always be available
     const response = await fetch('/lovable-uploads/logo-topcenter.png', { 
       method: 'HEAD',
       cache: 'no-store',
@@ -47,21 +47,21 @@ const checkServerAvailability = async (force = false) => {
   }
 };
 
-// Intercepteur pour ajouter le token d'authentification aux requêtes
+// Request interceptor to add auth token and check connectivity
 api.interceptors.request.use(async (config) => {
-  // Vérifier si on est en ligne avant d'envoyer la requête
+  // Check if online before sending request
   if (!navigator.onLine) {
     return Promise.reject(
-      new Error('Vous êtes actuellement hors ligne. Veuillez vous reconnecter à Internet.')
+      new Error('You are currently offline. Please reconnect to the internet.')
     );
   }
   
-  // Pour les routes d'authentification ou importantes, vérifiez aussi la disponibilité du serveur
+  // For authentication or important routes, also check server availability
   if (config.url?.includes('/auth/') || config.method === 'post' || config.method === 'put' || config.method === 'delete') {
     const isServerAvailable = await checkServerAvailability();
     if (!isServerAvailable) {
       return Promise.reject(
-        new Error('Le service est temporairement indisponible. Veuillez réessayer plus tard.')
+        new Error('The service is temporarily unavailable. Please try again later.')
       );
     }
   }
@@ -75,67 +75,66 @@ api.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
-// Un registre des erreurs pour éviter de montrer des toasts répétitifs
+// Error registry to avoid repeated toasts
 const errorRegistry = new Map();
-const ERROR_COOLDOWN = 30000; // 30 secondes
+const ERROR_COOLDOWN = 30000; // 30 seconds
 
-// Intercepteur pour gérer les erreurs de réponse
+// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const errorKey = error.message || 'unknown-error';
     const now = Date.now();
     
-    // Vérifier si cette erreur a déjà été affichée récemment
+    // Check if this error was already shown recently
     if (!errorRegistry.has(errorKey) || now - errorRegistry.get(errorKey) > ERROR_COOLDOWN) {
-      // Enregistrer l'erreur
+      // Register the error
       errorRegistry.set(errorKey, now);
       
-      // Nettoyer périodiquement le registre des erreurs
+      // Clean up error registry periodically
       setTimeout(() => {
         errorRegistry.delete(errorKey);
       }, ERROR_COOLDOWN);
       
-      // Vérifier si c'est une erreur liée au mode hors ligne ou à un problème réseau
+      // Handle offline or network errors
       if (!navigator.onLine || error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
-        toast.error('Vous êtes hors ligne ou le serveur est inaccessible. Certaines fonctionnalités peuvent être limitées.');
-        // Mettre à jour le statut du serveur
+        toast.error('You are offline or the server is unreachable. Some features may be limited.');
+        // Update server status
         lastServerStatus = false;
         lastServerCheck = now;
-        return Promise.reject(new Error('Le service est temporairement indisponible. Veuillez réessayer plus tard.'));
+        return Promise.reject(new Error('The service is temporarily unavailable. Please try again later.'));
       }
       
-      // Vérifier le statut de l'erreur HTTP
+      // Handle HTTP error statuses
       if (error.response) {
-        // Gérer les erreurs d'authentification (401)
+        // Authentication errors (401)
         if (error.response.status === 401) {
           localStorage.removeItem('auth_token');
-          // Ne pas rediriger automatiquement, car cela peut interrompre l'expérience utilisateur
-          // Montrer un toast à la place
-          toast.error('Session expirée. Veuillez vous reconnecter.', {
+          // Show toast instead of auto-redirect to avoid interrupting user experience
+          toast.error('Session expired. Please login again.', {
             action: {
-              label: 'Se connecter',
+              label: 'Login',
               onClick: () => window.location.href = '/login'
             }
           });
-          return Promise.reject(new Error('Session expirée. Veuillez vous reconnecter.'));
+          return Promise.reject(new Error('Session expired. Please login again.'));
         }
         
-        // Gérer les erreurs 503 (service indisponible)
+        // Service unavailable (503)
         if (error.response.status === 503) {
-          // Mettre à jour le statut du serveur
+          // Update server status
           lastServerStatus = false;
           lastServerCheck = now;
-          return Promise.reject(new Error('Le service est temporairement indisponible. Veuillez réessayer plus tard.'));
+          return Promise.reject(new Error('The service is temporarily unavailable. Please try again later.'));
         }
         
-        // Gérer les erreurs 500 (erreur serveur)
+        // Server errors (500+)
         if (error.response.status >= 500) {
-          return Promise.reject(new Error('Une erreur est survenue sur le serveur. Veuillez réessayer plus tard.'));
+          return Promise.reject(new Error('A server error occurred. Please try again later.'));
         }
         
-        // Afficher les erreurs avec toast pour les autres codes d'erreur
-        const errorMessage = error.response.data?.message || 'Une erreur est survenue';
+        // Show toast for other error codes
+        const errorMessage = error.response.data?.message || 'An error occurred';
         toast.error(errorMessage);
       }
     }
@@ -144,10 +143,12 @@ api.interceptors.response.use(
   }
 );
 
-// Exporter des méthodes supplémentaires
+// Export additional utility methods
 export const apiUtils = {
   checkServerAvailability,
-  resetErrorRegistry: () => errorRegistry.clear()
+  resetErrorRegistry: () => errorRegistry.clear(),
+  getLastServerStatus: () => lastServerStatus,
+  refreshServerStatus: () => checkServerAvailability(true)
 };
 
 export default api;

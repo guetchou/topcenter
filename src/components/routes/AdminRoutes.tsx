@@ -16,6 +16,7 @@ export const AdminRoutes = () => {
   return (
     <Routes>
       <Route element={<CMSLayout />}>
+        <Route path="/" element={<AdminDashboard />} />
         <Route path="/dashboard" element={<AdminDashboard />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/users" element={<UserManagement />} />
