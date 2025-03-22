@@ -1,47 +1,43 @@
 
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ModelSelector } from "./ModelSelector";
 
-interface ChatHeaderProps {
-  isConnectedToAgent: boolean;
-  queuePosition: number;
-  useChatterPal: boolean;
+export interface ChatHeaderProps {
+  selectedModel: string;
+  setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
   onClose: () => void;
+  activeTab?: string;
 }
 
-export const ChatHeader = ({ 
-  isConnectedToAgent, 
-  queuePosition, 
-  useChatterPal, 
-  onClose 
+export const ChatHeader = ({
+  selectedModel,
+  setSelectedModel,
+  onClose,
+  activeTab
 }: ChatHeaderProps) => {
   return (
-    <div className="p-4 border-b flex justify-between items-center bg-primary text-primary-foreground rounded-t-lg">
-      <div>
-        <h3 className="font-semibold">Chat en direct</h3>
-        {!isConnectedToAgent && queuePosition > 0 && !useChatterPal && (
-          <p className="text-sm opacity-90">
-            Position dans la file : {queuePosition}
-          </p>
-        )}
-        {isConnectedToAgent && !useChatterPal && (
-          <p className="text-sm opacity-90">
-            Agent connecté
-          </p>
-        )}
-        {useChatterPal && (
-          <p className="text-sm opacity-90">
-            Agent ChatterPal
-          </p>
+    <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center gap-2">
+        <h3 className="font-semibold">
+          {activeTab === "ai" ? "Assistant IA" : "Chat en direct"}
+        </h3>
+        {activeTab === "ai" && (
+          <ModelSelector
+            value={selectedModel}
+            onChange={setSelectedModel}
+          />
         )}
       </div>
       <Button
         variant="ghost"
         size="icon"
+        className="rounded-full"
         onClick={onClose}
-        className="hover:bg-primary/20"
       >
-        <X className="w-4 h-4" />
+        <X className="h-4 w-4" />
+        <span className="sr-only">Fermer</span>
       </Button>
     </div>
   );

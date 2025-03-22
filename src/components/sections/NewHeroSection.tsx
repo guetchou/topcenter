@@ -29,17 +29,31 @@ const NewHeroSection = () => {
       description: "Remplissez le formulaire pour obtenir un devis personnalisé."
     });
   };
+  
+  const handleConnect = () => {
+    navigate("/login");
+    toast.success("Connexion", {
+      description: "Connectez-vous à votre compte TopCenter."
+    });
+  };
 
   return (
-    <section className="relative bg-gradient-to-r from-primary/90 to-primary py-20 text-white overflow-hidden">
+    <section className="relative bg-gradient-to-r from-primary/90 to-primary py-20 text-white overflow-hidden min-h-[80vh] flex items-center">
       {/* Carrousel en arrière-plan avec effet de transition */}
-      <CarouselBackground images={backgroundImages} />
+      <CarouselBackground 
+        images={backgroundImages} 
+        interval={7000}
+        overlayOpacity={0.2}
+        animationDuration={2000}
+        blur={2}
+      />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <HeroContent 
             onCallNow={handleCallNow} 
-            onQuoteRequest={handleQuoteRequest} 
+            onQuoteRequest={handleQuoteRequest}
+            onConnect={handleConnect}
           />
           
           <div className="hidden md:block">
@@ -48,7 +62,8 @@ const NewHeroSection = () => {
               <img 
                 src="/lovable-uploads/agent-topcenter1.png" 
                 alt="Agent TopCenter" 
-                className="relative rounded-xl shadow-lg object-cover w-full max-w-lg mx-auto"
+                className="relative rounded-xl shadow-lg object-cover w-full max-w-lg mx-auto animate-scale-in"
+                style={{ animationDelay: "0.3s" }}
               />
             </div>
           </div>
