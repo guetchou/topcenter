@@ -11,7 +11,6 @@ const NewHeroSection = () => {
   // Images pour le carrousel en arrière-plan
   const backgroundImages = [
     "/lovable-uploads/staff-tce.jpg",
-    "/lovable-uploads/agent-topcenter1.png",
     "/lovable-uploads/equipe-topcenter.jpg"
   ];
 

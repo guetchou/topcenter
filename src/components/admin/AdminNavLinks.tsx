@@ -12,7 +12,8 @@ import {
   Menu,
   Key,
   Rocket,
-  Bot
+  Bot,
+  Newspaper
 } from 'lucide-react';
 
 interface NavLinkProps {
@@ -55,6 +56,9 @@ export const AdminNavLinks: React.FC = () => {
       </NavLink>
       <NavLink href="/admin/credentials" icon={Key}>
         Identifiants
+      </NavLink>
+      <NavLink href="/admin/news" icon={Newspaper}>
+        Actualités
       </NavLink>
       <NavLink href="/admin/articles" icon={FileText}>
         Articles
