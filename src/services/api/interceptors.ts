@@ -1,5 +1,5 @@
 
-import { InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance } from 'axios';
+import { InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance, AxiosHeaders } from 'axios';
 import { checkServerAvailability } from './serverStatus';
 import { handleApiError } from './errorHandler';
 
@@ -36,9 +36,11 @@ export const setupRequestInterceptor = (axiosInstance: AxiosInstance): void => {
       // Add authentication token if available
       const token = localStorage.getItem('auth_token');
       if (token) {
-        // This fixes the TypeScript error - we set headers as AxiosRequestHeaders
-        config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${token}`;
+        // Ensure headers is an AxiosHeaders instance
+        if (!config.headers) {
+          config.headers = new AxiosHeaders();
+        }
+        config.headers.set('Authorization', `Bearer ${token}`);
       }
       
       return config;

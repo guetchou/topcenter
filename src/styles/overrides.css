@@ -1,0 +1,5 @@
+
+/* Masquer les boutons de notification flottants qui ne sont pas dans le header */
+button:not(header button)[class*="notification"] {
+  display: none !important;
+}
