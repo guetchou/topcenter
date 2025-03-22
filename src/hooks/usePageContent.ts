@@ -66,9 +66,14 @@ const fallbackContents: Record<string, Partial<PageContent>> = {
     title: "Contactez-nous",
     description: "Notre équipe est à votre écoute pour répondre à vos besoins",
     content: {
-      address: "123 Avenue de la République, Brazzaville, Congo",
+      office_address: "123 Avenue de la République, Brazzaville, Congo",
       phone: "+242 06 123 4567",
-      email: "contact@topcenter.cg"
+      email: "contact@topcenter.cg",
+      hours: {
+        weekdays: "9h - 18h",
+        saturday: "10h - 15h",
+        sunday: "Fermé"
+      }
     }
   },
   'blog': {
