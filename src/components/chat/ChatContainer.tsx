@@ -5,9 +5,8 @@ import { ChatMessages } from "./ChatMessages";
 import { ChatInputForm } from "./ChatInputForm";
 import { ChatTabs } from "./ChatTabs";
 import { useAIChat } from "@/hooks/useAIChat";
-import { Button } from "@/components/ui/button";
-import { MessageSquareText } from "lucide-react";
-import { User } from "lucide-react";
+import { ChatActions } from "./ChatActions";
+import { ChatButton } from "./ChatButton";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -77,82 +76,112 @@ export const ChatContainer = () => {
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {isOpen ? (
-        <div className={cn(
-          "bg-background border rounded-lg shadow-lg w-[400px] max-h-[600px] flex flex-col",
-          "transition-all duration-300 ease-in-out",
-          "transform animate-in slide-in-from-bottom-5 fade-in-0",
-          "hover:shadow-xl",
-          "border-primary/10"
-        )}>
-          <ChatHeader 
-            activeTab={activeTab} 
-            selectedModel={selectedModel} 
-            setSelectedModel={setSelectedModel} 
-            onClose={() => setIsOpen(false)} 
+        <ChatPanel 
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          selectedModel={selectedModel}
+          setSelectedModel={setSelectedModel}
+          messages={messages}
+          isLoading={isLoading}
+          transferring={transferring}
+          message={message}
+          setMessage={setMessage}
+          handleMessageSubmit={handleMessageSubmit}
+          onClose={() => setIsOpen(false)}
+          chatterpalLoaded={chatterpalLoaded}
+          transferToHuman={transferToHuman}
+        />
+      ) : (
+        <ChatButton 
+          onClick={() => setIsOpen(true)}
+          hasMessages={messages.length > 0}
+        />
+      )}
+    </div>
+  );
+};
+
+interface ChatPanelProps {
+  activeTab: string;
+  setActiveTab: (tab: string) => void;
+  selectedModel: string;
+  setSelectedModel: (model: string) => void;
+  messages: any[];
+  isLoading: boolean;
+  transferring: boolean;
+  message: string;
+  setMessage: (message: string) => void;
+  handleMessageSubmit: (e: React.FormEvent) => void;
+  onClose: () => void;
+  chatterpalLoaded: boolean;
+  transferToHuman: () => void;
+}
+
+const ChatPanel = ({
+  activeTab,
+  setActiveTab,
+  selectedModel,
+  setSelectedModel,
+  messages,
+  isLoading,
+  transferring,
+  message,
+  setMessage,
+  handleMessageSubmit,
+  onClose,
+  chatterpalLoaded,
+  transferToHuman
+}: ChatPanelProps) => {
+  return (
+    <div className={cn(
+      "bg-background border rounded-lg shadow-lg w-[400px] max-h-[600px] flex flex-col",
+      "transition-all duration-300 ease-in-out",
+      "transform animate-in slide-in-from-bottom-5 fade-in-0",
+      "hover:shadow-xl",
+      "border-primary/10"
+    )}>
+      <ChatHeader 
+        activeTab={activeTab} 
+        selectedModel={selectedModel} 
+        setSelectedModel={setSelectedModel} 
+        onClose={onClose} 
+      />
+
+      <ChatTabs 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab}
+        chatterpalLoaded={chatterpalLoaded}
+      >
+        <div className="flex-1 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden">
+          <ChatMessages 
+            messages={messages} 
+            isLoading={isLoading} 
+            transferring={transferring} 
           />
 
-          <ChatTabs 
-            activeTab={activeTab} 
-            setActiveTab={setActiveTab}
-            chatterpalLoaded={chatterpalLoaded}
-          >
-            <div className="flex-1 flex flex-col data-[state=active]:flex data-[state=inactive]:hidden">
-              <ChatMessages 
-                messages={messages} 
-                isLoading={isLoading} 
-                transferring={transferring} 
-              />
-
-              <div className={cn(
-                "p-4 border-t flex flex-col gap-2",
-                "bg-gradient-to-b from-background to-background/80",
-                "backdrop-blur-sm"
-              )}>
-                {activeTab === "ai" && messages.length > 1 && !transferring && (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className={cn(
-                      "w-full text-xs flex items-center gap-1 mb-1",
-                      "transition-colors duration-200",
-                      "hover:bg-primary/5 hover:text-primary",
-                      "group"
-                    )}
-                    onClick={transferToHuman}
-                  >
-                    <User className="w-3 h-3 transition-transform group-hover:scale-110" />
-                    Parler à un agent humain pour des questions complexes
-                  </Button>
-                )}
-                
-                <ChatInputForm 
-                  message={message} 
-                  setMessage={setMessage} 
-                  onSubmit={handleMessageSubmit} 
-                  isLoading={isLoading} 
-                  transferring={transferring}
-                  messages={messages}
-                />
-              </div>
-            </div>
-          </ChatTabs>
+          <div className={cn(
+            "p-4 border-t flex flex-col gap-2",
+            "bg-gradient-to-b from-background to-background/80",
+            "backdrop-blur-sm"
+          )}>
+            <ChatActions 
+              activeTab={activeTab}
+              messages={messages}
+              transferring={transferring}
+              transferToHuman={transferToHuman}
+            />
+            
+            <ChatInputForm 
+              message={message} 
+              setMessage={setMessage} 
+              onSubmit={handleMessageSubmit} 
+              isLoading={isLoading} 
+              transferring={transferring}
+              messages={messages}
+            />
+          </div>
         </div>
-      ) : (
-        <Button
-          onClick={() => setIsOpen(true)}
-          size="lg"
-          className={cn(
-            "rounded-full w-12 h-12 shadow-lg",
-            "transition-all duration-300",
-            "hover:shadow-xl hover:scale-105",
-            "bg-primary text-primary-foreground",
-            "animate-bounce-subtle",
-            messages.length > 0 && "ring-2 ring-primary/20 ring-offset-2"
-          )}
-        >
-          <MessageSquareText className="w-6 h-6" />
-        </Button>
-      )}
+      </ChatTabs>
     </div>
   );
 };

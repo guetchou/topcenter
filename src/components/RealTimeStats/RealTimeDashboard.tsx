@@ -3,9 +3,9 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { motion } from "framer-motion";
 import { Phone, User, Clock, ThumbsUp, BarChart2 } from "lucide-react";
 import { CallVolumeChart } from "./CallVolumeChart";
+import { StatCard } from "./StatCard";
 
 // Données simulées
 const getRandomData = () => {
@@ -126,51 +126,5 @@ export const RealTimeDashboard = () => {
         </TabsContent>
       </Tabs>
     </div>
-  );
-};
-
-// Composant de carte statistique
-const StatCard = ({ 
-  icon, 
-  title, 
-  value, 
-  unit = "", 
-  change, 
-  isPositive = true 
-}: { 
-  icon: React.ReactNode; 
-  title: string; 
-  value: number; 
-  unit?: string;
-  change?: string;
-  isPositive?: boolean;
-}) => {
-  return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between space-x-2">
-          <div className="flex items-center space-x-2">
-            {icon}
-            <span className="text-sm font-medium">{title}</span>
-          </div>
-          {change && (
-            <span className={`text-xs ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              {change}
-            </span>
-          )}
-        </div>
-        <div className="mt-3">
-          <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            key={value} // Pour déclencher l'animation à chaque changement
-            transition={{ duration: 0.3 }}
-            className="text-2xl font-bold"
-          >
-            {value}{unit}
-          </motion.div>
-        </div>
-      </CardContent>
-    </Card>
   );
 };

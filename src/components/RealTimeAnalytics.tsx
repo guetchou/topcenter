@@ -2,11 +2,10 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  LineChart, Line, BarChart, Bar, PieChart, Pie, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  Cell
-} from "recharts";
+import { LineVolumeChart } from "./charts/LineVolumeChart";
+import { WaitTimeBarChart } from "./charts/WaitTimeBarChart";
+import { SatisfactionPieChart } from "./charts/SatisfactionPieChart";
+import { RequestTypeBarChart } from "./charts/RequestTypeBarChart";
 
 // Données simulées pour les appels
 const generateCallData = () => {
@@ -76,87 +75,24 @@ export const RealTimeAnalytics = () => {
           
           <TabsContent value="calls" className="space-y-4">
             <div className="h-[300px] mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={callData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="appelsEntrants" 
-                    stroke="#8884d8" 
-                    name="Appels entrants"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="appelsRepondus" 
-                    stroke="#82ca9d" 
-                    name="Appels répondus"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <LineVolumeChart data={callData} />
             </div>
             
             <div className="h-[250px] mt-8">
               <h3 className="text-lg font-medium mb-2">Temps d'attente moyen (min)</h3>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={callData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar 
-                    dataKey="tempsAttente" 
-                    fill="#f97316" 
-                    name="Temps d'attente moyen (min)"
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <WaitTimeBarChart data={callData} />
             </div>
           </TabsContent>
           
           <TabsContent value="satisfaction">
             <div className="h-[400px] mt-4 flex justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={satisfactionData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={130}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {satisfactionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+              <SatisfactionPieChart data={satisfactionData} />
             </div>
           </TabsContent>
           
           <TabsContent value="demandes">
             <div className="h-[400px] mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={typeDemandesData}
-                  layout="vertical"
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" width={150} />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#8884d8" name="Nombre de demandes" />
-                </BarChart>
-              </ResponsiveContainer>
+              <RequestTypeBarChart data={typeDemandesData} />
             </div>
           </TabsContent>
         </Tabs>

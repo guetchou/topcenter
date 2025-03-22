@@ -4,10 +4,10 @@ import { CallVolumeChart } from "./CallVolumeChart";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { CircleOff, Activity, BarChart, Clock, Zap } from "lucide-react";
+import { StatCard } from "./StatCard";
 import { AIPrediction } from "@/components/AIPrediction";
 import { VoiceAnalytics } from "@/components/VoiceAnalytics";
 import { RealTimeTranslation } from "@/components/RealTimeTranslation";
-import { Progress } from "@/components/ui/progress";
 
 export const RealTimeStats = () => {
   const [currentStats, setCurrentStats] = useState({
@@ -30,6 +30,37 @@ export const RealTimeStats = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const statsConfig = [
+    { 
+      title: "Appels en attente", 
+      value: currentStats.callsInQueue, 
+      icon: <CircleOff className="w-5 h-5 text-primary/70" />,
+      change: "+3%",
+      color: "text-amber-500"
+    },
+    { 
+      title: "Agents actifs", 
+      value: currentStats.activeAgents, 
+      icon: <Activity className="w-5 h-5 text-primary/70" />,
+      change: "+2%",
+      color: "text-emerald-500"
+    },
+    { 
+      title: "Temps moyen (sec)", 
+      value: currentStats.avgHandlingTime, 
+      icon: <Clock className="w-5 h-5 text-primary/70" />,
+      change: "-5%",
+      color: "text-blue-500"
+    },
+    { 
+      title: "Satisfaction", 
+      value: `${currentStats.satisfactionRate}%`, 
+      icon: <Zap className="w-5 h-5 text-primary/70" />,
+      change: "+1%",
+      color: "text-purple-500"
+    }
+  ];
 
   return (
     <div className="w-full space-y-6">
@@ -55,56 +86,16 @@ export const RealTimeStats = () => {
 
         <TabsContent value="dashboard" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { 
-                title: "Appels en attente", 
-                value: currentStats.callsInQueue, 
-                icon: <CircleOff className="w-5 h-5 text-primary/70" />,
-                change: "+3%",
-                color: "text-amber-500"
-              },
-              { 
-                title: "Agents actifs", 
-                value: currentStats.activeAgents, 
-                icon: <Activity className="w-5 h-5 text-primary/70" />,
-                change: "+2%",
-                color: "text-emerald-500"
-              },
-              { 
-                title: "Temps moyen (sec)", 
-                value: currentStats.avgHandlingTime, 
-                icon: <Clock className="w-5 h-5 text-primary/70" />,
-                change: "-5%",
-                color: "text-blue-500"
-              },
-              { 
-                title: "Satisfaction", 
-                value: `${currentStats.satisfactionRate}%`, 
-                icon: <Zap className="w-5 h-5 text-primary/70" />,
-                change: "+1%",
-                color: "text-purple-500"
-              }
-            ].map((stat, i) => (
-              <Card key={i} className="overflow-hidden group hover:shadow-md transition-all duration-300 border-primary/10">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">{stat.title}</h3>
-                    {stat.icon}
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <div className="text-2xl font-bold group-hover:text-primary transition-colors">
-                      {stat.value}
-                    </div>
-                    <div className={`text-xs ${stat.color} flex items-center gap-1`}>
-                      {stat.change}
-                    </div>
-                  </div>
-                  <Progress
-                    value={Math.random() * 100}
-                    className="h-1 mt-2 bg-primary/10"
-                  />
-                </CardContent>
-              </Card>
+            {statsConfig.map((stat, i) => (
+              <StatCard 
+                key={i}
+                title={stat.title}
+                value={stat.value}
+                icon={stat.icon}
+                change={stat.change}
+                color={stat.color}
+                progress={Math.random() * 100}
+              />
             ))}
           </div>
           
@@ -141,30 +132,36 @@ export const RealTimeStats = () => {
         </TabsContent>
 
         <TabsContent value="trends" className="space-y-4">
-          <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">Tendances hebdomadaires</h3>
-            <div className="space-y-6">
-              {["Volume d'appels", "Temps de réponse", "Taux de conversion", "Satisfaction"].map((metric, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span>{metric}</span>
-                    <span className={i % 2 === 0 ? "text-emerald-500" : "text-amber-500"}>
-                      {i % 2 === 0 ? "↑" : "↓"} {Math.floor(Math.random() * 10) + 1}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-primary"
-                      style={{width: `${Math.floor(Math.random() * 50) + 50}%`}}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Card>
+          <TrendsContent />
         </TabsContent>
       </Tabs>
     </div>
+  );
+};
+
+const TrendsContent = () => {
+  return (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-4">Tendances hebdomadaires</h3>
+      <div className="space-y-6">
+        {["Volume d'appels", "Temps de réponse", "Taux de conversion", "Satisfaction"].map((metric, i) => (
+          <div key={i} className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span>{metric}</span>
+              <span className={i % 2 === 0 ? "text-emerald-500" : "text-amber-500"}>
+                {i % 2 === 0 ? "↑" : "↓"} {Math.floor(Math.random() * 10) + 1}%
+              </span>
+            </div>
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary"
+                style={{width: `${Math.floor(Math.random() * 50) + 50}%`}}
+              ></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 };
 

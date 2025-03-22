@@ -11,11 +11,13 @@ export function setupInterceptors(api: AxiosInstance) {
       
       // Si un token existe, l'ajouter à l'en-tête Authorization
       if (token) {
-        config.headers = config.headers || {};
-        config.headers = {
-          ...config.headers,
-          Authorization: `Bearer ${token}`
-        } as AxiosHeaders;
+        // Créer une nouvelle instance de AxiosHeaders pour éviter les erreurs de type
+        if (!config.headers) {
+          config.headers = new AxiosHeaders();
+        }
+        
+        // Définir l'en-tête d'autorisation
+        config.headers.set('Authorization', `Bearer ${token}`);
       }
       
       return config;
