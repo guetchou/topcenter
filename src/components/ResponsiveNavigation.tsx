@@ -6,6 +6,7 @@ import { Menu, X } from 'lucide-react';
 import { NavbarContent } from './navigation/NavbarContent';
 import { MobileMenu } from './navigation/MobileMenu';
 import { NavigationActions } from './navigation/NavigationActions';
+import { Button } from '@/components/ui/button';
 
 const ResponsiveNavigation: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

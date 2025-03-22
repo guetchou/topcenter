@@ -28,13 +28,6 @@ const NewHeroSection = () => {
       description: "Remplissez le formulaire pour obtenir un devis personnalisé."
     });
   };
-  
-  const handleConnect = () => {
-    navigate("/login");
-    toast.success("Connexion", {
-      description: "Connectez-vous à votre compte TopCenter."
-    });
-  };
 
   return (
     <section className="relative bg-gradient-to-r from-primary/90 to-primary py-20 text-white overflow-hidden min-h-[80vh] flex items-center">
@@ -52,7 +45,6 @@ const NewHeroSection = () => {
           <HeroContent 
             onCallNow={handleCallNow} 
             onQuoteRequest={handleQuoteRequest}
-            onConnect={handleConnect}
           />
         </div>
       </div>

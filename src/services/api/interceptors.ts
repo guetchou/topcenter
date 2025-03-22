@@ -1,5 +1,5 @@
 
-import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosHeaders } from 'axios';
 import { markServerAsAvailable, markServerAsUnavailable } from './serverStatus';
 
 export function setupInterceptors(api: AxiosInstance) {
@@ -12,7 +12,10 @@ export function setupInterceptors(api: AxiosInstance) {
       // Si un token existe, l'ajouter à l'en-tête Authorization
       if (token) {
         config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers = {
+          ...config.headers,
+          Authorization: `Bearer ${token}`
+        } as AxiosHeaders;
       }
       
       return config;

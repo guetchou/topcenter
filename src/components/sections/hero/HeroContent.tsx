@@ -7,13 +7,11 @@ import { StatsRow } from "./StatsRow";
 interface HeroContentProps {
   onCallNow: () => void;
   onQuoteRequest: () => void;
-  onConnect?: () => void;
 }
 
 export const HeroContent = ({ 
   onCallNow, 
-  onQuoteRequest,
-  onConnect
+  onQuoteRequest
 }: HeroContentProps) => {
   return (
     <div>
@@ -46,17 +44,6 @@ export const HeroContent = ({
           <Mail className="w-4 h-4 mr-2" />
           Demander un devis
         </Button>
-        
-        {onConnect && (
-          <Button
-            size="lg"
-            variant="default"
-            className="bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            onClick={onConnect}
-          >
-            Se connecter
-          </Button>
-        )}
       </div>
       
       <StatsRow />
