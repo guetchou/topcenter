@@ -53,3 +53,13 @@ export type ChatAction =
   | { type: 'SET_ACTIVE_CHAT'; chatId: string }
   | { type: 'CREATE_SESSION'; session: ChatSession }
   | { type: 'DELETE_SESSION'; chatId: string };
+
+// Add MessageType enum for component compatibility
+export enum MessageType {
+  TEXT = 'text',
+  IMAGE = 'image',
+  FILE = 'file',
+  AUDIO = 'audio',
+  VIDEO = 'video',
+  SUGGESTION = 'suggestion'
+}

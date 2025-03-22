@@ -125,7 +125,7 @@ export const RealTimeStats: React.FC<RealTimeStatsProps> = ({
               <CardTitle>Volume d'appels</CardTitle>
             </CardHeader>
             <CardContent className="h-[400px]">
-              <CallVolumeChart data={mockCallVolumeData} />
+              <CallVolumeChart />
             </CardContent>
           </Card>
         </TabsContent>
