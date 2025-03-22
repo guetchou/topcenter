@@ -20,7 +20,7 @@ export function setupErrorHandlers(api: AxiosInstance) {
       const errorData = error.response?.data;
       
       // Message d'erreur à afficher
-      let errorMessage = 'Une erreur s'est produite';
+      let errorMessage = 'Une erreur s\'est produite';
       
       // Tenter d'extraire un message d'erreur significatif
       if (errorData) {
