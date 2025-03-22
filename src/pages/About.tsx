@@ -3,12 +3,22 @@ import { usePageContent } from "@/hooks/usePageContent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AboutSection } from "@/components/sections/AboutSection";
 import { Spinner } from "@/components/ui/spinner";
+import { useEffect, useState } from "react";
 
 const About = () => {
   const { data: pageContent, isLoading, error } = usePageContent('about');
+  const [isApiError, setIsApiError] = useState(false);
 
-  // Display loading indicator while content is being fetched
-  if (isLoading) {
+  // Détecter si l'API est en erreur en observant l'erreur et mettre à jour l'état
+  useEffect(() => {
+    if (error) {
+      console.log("Erreur détectée dans l'API usePageContent:", error);
+      setIsApiError(true);
+    }
+  }, [error]);
+
+  // Afficher un indicateur de chargement pendant que le contenu est récupéré
+  if (isLoading && !isApiError) {
     return (
       <div className="container py-8">
         <div className="flex justify-center items-center h-64">
@@ -18,20 +28,8 @@ const About = () => {
     );
   }
 
-  // Show error message if content couldn't be fetched
-  if (error) {
-    return (
-      <div className="container py-8">
-        <div className="bg-destructive/10 text-destructive p-4 rounded-md">
-          <h2 className="text-xl font-semibold mb-2">Impossible de charger le contenu</h2>
-          <p>Veuillez actualiser la page ou réessayer plus tard.</p>
-        </div>
-      </div>
-    );
-  }
-
-  // If we have API content, display it
-  if (pageContent) {
+  // Si on a du contenu API valide, l'afficher
+  if (pageContent && !isApiError) {
     return (
       <div className="container py-8">
         <h1 className="text-3xl font-bold mb-4">{pageContent.title}</h1>
@@ -53,7 +51,8 @@ const About = () => {
     );
   }
 
-  // If no API content is available, show the static AboutSection component as fallback
+  // Dans tous les autres cas (erreur ou pas de contenu), afficher la section AboutSection statique
+  console.log("Affichage du contenu AboutSection statique");
   return <AboutSection />;
 };
 
