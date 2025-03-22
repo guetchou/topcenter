@@ -17,7 +17,7 @@ export const ThemeToggle = () => {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="sm" className="w-8 h-8 p-0">
+      <Button variant="ghost" size="icon" className="w-8 h-8 p-0">
         <span className="sr-only">Toggle theme</span>
       </Button>
     );
@@ -28,26 +28,16 @@ export const ThemeToggle = () => {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="flex items-center gap-1"
+            className="w-8 h-8"
           >
             {theme === "dark" ? (
-              <>
-                <Sun className="h-[1rem] w-[1rem]" />
-                <span className="hidden sm:inline">
-                  <FormattedMessage id="nav.lightMode" defaultMessage="Light Mode" />
-                </span>
-              </>
+              <Sun className="h-[1rem] w-[1rem]" />
             ) : (
-              <>
-                <Moon className="h-[1rem] w-[1rem]" />
-                <span className="hidden sm:inline">
-                  <FormattedMessage id="nav.darkMode" defaultMessage="Dark Mode" />
-                </span>
-              </>
+              <Moon className="h-[1rem] w-[1rem]" />
             )}
           </Button>
         </TooltipTrigger>

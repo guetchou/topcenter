@@ -1,26 +1,16 @@
 
 import { Button } from "@/components/ui/button";
-import { Gift, Share2, Trophy, Users } from "lucide-react";
+import { Handshake, Award, Building, BarChart4 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export const LoyaltySection = () => {
   const { toast } = useToast();
 
-  const handleShare = async () => {
-    try {
-      await navigator.share({
-        title: "TopCenter - Programme de parrainage",
-        text: "Rejoignez TopCenter et bénéficiez de services exclusifs ! Utilisez mon code de parrainage.",
-        url: window.location.href,
-      });
-      
-      toast({
-        title: "Partage réussi!",
-        description: "Merci de partager notre programme avec vos amis.",
-      });
-    } catch (error) {
-      console.error("Error sharing:", error);
-    }
+  const handlePartnerInquiry = () => {
+    toast({
+      title: "Demande reçue",
+      description: "Nous vous contacterons rapidement pour discuter de notre programme partenaire.",
+    });
   };
 
   return (
@@ -28,41 +18,41 @@ export const LoyaltySection = () => {
       <div className="container">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="flex justify-center">
-            <Trophy className="h-12 w-12 text-primary" />
+            <Award className="h-12 w-12 text-primary" />
           </div>
-          <h2 className="text-3xl font-bold">Programme de fidélité</h2>
+          <h2 className="text-3xl font-bold">Programme Partenaires</h2>
           <p className="text-lg text-muted-foreground">
-            Gagnez des points et accédez à des avantages exclusifs en parrainant vos amis.
+            Collaborez avec TopCenter et développez votre activité avec nos solutions de centre d'appels innovantes.
           </p>
           
           <div className="grid md:grid-cols-3 gap-8 mt-12">
             <div className="space-y-4">
               <div className="flex justify-center">
-                <Gift className="h-8 w-8 text-primary" />
+                <Building className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-semibold text-xl">Gagnez des points</h3>
+              <h3 className="font-semibold text-xl">Partenariats B2B</h3>
               <p className="text-muted-foreground">
-                Cumulez des points à chaque interaction et échangez-les contre des récompenses.
+                Intégrez nos solutions à votre offre existante et proposez une expérience client complète.
               </p>
             </div>
             
             <div className="space-y-4">
               <div className="flex justify-center">
-                <Users className="h-8 w-8 text-primary" />
+                <Handshake className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-semibold text-xl">Parrainez vos amis</h3>
+              <h3 className="font-semibold text-xl">Revendeurs</h3>
               <p className="text-muted-foreground">
-                Invitez vos amis et recevez des points bonus pour chaque parrainage.
+                Devenez revendeur agréé et bénéficiez de marges attractives sur nos solutions.
               </p>
             </div>
             
             <div className="space-y-4">
               <div className="flex justify-center">
-                <Trophy className="h-8 w-8 text-primary" />
+                <BarChart4 className="h-8 w-8 text-primary" />
               </div>
-              <h3 className="font-semibold text-xl">Avantages VIP</h3>
+              <h3 className="font-semibold text-xl">Support entreprise</h3>
               <p className="text-muted-foreground">
-                Débloquez des avantages exclusifs en montant de niveau.
+                Une équipe dédiée pour accompagner la croissance de vos clients B2B et B2C.
               </p>
             </div>
           </div>
@@ -70,11 +60,11 @@ export const LoyaltySection = () => {
           <div className="mt-12">
             <Button
               size="lg"
-              onClick={handleShare}
+              onClick={handlePartnerInquiry}
               className="gap-2"
             >
-              <Share2 className="h-5 w-5" />
-              Partager avec vos amis
+              <Handshake className="h-5 w-5" />
+              Devenir partenaire
             </Button>
           </div>
         </div>

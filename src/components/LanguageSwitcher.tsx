@@ -6,8 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState, useEffect } from 'react';
@@ -37,7 +35,7 @@ export const LanguageSwitcher = () => {
 
   if (!mounted) {
     return (
-      <Button variant="outline" size="sm" className="w-9 h-9 p-0">
+      <Button variant="ghost" size="icon" className="w-8 h-8 p-0">
         <span className="sr-only">Change language</span>
       </Button>
     );
@@ -49,9 +47,8 @@ export const LanguageSwitcher = () => {
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
-                <Globe className="h-4 w-4" />
-                <span className="hidden sm:inline">{currentLanguage.name}</span>
+              <Button variant="ghost" size="icon" className="w-8 h-8">
+                <Globe className="h-[1rem] w-[1rem]" />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
@@ -60,8 +57,6 @@ export const LanguageSwitcher = () => {
           </TooltipContent>
         </Tooltip>
         <DropdownMenuContent align="end" className="w-40">
-          <DropdownMenuLabel>Select Language</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           {languages.map((language) => (
             <DropdownMenuItem
               key={language.code}
