@@ -46,8 +46,8 @@ export const useMenus = () => {
         path: "/blog",
       },
       {
-        title: "Recrutement",
-        path: "/recruitment",
+        title: "FAQ",
+        path: "/faq",
       },
       {
         title: "À propos",
@@ -122,8 +122,8 @@ export const useMenus = () => {
       };
       
       setState({
-        primaryMenuItems: primaryMenu.items ? parseJsonToMenuItems(primaryMenu.items as Json[]) : state.primaryMenuItems,
-        footerMenuItems: footerMenu.items ? parseJsonToMenuItems(footerMenu.items as Json[]) : state.footerMenuItems,
+        primaryMenuItems: primaryMenu?.items ? parseJsonToMenuItems(primaryMenu.items as Json[]) : state.primaryMenuItems,
+        footerMenuItems: footerMenu?.items ? parseJsonToMenuItems(footerMenu.items as Json[]) : state.footerMenuItems,
         isLoading: false,
         error: null
       });

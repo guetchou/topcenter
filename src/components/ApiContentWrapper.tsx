@@ -12,6 +12,7 @@ interface ApiContentWrapperProps<T> {
   fallback: React.ReactNode;
   loadingFallback?: React.ReactNode;
   errorFallback?: React.ReactNode;
+  emptyMessage?: string;
 }
 
 export function ApiContentWrapper<T>({
@@ -22,7 +23,8 @@ export function ApiContentWrapper<T>({
   children,
   fallback,
   loadingFallback,
-  errorFallback
+  errorFallback,
+  emptyMessage = "Aucune donnée disponible"
 }: ApiContentWrapperProps<T>) {
   const defaultLoadingFallback = (
     <div className="flex justify-center items-center h-64">
@@ -30,6 +32,7 @@ export function ApiContentWrapper<T>({
     </div>
   );
 
+  // Gestion améliorée des erreurs et des états de chargement
   return (
     <ApiErrorBoundary
       isLoading={isLoading}

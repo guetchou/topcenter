@@ -46,11 +46,12 @@ export function DynamicNav() {
     }
   };
 
-  // Fallback menu items quand l'API est inaccessible - Updated to match MenuItem interface
+  // Fallback menu items quand l'API est inaccessible - adapté à l'interface MenuItem
   const fallbackMenuItems: MenuItem[] = [
     { title: "Accueil", path: "/" },
     { title: "À propos", path: "/about" },
     { title: "Services", path: "/services" },
+    { title: "FAQ", path: "/faq" },
     { title: "Contact", path: "/contact" },
   ];
 
@@ -72,7 +73,7 @@ export function DynamicNav() {
             />
           </Link>
           <ApiErrorBoundary 
-            error={menusError as Error} 
+            error={menusError} 
             isLoading={menusLoading}
             retryFunction={refetchMenus}
             fallback={<DesktopNav items={fallbackMenuItems} />}

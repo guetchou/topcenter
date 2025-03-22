@@ -28,6 +28,9 @@ export function MainNav({ useNewDesign = false }) {
             <Link to="/blog" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
               Blog
             </Link>
+            <Link to="/faq" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+              FAQ
+            </Link>
             <Link to="/about" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
               À propos
             </Link>
