@@ -36,6 +36,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import Terms from "@/pages/Terms";
 import Auth from "@/pages/Auth";
 import Dashboard from "@/pages/Dashboard";
+import DeployDashboard from "@/pages/DeployDashboard";
 import Settings from "@/pages/Settings";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import ClientPortal from "@/pages/ClientPortal";
@@ -138,6 +139,11 @@ const App = () => {
                     <Dashboard />
                   </ProtectedRoute>
                 } />
+                <Route path="/deploy" element={
+                  <ProtectedRoute>
+                    <DeployDashboard />
+                  </ProtectedRoute>
+                } />
                 <Route path="/settings" element={
                   <ProtectedRoute>
                     <Settings />
@@ -157,6 +163,7 @@ const App = () => {
                   <Route path="menus" element={<MenusPage />} />
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="users" element={<UserManagement />} />
+                  <Route path="deploy" element={<DeployDashboard />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />

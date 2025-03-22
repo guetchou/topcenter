@@ -6,6 +6,7 @@ import { CMSLayout } from "@/pages/admin/CMSLayout";
 import UserManagement from "@/pages/admin/UserManagement";
 import { UserCredentialsPage } from "@/pages/admin/settings/UserCredentialsPage";
 import { CredentialsDocPage } from "@/pages/admin/CredentialsDocPage";
+import DeployDashboard from "@/pages/DeployDashboard";
 
 export const AdminRoutes = () => {
   return (
@@ -16,6 +17,7 @@ export const AdminRoutes = () => {
         <Route path="/users" element={<UserManagement />} />
         <Route path="/credentials" element={<UserCredentialsPage />} />
         <Route path="/credentials/docs" element={<CredentialsDocPage />} />
+        <Route path="/deploy" element={<DeployDashboard />} />
       </Route>
     </Routes>
   );

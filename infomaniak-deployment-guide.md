@@ -10,7 +10,8 @@ Ce guide explique comment déployer l'application TopCenter sur un hébergement 
 4. [Configuration du nom de domaine](#configuration-du-nom-de-domaine)
 5. [Mise en place de l'environnement de production](#mise-en-place-de-lenvironnement-de-production)
 6. [Déploiement automatique avec GitHub Actions](#déploiement-automatique-avec-github-actions)
-7. [Dépannage](#dépannage)
+7. [Tableau de bord de déploiement](#tableau-de-bord-de-déploiement)
+8. [Dépannage](#dépannage)
 
 ## Prérequis
 
@@ -166,6 +167,33 @@ Si le déploiement automatique échoue, vérifiez:
 - Vérifiez que les informations FTP sont correctes
 - Assurez-vous que l'utilisateur FTP a les droits d'écriture sur le dossier cible
 
+## Tableau de bord de déploiement
+
+TopCenter dispose d'un tableau de bord de déploiement intégré qui vous permet de:
+
+1. Lancer des déploiements manuels depuis l'interface utilisateur
+2. Effectuer des sauvegardes à la demande
+3. Suivre l'état des déploiements en temps réel
+4. Consulter les logs de déploiement
+
+### Accès au tableau de bord de déploiement
+
+Le tableau de bord de déploiement est accessible à deux endroits:
+
+1. Pour les administrateurs, via `/admin/deploy`
+2. En accès direct via `/deploy` (nécessite une connexion)
+
+### Fonctionnalités du tableau de bord
+
+- **Déploiement en un clic**: Lancez le processus de déploiement complet (sauvegarde, build, déploiement)
+- **Sauvegarde indépendante**: Effectuez uniquement une sauvegarde sans déploiement
+- **Logs en temps réel**: Suivez chaque étape du processus de déploiement
+- **Monitoring du serveur**: Vérifiez l'état des services (Infomaniak, base de données, GitHub Actions)
+
+### Sécurité
+
+Le tableau de bord est protégé et nécessite une connexion avec des droits d'administration. Toutes les actions sensibles sont enregistrées dans les logs système.
+
 ## Dépannage
 
 ### Les requêtes API échouent
@@ -198,5 +226,13 @@ Si le déploiement automatique échoue, vérifiez:
      AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json
    </IfModule>
    ```
+
+### Problèmes de déploiement automatique
+
+Si le déploiement automatique via le tableau de bord échoue:
+
+1. Vérifiez les logs de déploiement dans le tableau de bord
+2. Vérifiez les workflows GitHub Actions pour plus de détails
+3. Essayez un déploiement manuel via FTP comme solution de contournement
 
 Pour toute assistance supplémentaire, contactez le support Infomaniak ou consultez leur documentation officielle.

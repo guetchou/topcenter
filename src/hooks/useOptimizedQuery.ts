@@ -53,24 +53,26 @@ export function useOptimizedQuery<TData, TError = Error>({
     gcTime: options.gcTime || 5 * 60 * 1000, // 5 minutes par défaut
     // Stratégie pour les données périmées
     staleTime: options.staleTime || 60 * 1000, // 1 minute par défaut
-    // Fonction qui sera invoquée lorsque la requête est réussie
-    onSuccess: (data, ...rest) => {
-      // Stocker ces données dans le localStorage pour y accéder hors connexion
-      if (offlineData) {
-        try {
-          localStorage.setItem(
-            `query-${queryKey.join('-')}`, 
-            JSON.stringify(data)
-          );
-        } catch (error) {
-          console.warn('Impossible de mettre en cache les données :', error);
-        }
+  };
+
+  // Define success callback for storing data in localStorage
+  const handleSuccess = (data: TData) => {
+    // Stocker ces données dans le localStorage pour y accéder hors connexion
+    if (offlineData) {
+      try {
+        localStorage.setItem(
+          `query-${queryKey.join('-')}`, 
+          JSON.stringify(data)
+        );
+      } catch (error) {
+        console.warn('Impossible de mettre en cache les données :', error);
       }
-      
-      if (options.onSuccess) {
-        options.onSuccess(data, ...rest);
-      }
-    },
+    }
+    
+    // Call the original onSuccess if it exists
+    if (options.onSuccess) {
+      options.onSuccess(data);
+    }
   };
 
   // Si nous sommes hors ligne et avons des données de secours
@@ -84,6 +86,7 @@ export function useOptimizedQuery<TData, TError = Error>({
           queryKey,
           queryFn: () => Promise.resolve(parsedData),
           ...optimizedOptions,
+          onSuccess: handleSuccess,
         });
       }
     } catch (error) {
@@ -95,6 +98,7 @@ export function useOptimizedQuery<TData, TError = Error>({
       queryKey,
       queryFn: () => Promise.resolve(offlineData as TData),
       ...optimizedOptions,
+      onSuccess: handleSuccess,
     });
   }
 
@@ -103,5 +107,6 @@ export function useOptimizedQuery<TData, TError = Error>({
     queryKey,
     queryFn,
     ...optimizedOptions,
+    onSuccess: handleSuccess,
   });
 }
