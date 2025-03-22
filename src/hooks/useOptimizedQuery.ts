@@ -62,15 +62,13 @@ export function useOptimizedQuery<TData, TError = Error>({
       const cachedData = localStorage.getItem(`query-${queryKey.join('-')}`);
       if (cachedData) {
         const parsedData = JSON.parse(cachedData) as TData;
-        return useQuery<TData, TError>({
+        const queryResult = useQuery<TData, TError>({
           ...optimizedOptions,
           queryFn: () => Promise.resolve(parsedData),
-          onSuccess: (data) => {
-            if (options.onSuccess) {
-              options.onSuccess(data);
-            }
-          }
         });
+
+        // Conserver la structure du résultat
+        return queryResult;
       }
     } catch (error) {
       console.warn('Erreur lors de la récupération des données en cache :', error);
@@ -84,27 +82,24 @@ export function useOptimizedQuery<TData, TError = Error>({
   }
 
   // Comportement normal lorsque nous sommes en ligne
-  return useQuery<TData, TError>({
+  const queryResult = useQuery<TData, TError>({
     ...optimizedOptions,
     queryFn,
-    // Storage success callback for caching
-    onSuccess: (data) => {
-      // Stocker ces données dans le localStorage pour y accéder hors connexion
-      if (offlineData) {
-        try {
-          localStorage.setItem(
-            `query-${queryKey.join('-')}`, 
-            JSON.stringify(data)
-          );
-        } catch (error) {
-          console.warn('Impossible de mettre en cache les données :', error);
-        }
-      }
-      
-      // Call the original onSuccess if it exists
-      if (options.onSuccess) {
-        options.onSuccess(data);
+  });
+
+  // Stocker les données dans le localStorage pour y accéder hors connexion
+  useEffect(() => {
+    if (queryResult.data && offlineData) {
+      try {
+        localStorage.setItem(
+          `query-${queryKey.join('-')}`, 
+          JSON.stringify(queryResult.data)
+        );
+      } catch (error) {
+        console.warn('Impossible de mettre en cache les données :', error);
       }
     }
-  });
+  }, [queryResult.data, queryKey, offlineData]);
+
+  return queryResult;
 }

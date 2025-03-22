@@ -10,7 +10,8 @@ import {
   Image, 
   Tag,
   Menu,
-  Key
+  Key,
+  Rocket
 } from 'lucide-react';
 
 interface NavLinkProps {
@@ -65,6 +66,9 @@ export const AdminNavLinks: React.FC = () => {
       </NavLink>
       <NavLink href="/admin/menus" icon={Menu}>
         Menus
+      </NavLink>
+      <NavLink href="/admin/deploy" icon={Rocket}>
+        Déploiement
       </NavLink>
       <NavLink href="/admin/settings" icon={Settings}>
         Paramètres
