@@ -2,8 +2,7 @@
 import { usePageContent } from "@/hooks/usePageContent";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AboutSection } from "@/components/sections/AboutSection";
-import { Spinner } from "@/components/ui/spinner";
-import { ApiErrorBoundary } from "@/components/ApiErrorBoundary";
+import { ApiContentWrapper } from "@/components/ApiContentWrapper";
 
 const About = () => {
   const { data: pageContent, isLoading, error, refetch } = usePageContent('about');
@@ -33,23 +32,16 @@ const About = () => {
     );
   };
 
-  // Utilisation de notre composant ApiErrorBoundary
   return (
-    <ApiErrorBoundary
+    <ApiContentWrapper
+      data={pageContent}
       isLoading={isLoading}
-      error={error as Error}
-      retryFunction={refetch}
-      loadingFallback={
-        <div className="container py-8">
-          <div className="flex justify-center items-center h-64">
-            <Spinner className="h-8 w-8 text-primary" />
-          </div>
-        </div>
-      }
+      error={error}
+      refetch={refetch}
       fallback={<AboutSection />}
     >
-      {pageContent ? <ApiContent /> : <AboutSection />}
-    </ApiErrorBoundary>
+      {(data) => <ApiContent />}
+    </ApiContentWrapper>
   );
 };
 

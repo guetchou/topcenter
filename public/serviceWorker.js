@@ -1,6 +1,6 @@
 
 // Nom du cache
-const CACHE_NAME = 'topcenter-cache-v1';
+const CACHE_NAME = 'topcenter-cache-v2';
 
 // Liste des ressources à mettre en cache
 const urlsToCache = [
@@ -9,7 +9,21 @@ const urlsToCache = [
   '/offline.html',
   '/manifest.json',
   '/lovable-uploads/logo-topcenter.png',
-  '/notification.mp3'
+  '/notification.mp3',
+  // Images couramment utilisées
+  '/lovable-uploads/equipe-topcenter.jpg',
+  // Styles et scripts principaux
+  '/src/index.css',
+  // Polices
+  '/fonts/inter.woff2',
+];
+
+// Pages importantes à mettre en cache
+const importantPages = [
+  '/',
+  '/about',
+  '/services',
+  '/contact',
 ];
 
 // Installation du service worker
@@ -40,57 +54,123 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Stratégie de mise en cache network-first avec fallback
+// Déterminer si une URL est une page importante
+const isImportantPage = (url) => {
+  const parsedUrl = new URL(url);
+  return importantPages.some(page => parsedUrl.pathname === page);
+};
+
+// Stratégie de mise en cache - Stale-While-Revalidate pour les ressources importantes
+// Network-first avec fallback pour les autres ressources
 self.addEventListener('fetch', (event) => {
-  // Exclure les requêtes vers Supabase ou API externes
+  // Exclure les requêtes vers Supabase, API externes ou analytiques
   if (event.request.url.includes('supabase.co') || 
-      event.request.url.includes('api.')) {
+      event.request.url.includes('api.') ||
+      event.request.url.includes('analytics') ||
+      event.request.url.includes('socket')) {
     return;
   }
   
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Vérifier si la réponse est valide
-        if (!response || response.status !== 200 || response.type !== 'basic') {
-          return response;
-        }
-        
-        // Clone la réponse
-        const responseToCache = response.clone();
-        
-        // Mise à jour du cache avec la nouvelle réponse
-        caches.open(CACHE_NAME)
-          .then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          
-        return response;
-      })
-      .catch(() => {
-        // Si la requête échoue, on cherche dans le cache
-        return caches.match(event.request)
-          .then((response) => {
-            // Si trouvé dans le cache, on retourne la réponse
-            if (response) {
-              return response;
-            }
-            
-            // Si c'est une requête de navigation et qu'il n'y a pas de réponse dans le cache
-            if (event.request.mode === 'navigate') {
-              return caches.match('/offline.html');
-            }
-            
-            return new Response('Ressource non disponible hors ligne', {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: new Headers({
-                'Content-Type': 'text/plain'
+  // Extraire l'URL
+  const requestUrl = new URL(event.request.url);
+  
+  // Stratégie différente selon le type de ressource
+  if (event.request.destination === 'image' || 
+      event.request.url.endsWith('.css') || 
+      event.request.url.endsWith('.js') ||
+      event.request.url.includes('fonts')) {
+    
+    // Pour les assets statiques : Cache-first, puis réseau
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          // Cache hit - retourner la réponse
+          if (response) {
+            // En parallèle, mettre à jour le cache (sans attendre)
+            fetch(event.request)
+              .then((networkResponse) => {
+                if (networkResponse && networkResponse.ok) {
+                  caches.open(CACHE_NAME)
+                    .then((cache) => cache.put(event.request, networkResponse.clone()));
+                }
               })
+              .catch(() => console.log('Failed to update cache for: ' + event.request.url));
+              
+            return response;
+          }
+          
+          // Cache miss - faire une requête réseau
+          return fetch(event.request)
+            .then((networkResponse) => {
+              if (!networkResponse || !networkResponse.ok) {
+                return networkResponse;
+              }
+              
+              // Mise en cache de la nouvelle réponse
+              const responseToCache = networkResponse.clone();
+              caches.open(CACHE_NAME)
+                .then((cache) => cache.put(event.request, responseToCache));
+                
+              return networkResponse;
+            })
+            .catch(() => {
+              // Si c'est une image, retourner une image placeholder
+              if (event.request.destination === 'image') {
+                return caches.match('/placeholder.svg');
+              }
+              return new Response('Ressource non disponible hors ligne', {
+                status: 503,
+                headers: new Headers({ 'Content-Type': 'text/plain' })
+              });
             });
-          });
-      })
-  );
+        })
+    );
+  } else if (isImportantPage(event.request.url) || event.request.mode === 'navigate') {
+    // Pour les requêtes de navigation vers des pages importantes : Réseau puis cache
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Stocker dans le cache pour les futures visites hors ligne
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, responseToCache));
+          return response;
+        })
+        .catch(() => {
+          // Si offline, chercher dans le cache
+          return caches.match(event.request)
+            .then((cachedResponse) => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              // Si pas dans le cache, retourner la page offline
+              return caches.match('/offline.html');
+            });
+        })
+    );
+  } else {
+    // Pour tout le reste: Network-first avec fallback cache
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Mise à jour du cache pour les futures utilisations hors ligne
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, responseToCache));
+          return response;
+        })
+        .catch(() => {
+          // Si offline, chercher dans le cache
+          return caches.match(event.request)
+            .then((cachedResponse) => {
+              return cachedResponse || new Response('Ressource non disponible hors ligne', {
+                status: 503,
+                headers: new Headers({ 'Content-Type': 'text/plain' })
+              });
+            });
+        })
+    );
+  }
 });
 
 // Gestion des notifications push
@@ -116,7 +196,17 @@ self.addEventListener('push', (event) => {
     data: {
       dateOfArrival: Date.now(),
       url: data.url || '/'
-    }
+    },
+    actions: [
+      {
+        action: 'open',
+        title: 'Voir',
+      },
+      {
+        action: 'close',
+        title: 'Fermer',
+      },
+    ]
   };
 
   event.waitUntil(
@@ -127,6 +217,10 @@ self.addEventListener('push', (event) => {
 // Gestion des clics sur les notifications
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  
+  if (event.action === 'close') {
+    return;
+  }
   
   const urlToOpen = event.notification.data?.url || '/';
   
@@ -145,4 +239,34 @@ self.addEventListener('notificationclick', (event) => {
         }
       })
   );
+});
+
+// Périodiquement vérifier et mettre en cache les pages importantes
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'update-cache') {
+    event.waitUntil(
+      Promise.all(
+        importantPages.map(page => {
+          const url = new URL(page, self.location.origin).toString();
+          return fetch(url)
+            .then(response => {
+              const responseToCache = response.clone();
+              return caches.open(CACHE_NAME)
+                .then(cache => cache.put(url, responseToCache));
+            })
+            .catch(error => console.error(`Failed to update cache for ${url}`, error));
+        })
+      )
+    );
+  }
+});
+
+// Background sync pour les actions différées
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'deferred-operations') {
+    event.waitUntil(
+      // Récupérer les opérations en attente de IndexedDB et les envoyer
+      console.log('Background sync triggered for deferred operations')
+    );
+  }
 });

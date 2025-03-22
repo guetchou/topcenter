@@ -1,7 +1,9 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { Wifi, WifiOff, Server, ServerOff } from "lucide-react";
+import { Wifi, WifiOff, Server, ServerOff, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useApiError } from "@/hooks/useApiError";
 
 export function NetworkStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -9,6 +11,7 @@ export function NetworkStatus() {
   const [serverReachable, setServerReachable] = useState(true);
   const [lastServerCheckTime, setLastServerCheckTime] = useState(0);
   const [isCheckingServer, setIsCheckingServer] = useState(false);
+  const { checkServerAvailability } = useApiError();
 
   // Fonction pour vérifier activement la connexion au serveur
   const checkServerConnection = useCallback(async () => {
@@ -23,42 +26,14 @@ export function NetworkStatus() {
     setLastServerCheckTime(now);
     
     try {
-      // Create a controller for timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
-      
-      // Check a reliable server resource that should always be available
-      const response = await fetch(`/lovable-uploads/logo-topcenter.png?t=${now}`, { 
-        method: 'HEAD',
-        cache: 'no-store',
-        headers: { 'pragma': 'no-cache' },
-        signal: controller.signal
-      });
-      
-      // Clear the timeout
-      clearTimeout(timeoutId);
-      
-      const newServerStatus = response.ok;
+      const result = await checkServerAvailability();
       const previousStatus = serverReachable;
-      setServerReachable(newServerStatus);
+      setServerReachable(result);
       
-      if (newServerStatus !== previousStatus) {
-        if (newServerStatus) {
-          toast.success("Connexion au serveur rétablie");
-          setHasShownOfflineToast(false);
-        } else if (!hasShownOfflineToast) {
-          toast.error("Impossible de joindre le serveur. Vérifiez votre connexion ou réessayez plus tard.", {
-            duration: 10000
-          });
-          setHasShownOfflineToast(true);
-        }
-      }
-    } catch (error) {
-      console.error("Server check failed:", error);
-      const previousStatus = serverReachable;
-      setServerReachable(false);
-      
-      if (previousStatus && !hasShownOfflineToast) {
+      if (result && !previousStatus) {
+        toast.success("Connexion au serveur rétablie");
+        setHasShownOfflineToast(false);
+      } else if (!result && previousStatus && !hasShownOfflineToast) {
         toast.error("Impossible de joindre le serveur. Vérifiez votre connexion ou réessayez plus tard.", {
           duration: 10000
         });
@@ -67,7 +42,7 @@ export function NetworkStatus() {
     } finally {
       setIsCheckingServer(false);
     }
-  }, [serverReachable, hasShownOfflineToast, isCheckingServer, lastServerCheckTime]);
+  }, [serverReachable, hasShownOfflineToast, isCheckingServer, lastServerCheckTime, checkServerAvailability]);
 
   // Fonction pour vérifier le statut de connexion
   const checkConnectionStatus = useCallback(() => {
@@ -125,23 +100,43 @@ export function NetworkStatus() {
     };
   }, [checkConnectionStatus, checkServerConnection]);
 
+  const handleRetry = () => {
+    if (!isOnline) {
+      toast.info("Tentative de reconnexion...");
+      checkConnectionStatus();
+    } else if (!serverReachable) {
+      toast.info("Vérification de la connexion au serveur...");
+      checkServerConnection();
+    }
+  };
+
   // Ne rien afficher si l'utilisateur est en ligne et le serveur est accessible
   if (isOnline && serverReachable) return null;
 
   // Afficher un indicateur pour hors ligne ou serveur inaccessible
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex items-center bg-destructive text-white px-4 py-2 rounded-full shadow-lg animate-pulse">
+    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-destructive text-white px-4 py-2 rounded-full shadow-lg">
       {!isOnline ? (
         <>
-          <WifiOff className="w-4 h-4 mr-2" />
+          <WifiOff className="h-4 w-4" />
           <span className="text-sm font-medium">Mode hors ligne</span>
         </>
       ) : (
         <>
-          <ServerOff className="w-4 h-4 mr-2" />
+          <ServerOff className="h-4 w-4" />
           <span className="text-sm font-medium">Serveur inaccessible</span>
         </>
       )}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleRetry}
+        className="ml-2 bg-white/10 hover:bg-white/20 text-white"
+        disabled={isCheckingServer}
+      >
+        <RefreshCw className={`h-3 w-3 mr-1 ${isCheckingServer ? 'animate-spin' : ''}`} />
+        Réessayer
+      </Button>
     </div>
   );
 }
