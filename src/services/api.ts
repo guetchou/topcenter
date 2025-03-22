@@ -1,5 +1,5 @@
 
-import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
 
 // Create an axios instance with base configuration
@@ -97,7 +97,9 @@ const registerError = (errorKey: string): boolean => {
  * @returns The processed error
  */
 const handleApiError = (error: AxiosError): Error => {
-  const errorMessage = error.response?.data?.message || error.message || 'unknown-error';
+  const errorMessage = error.response?.data && typeof error.response.data === 'object' 
+    ? (error.response.data as any).message || 'unknown-error'
+    : error.message || 'unknown-error';
   const errorKey = `${error.code || ''}-${errorMessage}`;
   
   // Only show toast if this is a new error
@@ -142,7 +144,9 @@ const handleApiError = (error: AxiosError): Error => {
     }
     
     // Show toast for other error codes
-    const displayMessage = error.response.data?.message || 'An error occurred';
+    const displayMessage = error.response.data && typeof error.response.data === 'object' 
+      ? (error.response.data as any).message || 'An error occurred'
+      : 'An error occurred';
     toast.error(displayMessage);
   }
   
@@ -151,7 +155,7 @@ const handleApiError = (error: AxiosError): Error => {
 
 // Request interceptor to add auth token and check connectivity
 api.interceptors.request.use(
-  async (config: AxiosRequestConfig) => {
+  async (config: InternalAxiosRequestConfig) => {
     // Check if online before sending request
     if (!navigator.onLine) {
       return Promise.reject(
@@ -178,10 +182,8 @@ api.interceptors.request.use(
     // Add authentication token if available
     const token = localStorage.getItem('auth_token');
     if (token) {
-      config.headers = {
-        ...config.headers,
-        Authorization: `Bearer ${token}`
-      };
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
     }
     
     return config;
