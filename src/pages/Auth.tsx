@@ -10,6 +10,8 @@ import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 import { Logo } from '@/components/Logo';
 import { NetworkStatus } from '@/components/NetworkStatus';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { ServerOff, AlertTriangle } from 'lucide-react';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -18,6 +20,7 @@ const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [serverAvailable, setServerAvailable] = useState(true);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,6 +29,24 @@ const Auth = () => {
 
   // Déterminer la redirection en fonction de l'état de location ou utiliser un chemin par défaut
   const from = (location.state as any)?.from?.pathname || '/dashboard';
+
+  // Vérifier la disponibilité du serveur au chargement
+  useEffect(() => {
+    const checkServerStatus = async () => {
+      try {
+        const response = await fetch('/lovable-uploads/logo-topcenter.png', { 
+          method: 'HEAD',
+          signal: AbortSignal.timeout(5000)
+        });
+        setServerAvailable(response.ok);
+      } catch (error) {
+        console.error("Server check failed:", error);
+        setServerAvailable(false);
+      }
+    };
+    
+    checkServerStatus();
+  }, []);
 
   useEffect(() => {
     // Si l'utilisateur est déjà connecté, rediriger vers la page de destination
@@ -40,6 +61,15 @@ const Auth = () => {
     setErrorMessage(null);
 
     try {
+      // Vérifier à nouveau la disponibilité du serveur avant la soumission
+      if (!navigator.onLine) {
+        throw new Error("Vous êtes hors ligne. Veuillez vous reconnecter à Internet pour vous connecter.");
+      }
+      
+      if (!serverAvailable) {
+        throw new Error("Le service est temporairement indisponible. Veuillez réessayer plus tard.");
+      }
+
       if (isLogin) {
         await login(formData.email, formData.password);
       } else {
@@ -56,6 +86,12 @@ const Auth = () => {
     } catch (error: any) {
       console.error("Erreur d'authentification:", error);
       setErrorMessage(error.message || "Erreur d'authentification");
+      
+      // Mettre à jour le statut du serveur si l'erreur est liée à sa disponibilité
+      if (error.message.includes("indisponible") || error.message.includes("connexion au serveur")) {
+        setServerAvailable(false);
+      }
+      
       toast.error(error.message || "Erreur d'authentification");
     } finally {
       setFormLoading(false);
@@ -66,6 +102,12 @@ const Auth = () => {
     try {
       setFormLoading(true);
       setErrorMessage(null);
+      
+      // Vérifier la disponibilité du serveur avant de tenter la connexion Google
+      if (!serverAvailable) {
+        throw new Error("Le service est temporairement indisponible. Veuillez réessayer plus tard.");
+      }
+      
       await loginWithGoogle();
       // Note: La redirection est gérée par OAuth et AuthCallback component
     } catch (error: any) {
@@ -101,10 +143,22 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {errorMessage && (
-            <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
-              {errorMessage}
-            </div>
+          {!serverAvailable && (
+            <Alert variant="destructive" className="mb-4">
+              <ServerOff className="h-4 w-4" />
+              <AlertTitle>Service indisponible</AlertTitle>
+              <AlertDescription>
+                Le serveur est temporairement indisponible. Veuillez réessayer plus tard 
+                ou contactez le support si le problème persiste.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {errorMessage && serverAvailable && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
           )}
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -119,6 +173,7 @@ const Auth = () => {
                     fullName: e.target.value
                   }))}
                   required={!isLogin}
+                  disabled={!serverAvailable}
                 />
               </div>
             )}
@@ -133,6 +188,7 @@ const Auth = () => {
                   email: e.target.value
                 }))}
                 required
+                disabled={!serverAvailable}
               />
             </div>
             <div className="space-y-2">
@@ -146,6 +202,7 @@ const Auth = () => {
                   password: e.target.value
                 }))}
                 required
+                disabled={!serverAvailable}
               />
             </div>
             
@@ -157,7 +214,11 @@ const Auth = () => {
               </div>
             )}
             
-            <Button type="submit" className="w-full" disabled={formLoading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={formLoading || !serverAvailable}
+            >
               {formLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></span>
@@ -178,7 +239,7 @@ const Auth = () => {
             variant="outline" 
             className="w-full" 
             onClick={handleGoogleLogin}
-            disabled={formLoading}
+            disabled={formLoading || !serverAvailable}
           >
             <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -191,7 +252,7 @@ const Auth = () => {
           
           <div className="mt-4 text-center text-sm text-muted-foreground">
             <p>
-              Identifiants de démonstration:<br />
+              <strong>Identifiants de démonstration:</strong><br />
               - Email: admin@topcenter.app<br />
               - Mot de passe: password123
             </p>
@@ -204,6 +265,7 @@ const Auth = () => {
               type="button"
               className="text-primary hover:underline"
               onClick={() => setIsLogin(!isLogin)}
+              disabled={!serverAvailable}
             >
               {isLogin ? "S'inscrire" : "Se connecter"}
             </button>
