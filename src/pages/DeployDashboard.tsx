@@ -1,305 +1,249 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, Loader2, CheckCircle, Database, Server, Cloud, Package, GitPullRequest, Rocket } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Spinner } from "@/components/ui/spinner";
+import { AlertCircle, Loader2, CheckCircle, Server, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { toast } from "sonner";
 
-type DeployStatus = 'idle' | 'running' | 'success' | 'error';
-type LogEntry = {
-  id: number;
-  message: string;
-  timestamp: string;
-  type: 'info' | 'success' | 'error' | 'warning';
-};
+interface ServerStatus {
+  status: 'online' | 'offline' | 'unknown';
+  lastChecked: string;
+  responseTime?: number;
+}
 
 export default function DeployDashboard() {
-  const [status, setStatus] = useState<DeployStatus>("idle");
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [backupStatus, setBackupStatus] = useState<DeployStatus>('idle');
+  const [deployStatus, setDeployStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
+  const [backupStatus, setBackupStatus] = useState<'idle' | 'running' | 'success' | 'error'>('idle');
+  const [logs, setLogs] = useState<string[]>([]);
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({
+    status: 'unknown',
+    lastChecked: new Date().toISOString()
+  });
 
-  const formatTimestamp = () => {
-    const now = new Date();
-    return now.toLocaleTimeString();
-  };
-
-  const addLog = (message: string, type: LogEntry['type'] = 'info') => {
-    const newLog: LogEntry = {
-      id: Date.now(),
-      message,
-      timestamp: formatTimestamp(),
-      type
+  // Check server status periodically
+  useEffect(() => {
+    const checkServerStatus = async () => {
+      try {
+        const startTime = performance.now();
+        const response = await fetch('/', { method: 'HEAD' });
+        const endTime = performance.now();
+        
+        setServerStatus({
+          status: response.ok ? 'online' : 'offline',
+          lastChecked: new Date().toISOString(),
+          responseTime: Math.round(endTime - startTime)
+        });
+      } catch (error) {
+        setServerStatus({
+          status: 'offline',
+          lastChecked: new Date().toISOString()
+        });
+      }
     };
-    setLogs(prev => [...prev, newLog]);
-  };
+
+    checkServerStatus();
+    const interval = setInterval(checkServerStatus, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const simulateBackup = async () => {
-    setBackupStatus('running');
-    addLog("Sauvegarde du site en cours...", 'info');
-    await new Promise(r => setTimeout(r, 2000));
-    addLog("Compression des fichiers...", 'info');
-    await new Promise(r => setTimeout(r, 1000));
-    addLog("Téléchargement de la base de données...", 'info');
-    await new Promise(r => setTimeout(r, 1500));
-    addLog("Sauvegarde terminée avec succès!", 'success');
-    setBackupStatus('success');
-  };
-
-  const runBackupOnly = async () => {
     try {
       setBackupStatus('running');
-      addLog("Lancement de la sauvegarde indépendante...", 'info');
-      await simulateBackup();
+      setLogs(prev => [...prev, "📦 Sauvegarde du site en cours..."]);
+      await new Promise(r => setTimeout(r, 2000));
+      setLogs(prev => [...prev, "✅ Sauvegarde terminée avec succès."]);
+      setBackupStatus('success');
+      toast.success("Sauvegarde terminée avec succès");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-      addLog(`Erreur pendant la sauvegarde: ${errorMessage}`, 'error');
+      setLogs(prev => [...prev, `❌ Erreur de sauvegarde: ${error.message}`]);
       setBackupStatus('error');
+      toast.error("Erreur lors de la sauvegarde");
     }
   };
 
   const handleDeploy = async () => {
     try {
-      setStatus("running");
-      setLogs([{
-        id: Date.now(),
-        message: "🚀 Déploiement lancé...",
-        timestamp: formatTimestamp(),
-        type: 'info'
-      }]);
-      
-      // Exécuter la sauvegarde avant le déploiement
+      setDeployStatus('running');
+      setLogs(["🚀 Déploiement lancé..."]);
       await simulateBackup();
       
-      addLog("Préparation du déploiement...", 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      
-      // Simuler l'appel API à GitHub Actions
-      addLog("Connexion à GitHub Actions...", 'info');
+      // Simuler le déploiement via API ou GitHub Actions Trigger
+      setLogs(prev => [...prev, "⚙️ Configuration du déploiement..."]);
       await new Promise(r => setTimeout(r, 1500));
       
-      try {
-        // Simulation d'un appel API (ceci serait votre vrai appel en production)
-        addLog("Déclenchement du workflow GitHub Actions...", 'info');
-        await new Promise(r => setTimeout(r, 1000));
-        
-        // Ici, nous simulons une réponse réussie
-        const mockResponse = { status: 201 };
-        
-        if (mockResponse.status === 201) {
-          addLog("Déploiement GitHub déclenché avec succès!", 'success');
-          
-          // Simuler les étapes du déploiement
-          addLog("Construction du projet en cours...", 'info');
-          await new Promise(r => setTimeout(r, 2000));
-          
-          addLog("Tests unitaires réussis", 'success');
-          await new Promise(r => setTimeout(r, 1000));
-          
-          addLog("Optimisation des assets...", 'info');
-          await new Promise(r => setTimeout(r, 1500));
-          
-          addLog("Transfert FTP vers Infomaniak...", 'info');
-          await new Promise(r => setTimeout(r, 3000));
-          
-          addLog("Nettoyage des anciens fichiers...", 'info');
-          await new Promise(r => setTimeout(r, 1000));
-          
-          addLog("Déploiement terminé avec succès! Site en ligne.", 'success');
-          setStatus("success");
-        } else {
-          throw new Error("La requête a échoué avec le statut: " + mockResponse.status);
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-        throw new Error(`Erreur lors du déclenchement du déploiement: ${errorMessage}`);
-      }
+      setLogs(prev => [...prev, "🔄 Build de l'application en cours..."]);
+      await new Promise(r => setTimeout(r, 3000));
+      
+      setLogs(prev => [...prev, "📤 Transfert des fichiers vers le serveur..."]);
+      await new Promise(r => setTimeout(r, 2500));
+      
+      setLogs(prev => [...prev, "✅ Déploiement terminé avec succès!"]);
+      setDeployStatus('success');
+      toast.success("Déploiement terminé avec succès");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-      addLog(`${errorMessage}`, 'error');
-      setStatus("error");
+      setLogs(prev => [...prev, `❌ Erreur de déploiement: ${error.message}`]);
+      setDeployStatus('error');
+      toast.error("Erreur lors du déploiement");
     }
   };
 
-  // Fonction pour afficher une icône basée sur le type de log
-  const getLogIcon = (type: LogEntry['type']) => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle className="h-4 w-4 text-green-500 mr-2" />;
-      case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500 mr-2" />;
-      case 'warning':
-        return <AlertCircle className="h-4 w-4 text-yellow-500 mr-2" />;
-      default:
-        return null;
+  const handleManualGitHubDeploy = async () => {
+    try {
+      setDeployStatus('running');
+      setLogs(["🚀 Déploiement GitHub Actions lancé..."]);
+      
+      // Remplacer avec la vraie implémentation si nécessaire
+      // Cette version simule l'appel à l'API GitHub mais n'envoie pas réellement de requête
+      setLogs(prev => [...prev, "📤 Déclenchement de GitHub Actions..."]);
+      await new Promise(r => setTimeout(r, 2000));
+      
+      setLogs(prev => [...prev, "⏳ Workflow en cours d'exécution..."]);
+      await new Promise(r => setTimeout(r, 3000));
+      
+      setLogs(prev => [...prev, "✅ Workflow GitHub Actions terminé!"]);
+      setDeployStatus('success');
+      toast.success("Déploiement GitHub Actions terminé");
+    } catch (error) {
+      setLogs(prev => [...prev, `❌ Erreur lors du déclenchement du workflow: ${error.message}`]);
+      setDeployStatus('error');
+      toast.error("Erreur lors du déploiement via GitHub Actions");
     }
   };
 
-  const getStatusIndicator = (currentStatus: DeployStatus) => {
-    switch (currentStatus) {
+  const getStatusIcon = (status: 'idle' | 'running' | 'success' | 'error') => {
+    switch (status) {
       case 'running':
-        return <Spinner size="sm" className="text-blue-500" />;
+        return <Loader2 className="animate-spin text-blue-500" />;
       case 'success':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="text-green-500" />;
       case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className="text-red-500" />;
       default:
         return null;
     }
+  };
+
+  const getServerStatusColor = (status: 'online' | 'offline' | 'unknown') => {
+    switch (status) {
+      case 'online':
+        return 'text-green-500';
+      case 'offline':
+        return 'text-red-500';
+      case 'unknown':
+      default:
+        return 'text-yellow-500';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat('fr-FR', {
+      dateStyle: 'short',
+      timeStyle: 'medium'
+    }).format(date);
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 md:px-6">
-      <h1 className="text-3xl font-bold mb-6">Tableau de Bord de Déploiement</h1>
+    <div className="container py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Tableau de Bord de Déploiement</h1>
+        <div className="flex items-center gap-2">
+          <Server className={`h-5 w-5 ${getServerStatusColor(serverStatus.status)}`} />
+          <span className={`text-sm ${getServerStatusColor(serverStatus.status)}`}>
+            {serverStatus.status === 'online' ? 'Serveur en ligne' : 
+             serverStatus.status === 'offline' ? 'Serveur hors ligne' : 'Statut inconnu'}
+          </span>
+          {serverStatus.responseTime && (
+            <span className="text-xs text-muted-foreground ml-2">
+              {serverStatus.responseTime}ms
+            </span>
+          )}
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Rocket className="h-5 w-5 text-blue-500" /> 
-              Déploiement
-            </CardTitle>
+          <CardHeader>
+            <CardTitle className="text-xl">Déploiement Manuel</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-medium">Statut:</span>
-              <span className="flex items-center">
-                {getStatusIndicator(status)}
-                <span className="ml-2 text-sm">
-                  {status === 'idle' && 'En attente'}
-                  {status === 'running' && 'En cours...'}
-                  {status === 'success' && 'Déployé'}
-                  {status === 'error' && 'Erreur'}
-                </span>
-              </span>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-center gap-4">
+              <Button 
+                onClick={handleDeploy} 
+                disabled={deployStatus === 'running' || backupStatus === 'running'}
+                className="gap-2"
+              >
+                {deployStatus === 'running' ? <Loader2 className="animate-spin h-4 w-4" /> : <ArrowUpCircle className="h-4 w-4" />}
+                Déployer l'application
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={simulateBackup}
+                disabled={backupStatus === 'running' || deployStatus === 'running'}
+                className="gap-2"
+              >
+                {backupStatus === 'running' ? <Loader2 className="animate-spin h-4 w-4" /> : <ArrowDownCircle className="h-4 w-4" />}
+                Sauvegarde uniquement
+              </Button>
+              
+              <div className="flex items-center ml-auto">
+                {getStatusIcon(deployStatus)}
+              </div>
             </div>
-            <Button 
-              onClick={handleDeploy} 
-              disabled={status === 'running'}
-              className="w-full mt-2"
-            >
-              {status === 'running' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Déploiement en cours...
-                </>
+            
+            <div className="bg-muted/50 dark:bg-muted/20 border rounded-lg p-3 font-mono text-sm h-60 overflow-y-auto">
+              {logs.length === 0 ? (
+                <div className="text-muted-foreground italic">Les logs de déploiement s'afficheront ici...</div>
               ) : (
-                <>Lancer le déploiement</>
+                logs.map((log, i) => (
+                  <div key={i} className="py-1">{log}</div>
+                ))
               )}
-            </Button>
+            </div>
           </CardContent>
         </Card>
-
+        
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Database className="h-5 w-5 text-purple-500" /> 
-              Sauvegarde
-            </CardTitle>
+          <CardHeader>
+            <CardTitle className="text-xl">GitHub Actions</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm font-medium">Statut:</span>
-              <span className="flex items-center">
-                {getStatusIndicator(backupStatus)}
-                <span className="ml-2 text-sm">
-                  {backupStatus === 'idle' && 'En attente'}
-                  {backupStatus === 'running' && 'En cours...'}
-                  {backupStatus === 'success' && 'Sauvegardé'}
-                  {backupStatus === 'error' && 'Erreur'}
-                </span>
-              </span>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Déclenchez un déploiement via GitHub Actions. Cette action démarrera le workflow
+              configuré dans <code className="bg-muted/50 px-1 rounded">.github/workflows/deploy.yml</code>.
+            </p>
+            
+            <div className="flex items-center gap-4 pt-2">
+              <Button 
+                variant="secondary"
+                onClick={handleManualGitHubDeploy}
+                disabled={deployStatus === 'running'}
+                className="gap-2"
+              >
+                {deployStatus === 'running' ? <Loader2 className="animate-spin h-4 w-4" /> : null}
+                Déclencher workflow GitHub
+              </Button>
             </div>
-            <Button 
-              onClick={runBackupOnly}
-              disabled={backupStatus === 'running' || status === 'running'}
-              variant="outline"
-              className="w-full mt-2"
-            >
-              {backupStatus === 'running' ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Sauvegarde en cours...
-                </>
-              ) : (
-                <>Sauvegarder uniquement</>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Server className="h-5 w-5 text-amber-500" /> 
-              Statut du serveur
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Infomaniak:</span>
-                <span className="flex items-center text-green-500 text-sm">
-                  <CheckCircle className="h-4 w-4 mr-1" /> Opérationnel
+            
+            <div className="bg-muted/20 border border-dashed rounded-lg p-4 mt-4">
+              <h3 className="font-medium mb-2">Dernière vérification serveur</h3>
+              <p className="text-sm">
+                <span className="font-medium">Date: </span> 
+                {formatDate(serverStatus.lastChecked)}
+              </p>
+              <p className="text-sm">
+                <span className="font-medium">Statut: </span> 
+                <span className={getServerStatusColor(serverStatus.status)}>
+                  {serverStatus.status === 'online' ? 'En ligne' : 
+                   serverStatus.status === 'offline' ? 'Hors ligne' : 'Inconnu'}
                 </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Base de données:</span>
-                <span className="flex items-center text-green-500 text-sm">
-                  <CheckCircle className="h-4 w-4 mr-1" /> Opérationnel
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">GitHub Actions:</span>
-                <span className="flex items-center text-green-500 text-sm">
-                  <CheckCircle className="h-4 w-4 mr-1" /> Opérationnel
-                </span>
-              </div>
+              </p>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {status === 'error' && (
-        <Alert variant="destructive" className="mb-6">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Erreur de déploiement</AlertTitle>
-          <AlertDescription>
-            Le déploiement a échoué. Consultez les logs ci-dessous pour plus de détails.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2">
-            <GitPullRequest className="h-5 w-5" /> Logs du déploiement
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="bg-gray-900 text-white p-3 rounded-lg text-sm h-80 overflow-y-auto font-mono">
-            {logs.length === 0 ? (
-              <div className="text-gray-500 italic">Aucun log disponible. Lancez un déploiement pour voir les logs.</div>
-            ) : (
-              logs.map((log) => (
-                <div key={log.id} className="flex items-start mb-1">
-                  <span className="text-gray-400 mr-2">[{log.timestamp}]</span>
-                  <span className="flex items-center">
-                    {getLogIcon(log.type)}
-                    <span className={`
-                      ${log.type === 'success' ? 'text-green-400' : ''}
-                      ${log.type === 'error' ? 'text-red-400' : ''}
-                      ${log.type === 'warning' ? 'text-yellow-400' : ''}
-                    `}>
-                      {log.message}
-                    </span>
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

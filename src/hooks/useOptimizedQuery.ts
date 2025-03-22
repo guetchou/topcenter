@@ -1,5 +1,5 @@
 
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 // Options spécifiques pour notre hook optimisé
@@ -9,7 +9,6 @@ export interface OptimizedQueryOptions<TData, TError>
   queryFn: () => Promise<TData>;
   retryOnReconnect?: boolean;
   offlineData?: TData;
-  gcTime?: number; // Remplacement de cacheTime qui est obsolète
 }
 
 /**
@@ -24,7 +23,7 @@ export function useOptimizedQuery<TData, TError = Error>({
   retryOnReconnect = true,
   offlineData,
   ...options
-}: OptimizedQueryOptions<TData, TError>) {
+}: OptimizedQueryOptions<TData, TError>): UseQueryResult<TData, TError> {
   // État pour suivre la connectivité réseau
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
 
@@ -45,6 +44,7 @@ export function useOptimizedQuery<TData, TError = Error>({
   // Étendre les options avec des configurations optimisées
   const optimizedOptions: UseQueryOptions<TData, TError, TData, any[]> = {
     ...options,
+    queryKey,
     // Si nous sommes hors ligne, ne pas faire de requêtes au serveur
     enabled: options.enabled !== false && (isOnline || !!offlineData),
     // Tenter à nouveau la requête lorsque l'application revient en ligne
@@ -55,26 +55,6 @@ export function useOptimizedQuery<TData, TError = Error>({
     staleTime: options.staleTime || 60 * 1000, // 1 minute par défaut
   };
 
-  // Define success callback for storing data in localStorage
-  const handleSuccess = (data: TData) => {
-    // Stocker ces données dans le localStorage pour y accéder hors connexion
-    if (offlineData) {
-      try {
-        localStorage.setItem(
-          `query-${queryKey.join('-')}`, 
-          JSON.stringify(data)
-        );
-      } catch (error) {
-        console.warn('Impossible de mettre en cache les données :', error);
-      }
-    }
-    
-    // Call the original onSuccess if it exists
-    if (options.onSuccess) {
-      options.onSuccess(data);
-    }
-  };
-
   // Si nous sommes hors ligne et avons des données de secours
   if (!isOnline && offlineData) {
     // Essayer de récupérer les données mises en cache précédemment
@@ -83,10 +63,13 @@ export function useOptimizedQuery<TData, TError = Error>({
       if (cachedData) {
         const parsedData = JSON.parse(cachedData) as TData;
         return useQuery<TData, TError>({
-          queryKey,
-          queryFn: () => Promise.resolve(parsedData),
           ...optimizedOptions,
-          onSuccess: handleSuccess,
+          queryFn: () => Promise.resolve(parsedData),
+          onSuccess: (data) => {
+            if (options.onSuccess) {
+              options.onSuccess(data);
+            }
+          }
         });
       }
     } catch (error) {
@@ -95,18 +78,33 @@ export function useOptimizedQuery<TData, TError = Error>({
 
     // Utiliser les données de secours si aucune donnée mise en cache n'est disponible
     return useQuery<TData, TError>({
-      queryKey,
-      queryFn: () => Promise.resolve(offlineData as TData),
       ...optimizedOptions,
-      onSuccess: handleSuccess,
+      queryFn: () => Promise.resolve(offlineData as TData)
     });
   }
 
   // Comportement normal lorsque nous sommes en ligne
   return useQuery<TData, TError>({
-    queryKey,
-    queryFn,
     ...optimizedOptions,
-    onSuccess: handleSuccess,
+    queryFn,
+    // Storage success callback for caching
+    onSuccess: (data) => {
+      // Stocker ces données dans le localStorage pour y accéder hors connexion
+      if (offlineData) {
+        try {
+          localStorage.setItem(
+            `query-${queryKey.join('-')}`, 
+            JSON.stringify(data)
+          );
+        } catch (error) {
+          console.warn('Impossible de mettre en cache les données :', error);
+        }
+      }
+      
+      // Call the original onSuccess if it exists
+      if (options.onSuccess) {
+        options.onSuccess(data);
+      }
+    }
   });
 }

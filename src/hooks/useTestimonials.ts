@@ -45,9 +45,9 @@ const fallbackTestimonials: Testimonial[] = [
 ];
 
 export const useTestimonials = () => {
-  return useOptimizedQuery(
-    ['testimonials'],
-    async () => {
+  return useOptimizedQuery({
+    queryKey: ['testimonials'],
+    queryFn: async () => {
       try {
         const { data, error } = await supabase
           .from('testimonials')
@@ -66,11 +66,10 @@ export const useTestimonials = () => {
         return fallbackTestimonials;
       }
     },
-    {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      retry: 1,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: true
-    }
-  );
+    offlineData: fallbackTestimonials,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: 1,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: true
+  });
 };

@@ -60,9 +60,9 @@ const fallbackTeamMembers: TeamMember[] = [
 ];
 
 export const useTeamMembers = () => {
-  return useOptimizedQuery(
-    ['team-members'],
-    async () => {
+  return useOptimizedQuery({
+    queryKey: ['team-members'],
+    queryFn: async () => {
       try {
         const { data, error } = await supabase
           .from('team_members')
@@ -84,10 +84,9 @@ export const useTeamMembers = () => {
         return fallbackTeamMembers;
       }
     },
-    {
-      staleTime: 10 * 60 * 1000, // 10 minutes
-      retry: 1,
-      refetchOnWindowFocus: false
-    }
-  );
+    offlineData: fallbackTeamMembers,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    retry: 1,
+    refetchOnWindowFocus: false
+  });
 };
