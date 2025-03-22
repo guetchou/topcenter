@@ -1,12 +1,12 @@
-
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
 import { AppProviders } from './providers/AppProviders.tsx'
 import { toast } from 'sonner'
 
+// Create a single QueryClient instance
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
   },
 })
 
-// Enregistrement du service worker pour le mode hors ligne et les PWA
+// Service worker registration code
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
@@ -58,10 +58,8 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <AppProviders>
-        <App />
-      </AppProviders>
-    </QueryClientProvider>
+    <AppProviders>
+      <App />
+    </AppProviders>
   </BrowserRouter>
 );
