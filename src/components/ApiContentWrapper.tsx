@@ -2,6 +2,7 @@
 import React from 'react';
 import { ApiErrorBoundary } from './ApiErrorBoundary';
 import { Spinner } from './ui/spinner';
+import { cn } from '@/lib/utils';
 
 interface ApiContentWrapperProps<T> {
   data: T | null | undefined;
@@ -26,9 +27,23 @@ export function ApiContentWrapper<T>({
   errorFallback,
   emptyMessage = "Aucune donnée disponible"
 }: ApiContentWrapperProps<T>) {
+  // Composant réutilisable pour afficher l'état de chargement avec animation
   const defaultLoadingFallback = (
-    <div className="flex justify-center items-center h-64">
-      <Spinner className="h-8 w-8 text-primary" />
+    <div className="flex flex-col justify-center items-center h-64 gap-3 animate-fade-in">
+      <Spinner className="h-8 w-8 text-primary animate-bounce-subtle" />
+      <p className="text-sm text-muted-foreground animate-pulse-subtle">Chargement en cours...</p>
+    </div>
+  );
+
+  // Animation conditionnelle pour le contenu lorsqu'il est chargé
+  const ContentWithAnimation = ({ children }: { children: React.ReactNode }) => (
+    <div 
+      className={cn(
+        "animate-fade-in transition-opacity duration-500",
+        isLoading ? "opacity-0" : "opacity-100"
+      )}
+    >
+      {children}
     </div>
   );
 
@@ -41,7 +56,9 @@ export function ApiContentWrapper<T>({
       loadingFallback={loadingFallback || defaultLoadingFallback}
       fallback={errorFallback}
     >
-      {data ? children(data) : fallback}
+      <ContentWithAnimation>
+        {data ? children(data) : fallback}
+      </ContentWithAnimation>
     </ApiErrorBoundary>
   );
 }
