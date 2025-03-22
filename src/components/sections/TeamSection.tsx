@@ -10,49 +10,16 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ApiContentWrapper } from "@/components/ApiContentWrapper";
+import { useTeamMembers } from "@/hooks/useTeamMembers";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
-
-const agents = [
-  {
-    name: "Gess NGUIE",
-    role: "Manager Général",
-    expertise: "Gestion de projet, CRM, Business Développement",
-    image: "/lovable-uploads/gess.jpg",
-    specialties: ["Gestion d'entreprise", "CRM & VOIP", "Business Développement"],
-  },
-  {
-    name: "Myna BAYI",
-    role: "Manager IT",
-    expertise: "Manager Technique",
-    image: "/lovable-uploads/bayimina.jpg",
-    specialties: ["Réseaux & Télécom", "VOIP"],
-  },
-  {
-    name: "Nidda KIKAME",
-    role: "Chargée de Projet",
-    expertise: "Service Client Premium",
-    image: "/lovable-uploads/nidda_photo.jpeg",
-    specialties: ["Gestion d'équipe", "Formation", "Support VIP"],
-  },
-  {
-    name: "Caley BAYI",
-    role: "Superviseur",
-    expertise: "Support Technique",
-    image: "/lovable-uploads/caley.png",
-    specialties: ["Résolution de problèmes", "Coaching", "Analyse de données"],
-  },
-  {
-    name: "Jeancia NANTI",
-    role: "Responsable Formation",
-    expertise: "Développement des compétences",
-    image: "/lovable-uploads/jeancia.jpeg",
-    specialties: ["Formation initiale", "Amélioration continue", "E-learning"],
-  },
-];
 
 export const TeamSection = () => {
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Récupération des membres de l'équipe depuis Supabase
+  const { data: teamMembers, isLoading, error, refetch } = useTeamMembers();
 
   useEffect(() => {
     if (!api || isPaused) return;
@@ -78,48 +45,92 @@ export const TeamSection = () => {
           </p>
         </div>
 
-        <Carousel
-          setApi={setApi}
-          opts={{ align: "start", loop: true }}
-          className="w-full max-w-5xl mx-auto"
+        <ApiContentWrapper
+          data={teamMembers}
+          isLoading={isLoading}
+          error={error}
+          refetch={refetch}
+          emptyMessage="Aucun membre d'équipe disponible pour le moment."
+          loadingFallback={
+            <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3].map((i) => (
+                <Card key={i} className="shadow-lg animate-pulse">
+                  <CardContent className="p-6">
+                    <div className="aspect-square mb-4 rounded-full bg-muted"></div>
+                    <div className="h-6 bg-muted rounded mb-2"></div>
+                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-muted rounded w-2/3 mb-4"></div>
+                    <div className="flex flex-wrap gap-2">
+                      {[1, 2, 3].map((j) => (
+                        <div key={j} className="h-6 bg-muted rounded w-20"></div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          }
+          fallback={<div className="text-center text-muted-foreground">Aucune information sur l'équipe disponible.</div>}
         >
-          <CarouselContent>
-            {agents.map((agent, index) => (
-              <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                <motion.div whileHover={{ scale: 1.05 }}>
-                  <Card className="shadow-lg hover:shadow-xl transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="aspect-square mb-4 overflow-hidden rounded-full">
-                        <img
-                          src={agent.image}
-                          alt={agent.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                      </div>
-                      <h3 className="text-xl font-semibold mb-2">{agent.name}</h3>
-                      <p className="text-primary font-medium mb-2">{agent.role}</p>
-                      <p className="text-sm text-muted-foreground mb-4">{agent.expertise}</p>
-                      <div className="flex flex-wrap gap-2">
-                        {agent.specialties.map((specialty, i) => (
-                          <Badge key={i} variant="secondary">
-                            {specialty}
-                          </Badge>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <div className="absolute -left-4 top-1/2 transform -translate-y-1/2">
-            <CarouselPrevious />
-          </div>
-          <div className="absolute -right-4 top-1/2 transform -translate-y-1/2">
-            <CarouselNext />
-          </div>
-        </Carousel>
+          {(teamMembers) => (
+            <Carousel
+              setApi={setApi}
+              opts={{ align: "start", loop: true }}
+              className="w-full max-w-5xl mx-auto"
+            >
+              <CarouselContent>
+                {teamMembers.map((member) => (
+                  <CarouselItem key={member.id} className="md:basis-1/2 lg:basis-1/3">
+                    <motion.div whileHover={{ scale: 1.05 }}>
+                      <Card className="shadow-lg hover:shadow-xl transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="aspect-square mb-4 overflow-hidden rounded-full">
+                            <img
+                              src={member.image}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg';
+                              }}
+                            />
+                          </div>
+                          <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
+                          <p className="text-primary font-medium mb-2">{member.role}</p>
+                          <p className="text-sm text-muted-foreground mb-4">{member.expertise}</p>
+                          <div className="flex flex-wrap gap-2">
+                            {member.specialties.map((specialty, i) => (
+                              <Badge key={i} variant="secondary">
+                                {specialty}
+                              </Badge>
+                            ))}
+                          </div>
+                          
+                          {member.email && (
+                            <div className="mt-4 text-sm">
+                              <a 
+                                href={`mailto:${member.email}`}
+                                className="text-primary hover:underline"
+                              >
+                                {member.email}
+                              </a>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="absolute -left-4 top-1/2 transform -translate-y-1/2">
+                <CarouselPrevious />
+              </div>
+              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2">
+                <CarouselNext />
+              </div>
+            </Carousel>
+          )}
+        </ApiContentWrapper>
       </div>
     </section>
   );

@@ -1,33 +1,38 @@
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "@/components/theme-provider";
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./AuthProvider";
+import { NotificationsProvider } from "./NotificationsProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
+import { HelmetProvider } from "react-helmet-async";
 
-import { ThemeProvider } from "next-themes";
-import { IntlProvider } from "react-intl";
-import { useState, useEffect } from "react";
-import frMessages from "../i18n/fr.json";
-import enMessages from "../i18n/en.json";
+import { SearchProvider } from "@/contexts/SearchContext";
 
-const messages = {
-  fr: frMessages,
-  en: enMessages,
-};
-
-export const AppProviders = ({ children }: { children: React.ReactNode }) => {
-  const [locale, setLocale] = useState('fr');
-
-  useEffect(() => {
-    // Set initial locale based on browser language
-    const browserLocale = navigator.language.split(/[-_]/)[0];
-    setLocale(browserLocale in messages ? browserLocale : 'fr');
-  }, []);
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  const queryClient = new QueryClient();
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <IntlProvider
-        messages={messages[locale as keyof typeof messages]}
-        locale={locale}
-        defaultLocale="fr"
-      >
-        {children}
-      </IntlProvider>
-    </ThemeProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light" storageKey="color-theme">
+          <AuthProvider>
+            <NotificationsProvider>
+              <SearchProvider>
+                <Suspense fallback={<PageLoader />}>
+                  <HelmetProvider>
+                    {children}
+                    <Toaster />
+                  </HelmetProvider>
+                </Suspense>
+              </SearchProvider>
+            </NotificationsProvider>
+          </AuthProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </BrowserRouter>
   );
-};
+}
