@@ -28,8 +28,8 @@ export interface AuthStore {
 }
 
 // Types pour les rôles utilisateurs
-export type UserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
-export type DbUserRole = 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
+export type UserRole = 'master_admin' | 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
+export type DbUserRole = 'master_admin' | 'super_admin' | 'admin' | 'commercial_agent' | 'support_agent' | 'client';
 
 // Interface pour l'utilisateur authentifié avec un profil
 export interface AuthUser {

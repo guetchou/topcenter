@@ -24,7 +24,9 @@ export function UserProfileMenu({ activeUser, handleLogout }: UserProfileMenuPro
   const getAdminRoute = () => {
     if (!activeUser) return "/login";
     
-    if (activeUser.role === "super_admin") {
+    if (activeUser.role === "master_admin") {
+      return "/master-admin/dashboard";
+    } else if (activeUser.role === "super_admin") {
       return "/super-admin/users";
     } else if (activeUser.role === "admin") {
       return "/admin";
@@ -38,7 +40,7 @@ export function UserProfileMenu({ activeUser, handleLogout }: UserProfileMenuPro
   const getProfileRoute = () => {
     if (!activeUser) return "/login";
     
-    if (activeUser.role === "super_admin" || activeUser.role === "admin") {
+    if (activeUser.role === "master_admin" || activeUser.role === "super_admin" || activeUser.role === "admin") {
       return "/admin/settings";
     } else if (activeUser.role?.includes("agent")) {
       return "/agent/settings";
@@ -68,8 +70,8 @@ export function UserProfileMenu({ activeUser, handleLogout }: UserProfileMenuPro
           className="relative h-8 w-8 rounded-full"
           aria-label="Menu utilisateur"
         >
-          {activeUser.role === "super_admin" && !impersonatedUser ? (
-            <Shield className="h-5 w-5 text-destructive" />
+          {(activeUser.role === "master_admin" || activeUser.role === "super_admin") && !impersonatedUser ? (
+            <Shield className={`h-5 w-5 ${activeUser.role === "master_admin" ? "text-purple-600" : "text-destructive"}`} />
           ) : (
             <User className="h-5 w-5" />
           )}
@@ -81,6 +83,12 @@ export function UserProfileMenu({ activeUser, handleLogout }: UserProfileMenuPro
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>
           {activeUser.profile?.full_name || activeUser.email}
+          {activeUser.role === "master_admin" && (
+            <span className="ml-2 text-xs text-purple-600">(Master Admin)</span>
+          )}
+          {activeUser.role === "super_admin" && (
+            <span className="ml-2 text-xs text-destructive">(Super Admin)</span>
+          )}
           {impersonatedUser && (
             <span className="ml-2 text-xs text-destructive">(Impersonnifié)</span>
           )}
@@ -89,13 +97,15 @@ export function UserProfileMenu({ activeUser, handleLogout }: UserProfileMenuPro
         
         <DropdownMenuItem asChild>
           <Link to={getAdminRoute()}>
-            {activeUser.role === "super_admin" 
-              ? "Panneau Super Admin" 
-              : activeUser.role === "admin" 
-                ? "Panneau Admin" 
-                : activeUser.role?.includes("agent") 
-                  ? "Portail Agent" 
-                  : "Portail Client"}
+            {activeUser.role === "master_admin" 
+              ? "Panneau Master Admin" 
+              : activeUser.role === "super_admin" 
+                ? "Panneau Super Admin" 
+                : activeUser.role === "admin" 
+                  ? "Panneau Admin" 
+                  : activeUser.role?.includes("agent") 
+                    ? "Portail Agent" 
+                    : "Portail Client"}
           </Link>
         </DropdownMenuItem>
         

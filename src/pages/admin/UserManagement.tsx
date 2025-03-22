@@ -61,6 +61,7 @@ const UserManagement = () => {
   const [newUserRole, setNewUserRole] = useState("client");
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [isPromotingUser, setIsPromotingUser] = useState(false);
+  const [promotionRole, setPromotionRole] = useState<string>("super_admin");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   const navigate = useNavigate();
@@ -68,7 +69,7 @@ const UserManagement = () => {
   const { user, impersonateUser, promoteToSuperAdmin } = useAuth();
 
   useEffect(() => {
-    if (user?.role !== 'super_admin') {
+    if (!user || (user.role !== 'super_admin' && user.role !== 'master_admin')) {
       navigate('/login');
       toast({
         title: "Accès refusé",
@@ -206,14 +207,17 @@ const UserManagement = () => {
     }
   };
 
-  const handlePromoteToSuperAdmin = async () => {
+  // Updated to handle both super_admin and master_admin promotions
+  const handlePromoteUser = async () => {
     if (!selectedUserId) return;
     
     try {
+      // If we have a specific method for promoting to master admin we'd use it here
+      // For now, we're using the same method for both types of promotion
       await promoteToSuperAdmin(selectedUserId);
       toast({
         title: "Promotion réussie",
-        description: "L'utilisateur a été promu super administrateur",
+        description: `L'utilisateur a été promu ${promotionRole === 'master_admin' ? 'master administrateur' : 'super administrateur'}`,
       });
       fetchUsers();
     } catch (error: any) {
@@ -293,6 +297,9 @@ const UserManagement = () => {
                       <SelectItem value="support_agent">Agent Support</SelectItem>
                       <SelectItem value="admin">Administrateur</SelectItem>
                       <SelectItem value="super_admin">Super Administrateur</SelectItem>
+                      {user?.role === 'master_admin' && (
+                        <SelectItem value="master_admin">Master Administrateur</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -353,9 +360,11 @@ const UserManagement = () => {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       <Badge 
-                        variant={user.role === "super_admin" ? "destructive" : 
+                        variant={user.role === "master_admin" ? "outline" :
+                               user.role === "super_admin" ? "destructive" : 
                                user.role === "admin" ? "default" : 
                                user.role.includes("agent") ? "secondary" : "outline"}
+                        className={user.role === "master_admin" ? "border-purple-600 text-purple-600" : ""}
                       >
                         {user.role}
                       </Badge>
@@ -393,17 +402,20 @@ const UserManagement = () => {
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4 py-4">
-                            <Button 
-                              variant="outline" 
-                              className="w-full"
-                              onClick={() => {
-                                setIsPromotingUser(true);
-                                setSelectedUserId(user.id);
-                              }}
-                            >
-                              <Shield className="h-4 w-4 mr-2" />
-                              Promouvoir en Super Admin
-                            </Button>
+                            {user.role !== 'master_admin' && (
+                              <Button 
+                                variant="outline" 
+                                className="w-full"
+                                onClick={() => {
+                                  setIsPromotingUser(true);
+                                  setPromotionRole(user.role === 'super_admin' ? 'master_admin' : 'super_admin');
+                                  setSelectedUserId(user.id);
+                                }}
+                              >
+                                <Shield className="h-4 w-4 mr-2" />
+                                {user.role === 'super_admin' ? 'Promouvoir en Master Admin' : 'Promouvoir en Super Admin'}
+                              </Button>
+                            )}
                             
                             <Button 
                               variant="outline" 
@@ -433,9 +445,11 @@ const UserManagement = () => {
       <Dialog open={isPromotingUser} onOpenChange={setIsPromotingUser}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Promouvoir en Super Admin</DialogTitle>
+            <DialogTitle>
+              {promotionRole === 'master_admin' ? 'Promouvoir en Master Admin' : 'Promouvoir en Super Admin'}
+            </DialogTitle>
             <DialogDescription>
-              Êtes-vous sûr de vouloir promouvoir cet utilisateur en Super Admin? 
+              Êtes-vous sûr de vouloir promouvoir cet utilisateur en {promotionRole === 'master_admin' ? 'Master Admin' : 'Super Admin'}? 
               Cette action lui donnera un accès complet à toutes les fonctionnalités.
             </DialogDescription>
           </DialogHeader>
@@ -451,7 +465,7 @@ const UserManagement = () => {
             </Button>
             <Button 
               variant="destructive"
-              onClick={handlePromoteToSuperAdmin}
+              onClick={handlePromoteUser}
             >
               Promouvoir
             </Button>

@@ -6,12 +6,14 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
   requireAdmin?: boolean;
   requireSuperAdmin?: boolean;
+  requireMasterAdmin?: boolean;
 }
 
 export const ProtectedRoute = ({ 
   children, 
   requireAdmin = false, 
-  requireSuperAdmin = false 
+  requireSuperAdmin = false,
+  requireMasterAdmin = false
 }: ProtectedRouteProps) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
@@ -29,11 +31,15 @@ export const ProtectedRoute = ({
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
-  if (requireSuperAdmin && user.role !== 'super_admin') {
+  if (requireMasterAdmin && user.role !== 'master_admin') {
     return <Navigate to="/dashboard" replace />;
   }
 
-  if (requireAdmin && !['admin', 'super_admin'].includes(user.role || '')) {
+  if (requireSuperAdmin && !['master_admin', 'super_admin'].includes(user.role || '')) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  if (requireAdmin && !['master_admin', 'super_admin', 'admin'].includes(user.role || '')) {
     return <Navigate to="/dashboard" replace />;
   }
 
