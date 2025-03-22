@@ -4,21 +4,17 @@ import { useEffect, useState } from "react";
 import { useApiError } from "./useApiError";
 import { toast } from "sonner";
 
-interface OptimizedQueryOptions<TData, TError> extends Omit<UseQueryOptions<TData, TError, TData>, 'queryKey' | 'queryFn'> {
-  onSuccess?: (data: TData) => void;
-  onError?: (error: TError) => void;
+type OptimizedQueryOptions<TData, TError> = Omit<UseQueryOptions<TData, TError, TData>, 'queryKey' | 'queryFn'> & {
   showSuccessToast?: boolean;
   successToastMessage?: string;
   showErrorToast?: boolean;
   errorToastMessage?: string;
-  cacheTime?: number;
   staleTime?: number;
-  retry?: number | boolean | ((failureCount: number, error: TError) => boolean);
   refetchOnWindowFocus?: boolean;
   refetchOnReconnect?: boolean;
   refetchInterval?: number | false;
   refetchIntervalInBackground?: boolean;
-}
+};
 
 export function useOptimizedQuery<TData, TError = Error>(
   queryKey: string[],
@@ -67,28 +63,24 @@ export function useOptimizedQuery<TData, TError = Error>(
     refetchOnWindowFocus: options?.refetchOnWindowFocus !== undefined ? options.refetchOnWindowFocus : false,
     refetchOnReconnect: options?.refetchOnReconnect !== undefined ? options.refetchOnReconnect : true,
     refetchIntervalInBackground: false,
-    ...options,
     enabled: !connectionPaused && !isServerUnavailable && (options?.enabled !== undefined ? options.enabled : true),
-    onSuccess: (data) => {
-      if (options?.showSuccessToast) {
-        toast.success(options.successToastMessage || "Données mises à jour");
-      }
-      if (options?.onSuccess) {
-        options.onSuccess(data);
+    // Utiliser le mécanisme d'événements de TanStack Query v5
+    meta: {
+      onSuccess: (data: TData) => {
+        if (options?.showSuccessToast) {
+          toast.success(options.successToastMessage || "Données mises à jour");
+        }
+      },
+      onError: (error: TError) => {
+        if (error instanceof Error && error.message.includes('network')) {
+          setConnectionPaused(true);
+        }
+        
+        if (options?.showErrorToast) {
+          toast.error(options.errorToastMessage || "Erreur lors du chargement des données");
+        }
       }
     },
-    onError: (error) => {
-      if (error instanceof Error && error.message.includes('network')) {
-        setConnectionPaused(true);
-      }
-      
-      if (options?.showErrorToast) {
-        toast.error(options.errorToastMessage || "Erreur lors du chargement des données");
-      }
-      
-      if (options?.onError) {
-        options.onError(error as TError);
-      }
-    }
+    ...options
   });
 }

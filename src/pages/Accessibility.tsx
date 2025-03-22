@@ -1,401 +1,270 @@
 
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FontBold, FontSize, MousePointer2, Contrast, Eye, Type, Bot, Check } from "lucide-react";
-import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Plus, Minus, Type, Eye, MousePointer, Keyboard, Volume2 } from "lucide-react";
 
 const Accessibility = () => {
-  // Accessibility preferences state
   const [fontSize, setFontSize] = useState(100);
-  const [contrast, setContrast] = useState("normal");
+  const [contrast, setContrast] = useState(100);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const [increasedSpacing, setIncreasedSpacing] = useState(false);
-  const [dyslexicFont, setDyslexicFont] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
-  const [cursorSize, setCursorSize] = useState("normal");
-  const [textToSpeech, setTextToSpeech] = useState(false);
+  const [dyslexicFont, setDyslexicFont] = useState(false);
 
-  // Load settings from localStorage on initial render
-  useEffect(() => {
-    const savedSettings = localStorage.getItem("accessibility-settings");
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      setFontSize(settings.fontSize || 100);
-      setContrast(settings.contrast || "normal");
-      setReduceMotion(settings.reduceMotion || false);
-      setIncreasedSpacing(settings.increasedSpacing || false);
-      setDyslexicFont(settings.dyslexicFont || false);
-      setHighContrast(settings.highContrast || false);
-      setCursorSize(settings.cursorSize || "normal");
-      setTextToSpeech(settings.textToSpeech || false);
-      
-      // Apply settings
-      applySettings(settings);
+  // Appliquer les changements au document
+  const applyAccessibilityChanges = () => {
+    // Taille de police
+    document.documentElement.style.setProperty('--font-size-multiplier', `${fontSize}%`);
+    
+    // Contraste
+    if (highContrast) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
     }
-  }, []);
-
-  // Save settings to localStorage and apply them
-  const saveSettings = () => {
-    const settings = {
-      fontSize,
-      contrast,
-      reduceMotion,
-      increasedSpacing,
-      dyslexicFont,
-      highContrast,
-      cursorSize,
-      textToSpeech
-    };
     
-    localStorage.setItem("accessibility-settings", JSON.stringify(settings));
-    applySettings(settings);
+    // Police pour dyslexie
+    if (dyslexicFont) {
+      document.documentElement.classList.add('dyslexic-font');
+    } else {
+      document.documentElement.classList.remove('dyslexic-font');
+    }
     
-    toast.success("Paramètres d'accessibilité sauvegardés", {
-      description: "Vos préférences ont été enregistrées."
-    });
+    // Réduction de mouvement
+    if (reduceMotion) {
+      document.documentElement.classList.add('reduce-motion');
+    } else {
+      document.documentElement.classList.remove('reduce-motion');
+    }
   };
 
-  // Reset settings to defaults
-  const resetSettings = () => {
-    const defaultSettings = {
-      fontSize: 100,
-      contrast: "normal",
-      reduceMotion: false,
-      increasedSpacing: false,
-      dyslexicFont: false,
-      highContrast: false,
-      cursorSize: "normal",
-      textToSpeech: false
-    };
-    
-    // Update state
-    setFontSize(defaultSettings.fontSize);
-    setContrast(defaultSettings.contrast);
-    setReduceMotion(defaultSettings.reduceMotion);
-    setIncreasedSpacing(defaultSettings.increasedSpacing);
-    setDyslexicFont(defaultSettings.dyslexicFont);
-    setHighContrast(defaultSettings.highContrast);
-    setCursorSize(defaultSettings.cursorSize);
-    setTextToSpeech(defaultSettings.textToSpeech);
-    
-    // Save and apply
-    localStorage.setItem("accessibility-settings", JSON.stringify(defaultSettings));
-    applySettings(defaultSettings);
-    
-    toast.info("Paramètres d'accessibilité réinitialisés", {
-      description: "Les paramètres par défaut ont été restaurés."
-    });
-  };
-
-  // Apply settings to DOM
-  const applySettings = (settings: any) => {
-    const root = document.documentElement;
-    
-    // Font size
-    root.style.setProperty("--font-size-multiplier", `${settings.fontSize / 100}`);
-    
-    // Contrast
-    if (settings.highContrast) {
-      root.classList.add("high-contrast");
-    } else {
-      root.classList.remove("high-contrast");
-    }
-    
-    // Reduce motion
-    if (settings.reduceMotion) {
-      root.classList.add("reduce-motion");
-    } else {
-      root.classList.remove("reduce-motion");
-    }
-    
-    // Spacing
-    if (settings.increasedSpacing) {
-      root.classList.add("increased-spacing");
-    } else {
-      root.classList.remove("increased-spacing");
-    }
-    
-    // Dyslexic font
-    if (settings.dyslexicFont) {
-      root.classList.add("dyslexic-font");
-    } else {
-      root.classList.remove("dyslexic-font");
-    }
-    
-    // Cursor size
-    root.classList.remove("cursor-large", "cursor-x-large");
-    if (settings.cursorSize === "large") {
-      root.classList.add("cursor-large");
-    } else if (settings.cursorSize === "x-large") {
-      root.classList.add("cursor-x-large");
-    }
-  };
+  // Appliquer les changements lorsque les valeurs changent
+  React.useEffect(() => {
+    applyAccessibilityChanges();
+  }, [fontSize, contrast, reduceMotion, highContrast, dyslexicFont]);
 
   return (
-    <div className="container py-10">
+    <div className="container py-8 mx-auto px-4 md:px-6">
       <Helmet>
-        <title>Accessibilité - TopCenter</title>
-        <meta 
-          name="description" 
-          content="Paramètres d'accessibilité pour TopCenter - Adaptez notre site à vos besoins spécifiques."
-        />
+        <title>Accessibilité | TopCenter</title>
+        <meta name="description" content="Paramètres d'accessibilité pour améliorer votre expérience sur TopCenter" />
       </Helmet>
-      
-      <Breadcrumbs />
-      
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Accessibilité</h1>
-        
-        <p className="mb-8 text-muted-foreground">
-          Adaptez votre expérience sur TopCenter.cg en fonction de vos besoins et préférences. 
-          Ces paramètres seront enregistrés pour vos prochaines visites.
-        </p>
-        
-        <Tabs defaultValue="visual">
-          <TabsList className="grid grid-cols-3 mb-8">
-            <TabsTrigger value="visual" className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              <span>Affichage</span>
-            </TabsTrigger>
-            <TabsTrigger value="reading" className="flex items-center gap-2">
-              <Type className="h-4 w-4" />
-              <span>Lecture</span>
-            </TabsTrigger>
-            <TabsTrigger value="navigation" className="flex items-center gap-2">
-              <MousePointer2 className="h-4 w-4" />
-              <span>Navigation</span>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="visual">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FontSize className="h-5 w-5 text-primary" />
-                    Taille du texte
-                  </CardTitle>
-                  <CardDescription>
-                    Ajustez la taille du texte pour une meilleure lisibilité.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">A</span>
-                      <Slider 
-                        value={[fontSize]}
-                        onValueChange={(values) => setFontSize(values[0])}
-                        min={75}
-                        max={200}
-                        step={5}
-                        className="w-2/3 mx-4"
-                      />
-                      <span className="text-xl font-bold">A</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Taille actuelle: {fontSize}%
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+
+      <h1 className="text-3xl font-bold mb-6">Paramètres d'accessibilité</h1>
+      <p className="text-muted-foreground mb-8">
+        Personnalisez l'affichage du site selon vos besoins pour une meilleure expérience de navigation.
+      </p>
+
+      <Tabs defaultValue="visual" className="mb-8">
+        <TabsList className="mb-6 flex flex-wrap">
+          <TabsTrigger value="visual" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            <span>Affichage</span>
+          </TabsTrigger>
+          <TabsTrigger value="interaction" className="flex items-center gap-2">
+            <MousePointer className="h-4 w-4" />
+            <span>Interaction</span>
+          </TabsTrigger>
+          <TabsTrigger value="keyboard" className="flex items-center gap-2">
+            <Keyboard className="h-4 w-4" />
+            <span>Clavier</span>
+          </TabsTrigger>
+          <TabsTrigger value="audio" className="flex items-center gap-2">
+            <Volume2 className="h-4 w-4" />
+            <span>Audio</span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="visual" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Type className="h-5 w-5" />
+                Taille du texte
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => setFontSize(Math.max(80, fontSize - 10))}
+                  aria-label="Réduire la taille du texte"
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                
+                <Slider
+                  value={[fontSize]}
+                  min={80}
+                  max={200}
+                  step={10}
+                  onValueChange={(values) => setFontSize(values[0])}
+                  aria-label="Taille de police"
+                  className="flex-1"
+                />
+                
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => setFontSize(Math.min(200, fontSize + 10))}
+                  aria-label="Augmenter la taille du texte"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+                
+                <span className="w-12 text-right font-mono">{fontSize}%</span>
+              </div>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Contrast className="h-5 w-5 text-primary" />
-                    Contraste
-                  </CardTitle>
-                  <CardDescription>
-                    Modifiez le contraste pour améliorer la visibilité.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="high-contrast"
-                        checked={highContrast}
-                        onCheckedChange={setHighContrast}
-                      />
-                      <Label htmlFor="high-contrast">Mode contraste élevé</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Augmente le contraste entre le texte et l'arrière-plan pour une meilleure lisibilité.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="mt-4 p-4 border rounded-md">
+                <p className="font-medium">Exemple de texte</p>
+                <p style={{ fontSize: `${fontSize}%` }}>
+                  Ceci est un exemple de texte qui sera affiché selon vos préférences.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Paramètres visuels</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="high-contrast">Contraste élevé</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Augmente le contraste des couleurs pour améliorer la lisibilité
+                  </p>
+                </div>
+                <Switch
+                  id="high-contrast"
+                  checked={highContrast}
+                  onCheckedChange={setHighContrast}
+                />
+              </div>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bot className="h-5 w-5 text-primary" />
-                    Animations
-                  </CardTitle>
-                  <CardDescription>
-                    Contrôlez les animations et les effets visuels.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="reduce-motion"
-                        checked={reduceMotion}
-                        onCheckedChange={setReduceMotion}
-                      />
-                      <Label htmlFor="reduce-motion">Réduire les animations</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Désactive ou réduit les animations et transitions pour limiter les distractions.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="reading">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FontBold className="h-5 w-5 text-primary" />
-                    Police de caractères
-                  </CardTitle>
-                  <CardDescription>
-                    Personnalisez la police pour faciliter la lecture.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="dyslexic-font"
-                        checked={dyslexicFont}
-                        onCheckedChange={setDyslexicFont}
-                      />
-                      <Label htmlFor="dyslexic-font">Police adaptée à la dyslexie</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Utilise une police spécialement conçue pour faciliter la lecture des personnes dyslexiques.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="dyslexic-font">Police pour dyslexie</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Utilise une police adaptée pour faciliter la lecture
+                  </p>
+                </div>
+                <Switch
+                  id="dyslexic-font"
+                  checked={dyslexicFont}
+                  onCheckedChange={setDyslexicFont}
+                />
+              </div>
               
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Type className="h-5 w-5 text-primary" />
-                    Espacement du texte
-                  </CardTitle>
-                  <CardDescription>
-                    Ajustez l'espacement pour améliorer la lisibilité.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="increased-spacing"
-                        checked={increasedSpacing}
-                        onCheckedChange={setIncreasedSpacing}
-                      />
-                      <Label htmlFor="increased-spacing">Augmenter l'espacement</Label>
-                    </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="reduce-motion">Réduire les animations</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Désactive ou réduit les animations et transitions
+                  </p>
+                </div>
+                <Switch
+                  id="reduce-motion"
+                  checked={reduceMotion}
+                  onCheckedChange={setReduceMotion}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="interaction">
+          <Card>
+            <CardHeader>
+              <CardTitle>Paramètres d'interaction</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Délai du clic</Label>
+                <Select defaultValue="normal">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Délai du clic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="short">Court</SelectItem>
+                    <SelectItem value="normal">Normal</SelectItem>
+                    <SelectItem value="long">Long</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground">
+                  Ajuste le délai nécessaire pour qu'un clic soit enregistré
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="keyboard">
+          <Card>
+            <CardHeader>
+              <CardTitle>Navigation au clavier</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <p className="font-medium">Raccourcis clavier</p>
+                  <ul className="space-y-2 list-disc pl-5">
+                    <li>Alt + M: Ouvrir le menu (mobile)</li>
+                    <li>Ctrl/Cmd + K: Ouvrir la recherche</li>
+                    <li>Alt + S: Aller au contenu principal</li>
+                    <li>Alt + 1 à 9: Accéder aux sections principales</li>
+                  </ul>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4">
+                  Utilisez la touche Tab pour naviguer entre les éléments interactifs.
+                  Appuyez sur Entrée pour activer un élément sélectionné.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="audio">
+          <Card>
+            <CardHeader>
+              <CardTitle>Paramètres audio</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="screen-reader">Support lecteur d'écran</Label>
                     <p className="text-sm text-muted-foreground">
-                      Augmente l'espacement entre les lettres, les mots et les lignes pour faciliter la lecture.
+                      Optimise le site pour les lecteurs d'écran (NVDA, JAWS, VoiceOver)
                     </p>
                   </div>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5 text-primary" />
-                    Lecture vocale
-                  </CardTitle>
-                  <CardDescription>
-                    Options de lecture vocale du contenu.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        id="text-to-speech"
-                        checked={textToSpeech}
-                        onCheckedChange={setTextToSpeech}
-                      />
-                      <Label htmlFor="text-to-speech">Activer la lecture vocale</Label>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Permet la lecture vocale du contenu sélectionné (nécessite un navigateur compatible).
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="navigation">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MousePointer2 className="h-5 w-5 text-primary" />
-                    Curseur
-                  </CardTitle>
-                  <CardDescription>
-                    Personnalisez l'apparence du curseur.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <Select
-                      value={cursorSize}
-                      onValueChange={(value) => setCursorSize(value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Taille du curseur" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="normal">Normal</SelectItem>
-                        <SelectItem value="large">Grand</SelectItem>
-                        <SelectItem value="x-large">Très grand</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-sm text-muted-foreground">
-                      Modifie la taille du curseur pour faciliter la navigation.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
-        
-        <div className="flex justify-between mt-10">
-          <Button variant="outline" onClick={resetSettings}>
-            Réinitialiser les paramètres
-          </Button>
-          <Button onClick={saveSettings} className="gap-2">
-            <Check className="h-4 w-4" />
-            Enregistrer les paramètres
-          </Button>
-        </div>
-      </div>
+                  <Switch id="screen-reader" defaultChecked />
+                </div>
+                
+                <div className="space-y-2 mt-4">
+                  <Label>Volume des notifications</Label>
+                  <Slider defaultValue={[70]} max={100} step={10} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <Button 
+        onClick={applyAccessibilityChanges}
+        className="w-full md:w-auto mt-4"
+      >
+        Appliquer les paramètres
+      </Button>
     </div>
   );
 };

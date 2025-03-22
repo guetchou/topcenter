@@ -1,180 +1,127 @@
 
-/* Accessibility Styles */
+/* Styles d'accessibilité */
 
-/* High Contrast Mode */
+/* Lien pour passer directement au contenu */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  padding: 8px 12px;
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  z-index: 9999;
+  transition: top 0.2s;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Styles pour améliorer la visibilité du focus */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Support de la préférence de réduction de mouvement */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Classes d'accessibilité */
+.reduce-motion *,
+.reduce-motion *::before,
+.reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 .high-contrast {
   --background: 0 0% 100%;
   --foreground: 0 0% 0%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 0%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 0%;
-  --primary: 24 100% 40%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 90%;
+  --primary: 45 100% 45%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 95%;
   --secondary-foreground: 0 0% 0%;
   --muted: 0 0% 90%;
   --muted-foreground: 0 0% 0%;
-  --accent: 0 0% 90%;
-  --accent-foreground: 0 0% 0%;
-  --destructive: 0 100% 40%;
-  --destructive-foreground: 0 0% 100%;
   --border: 0 0% 0%;
-  --input: 0 0% 0%;
-  --ring: 24 100% 40%;
 }
 
 .high-contrast.dark {
   --background: 0 0% 0%;
   --foreground: 0 0% 100%;
-  --card: 0 0% 0%;
-  --card-foreground: 0 0% 100%;
-  --popover: 0 0% 0%;
-  --popover-foreground: 0 0% 100%;
-  --primary: 24 100% 60%;
+  --primary: 45 100% 55%;
   --primary-foreground: 0 0% 0%;
   --secondary: 0 0% 15%;
   --secondary-foreground: 0 0% 100%;
-  --muted: 0 0% 15%;
+  --muted: 0 0% 20%;
   --muted-foreground: 0 0% 100%;
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 100%;
-  --destructive: 0 100% 60%;
-  --destructive-foreground: 0 0% 0%;
   --border: 0 0% 100%;
-  --input: 0 0% 100%;
-  --ring: 24 100% 60%;
 }
 
-/* Reduced Motion */
-.reduce-motion * {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001ms !important;
-  scroll-behavior: auto !important;
+.dyslexic-font {
+  --font-sans: 'OpenDyslexic', sans-serif;
+  font-family: var(--font-sans);
+  letter-spacing: 0.05em;
+  word-spacing: 0.1em;
+  line-height: 1.5;
 }
 
-/* Font Size Adjustment */
+/* Variables de taille de police */
 :root {
-  --font-size-multiplier: 1;
+  --font-size-multiplier: 100%;
 }
 
 body {
-  font-size: calc(1rem * var(--font-size-multiplier));
+  font-size: calc(1rem * var(--font-size-multiplier) / 100);
 }
 
-h1 {
-  font-size: calc(2.25rem * var(--font-size-multiplier));
-}
-
-h2 {
-  font-size: calc(1.875rem * var(--font-size-multiplier));
-}
-
-h3 {
-  font-size: calc(1.5rem * var(--font-size-multiplier));
-}
-
-h4 {
-  font-size: calc(1.25rem * var(--font-size-multiplier));
-}
-
-h5 {
-  font-size: calc(1.125rem * var(--font-size-multiplier));
-}
-
-h6 {
-  font-size: calc(1rem * var(--font-size-multiplier));
-}
-
-/* Dyslexic Font */
-.dyslexic-font {
-  font-family: "Open Dyslexic", "Comic Sans MS", sans-serif;
-  letter-spacing: 0.05em;
-  word-spacing: 0.1em;
-}
-
-/* Increased Spacing */
-.increased-spacing {
-  letter-spacing: 0.1em;
-  word-spacing: 0.2em;
-  line-height: 1.8;
-}
-
-.increased-spacing p {
-  margin-bottom: 1.5em;
-}
-
-.increased-spacing li {
-  margin-bottom: 0.75em;
-}
-
-/* Custom Cursor Sizes */
-.cursor-large, 
-.cursor-large * {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z'/%3E%3Cpath d='m13 13 6 6'/%3E%3C/svg%3E") 16 16, auto !important;
-}
-
-.cursor-x-large, 
-.cursor-x-large * {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 3 7.07 16.97 2.51-7.39 7.39-2.51L3 3z'/%3E%3Cpath d='m13 13 6 6'/%3E%3C/svg%3E") 24 24, auto !important;
-}
-
-/* Focus Indicators */
-*:focus-visible {
-  outline: 3px solid var(--primary) !important;
-  outline-offset: 2px !important;
-}
-
-.high-contrast *:focus-visible {
-  outline: 3px solid #000 !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 3px #fff, 0 0 0 6px #000 !important;
-}
-
-.high-contrast.dark *:focus-visible {
-  outline: 3px solid #fff !important;
-  outline-offset: 2px !important;
-  box-shadow: 0 0 0 3px #000, 0 0 0 6px #fff !important;
-}
-
-/* Skip Navigation Link */
-.skip-link {
+/* Lecteurs d'écran seulement */
+.sr-only {
   position: absolute;
-  top: -40px;
-  left: 0;
-  background: var(--primary);
-  color: white;
-  padding: 8px;
-  z-index: 100;
-  transition: top 0.1s ease-in;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
-.skip-link:focus {
-  top: 0;
+/* Contraste des textes */
+.text-contrast-improved {
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Enhanced form controls for accessibility */
-input:focus, 
-select:focus, 
-textarea:focus,
-button:focus {
-  outline: 2px solid var(--primary) !important;
-  outline-offset: 2px !important;
-  box-shadow: none !important;
+.dark .text-contrast-improved {
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
-/* Better keyboard navigation indicators */
-a:focus, button:focus, [role="button"]:focus {
-  text-decoration: underline;
+/* Accessibilité du formulaire */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
-/* Making sure text remains visible during webfont load */
-html {
-  font-display: swap;
-}
-
-/* Reducing opacity on disabled elements */
-*:disabled {
-  opacity: 0.6 !important;
+/* Espacement du texte pour la dyslexie */
+.dyslexic-spacing {
+  letter-spacing: 0.1em;
+  word-spacing: 0.15em;
+  line-height: 1.6;
 }

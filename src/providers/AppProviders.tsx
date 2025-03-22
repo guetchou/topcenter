@@ -1,40 +1,30 @@
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "./ThemeProvider"; 
-import { useAuth } from "@/contexts/AuthContext";
-import { NotificationsProvider } from "@/components/notifications/NotificationsProvider";
-import { Toaster } from "@/components/ui/toaster";
+import { ThemeProvider } from "./ThemeProvider";
+import { HelmetProvider } from "react-helmet-async";
 import { Suspense } from "react";
 import PageLoader from "@/components/PageLoader";
-import { HelmetProvider } from "react-helmet-async";
 import { SearchProvider } from "@/contexts/SearchContext";
+import { IntlProviderWrapper } from "@/components/IntlProvider";
+import { Toaster } from "sonner";
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
-  const queryClient = new QueryClient();
-
+export function AppProviders({ children }) {
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={new QueryClient()}>
       <ThemeProvider defaultTheme="light" storageKey="color-theme">
-        <AuthContext>
-          <NotificationsProvider>
-            <SearchProvider>
-              <Suspense fallback={<PageLoader />}>
-                <HelmetProvider>
-                  {children}
-                  <Toaster />
-                </HelmetProvider>
-              </Suspense>
-            </SearchProvider>
-          </NotificationsProvider>
-        </AuthContext>
+        <IntlProviderWrapper>
+          <SearchProvider>
+            <Suspense fallback={<PageLoader />}>
+              <HelmetProvider>
+                {children}
+                <Toaster position="top-right" richColors closeButton />
+              </HelmetProvider>
+            </Suspense>
+          </SearchProvider>
+        </IntlProviderWrapper>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }
-
-// Create a simple AuthContext provider that uses the existing useAuth hook
-const AuthContext = ({ children }: { children: React.ReactNode }) => {
-  return <>{children}</>;
-};

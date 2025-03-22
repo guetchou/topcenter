@@ -4,21 +4,8 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
 import './lib/accessibilityStyles.css'
-import { QueryClient } from '@tanstack/react-query'
 import { AppProviders } from './providers/AppProviders.tsx'
 import { toast } from 'sonner'
-
-// Create a single QueryClient instance
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (anciennement cacheTime)
-      retry: 1,
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    },
-  },
-})
 
 // Service worker registration code
 if ('serviceWorker' in navigator) {
