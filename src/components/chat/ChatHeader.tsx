@@ -9,13 +9,19 @@ export interface ChatHeaderProps {
   setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
   onClose: () => void;
   activeTab?: string;
+  isConnectedToAgent?: boolean;
+  queuePosition?: number;
+  useChatterPal?: boolean;
 }
 
 export const ChatHeader = ({
   selectedModel,
   setSelectedModel,
   onClose,
-  activeTab
+  activeTab,
+  isConnectedToAgent,
+  queuePosition,
+  useChatterPal
 }: ChatHeaderProps) => {
   return (
     <div className="flex items-center justify-between p-4 border-b">
@@ -25,8 +31,8 @@ export const ChatHeader = ({
         </h3>
         {activeTab === "ai" && (
           <ModelSelector
-            value={selectedModel}
-            onChange={setSelectedModel}
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
           />
         )}
       </div>

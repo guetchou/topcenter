@@ -20,7 +20,8 @@ export const MapLocation = () => {
     
     if (map.current) return; // Éviter la réinitialisation
 
-    const brazzavilleCoordinates = [15.2772, -4.2674]; // Coordonnées précises de Brazzaville
+    // Coordonnées précises de Brazzaville comme un tuple [longitude, latitude]
+    const brazzavilleCoordinates: [number, number] = [15.2772, -4.2674];
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
