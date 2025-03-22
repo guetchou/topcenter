@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useOptimizedQuery } from "@/hooks/useOptimizedQuery";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface TeamMember {
@@ -15,7 +15,7 @@ export interface TeamMember {
   order?: number;
 }
 
-// Données de secours en cas d'indisponibilité du serveur
+// Fallback data in case of server unavailability
 const fallbackTeamMembers: TeamMember[] = [
   {
     id: "1",
@@ -60,9 +60,9 @@ const fallbackTeamMembers: TeamMember[] = [
 ];
 
 export const useTeamMembers = () => {
-  return useQuery({
-    queryKey: ['team-members'],
-    queryFn: async () => {
+  return useOptimizedQuery(
+    ['team-members'],
+    async () => {
       try {
         const { data, error } = await supabase
           .from('team_members')
@@ -74,7 +74,7 @@ export const useTeamMembers = () => {
           throw error;
         }
         
-        // Si aucune donnée n'est disponible, retourner les données de secours
+        // If no data is available, return fallback data
         return data.length > 0 ? data.map(member => ({
           ...member,
           specialties: member.specialties || []
@@ -84,7 +84,10 @@ export const useTeamMembers = () => {
         return fallbackTeamMembers;
       }
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    retry: 1
-  });
+    {
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false
+    }
+  );
 };

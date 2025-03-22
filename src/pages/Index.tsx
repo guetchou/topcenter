@@ -1,13 +1,14 @@
 
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyInfoSection } from "@/components/sections/CompanyInfoSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { shouldUseNewDesign } from "@/lib/designUtils";
 import { DesignToggle } from "@/components/DesignToggle";
+import { useInView } from "react-intersection-observer";
 
-// Lazy loading des sections originales
+// Lazy loading original sections
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
 const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection"));
 const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection"));
@@ -17,18 +18,70 @@ const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(
 const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
 const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
-// Lazy loading des nouvelles sections
+// Lazy loading new sections
 const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection"));
 
-// Fallback générique
-const Fallback = ({ size = "lg" }: { size?: "sm" | "lg" }) => (
-  <div className={`min-h-[50vh] flex items-center justify-center`}>
-    <Spinner size={size} />
+// Enhanced fallback with more contextual information
+const Fallback = ({ size = "lg", label = "Chargement" }: { size?: "sm" | "lg", label?: string }) => (
+  <div className="min-h-[50vh] flex items-center justify-center" aria-live="polite">
+    <div className="flex flex-col items-center gap-3">
+      <Spinner size={size} aria-hidden="true" />
+      <p className="text-sm text-muted-foreground animate-pulse">
+        {label}...
+      </p>
+    </div>
   </div>
 );
 
+// Intersection Observer component to lazy load when in viewport
+const LazySection = ({ 
+  children, 
+  fallbackHeight = "50vh",
+  id,
+  threshold = 0.1
+}: { 
+  children: React.ReactNode,
+  fallbackHeight?: string,
+  id: string,
+  threshold?: number
+}) => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold
+  });
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (inView && !isLoaded) {
+      setIsLoaded(true);
+    }
+  }, [inView, isLoaded]);
+
+  return (
+    <div 
+      ref={ref} 
+      id={id} 
+      style={{ minHeight: isLoaded ? 'auto' : fallbackHeight }}
+      className="relative"
+    >
+      {(inView || isLoaded) ? (
+        <ErrorBoundary>
+          <Suspense fallback={<Fallback label={`Chargement de la section ${id}`} />}>
+            {children}
+          </Suspense>
+        </ErrorBoundary>
+      ) : (
+        <div 
+          className="w-full h-full absolute top-0 left-0 bg-gradient-to-b from-background to-background/50"
+          aria-hidden="true"
+        />
+      )}
+    </div>
+  );
+};
+
 const Index = () => {
-  // Déterminer quelles sections utiliser (ancien ou nouveau design)
+  // Determine which sections to use (old or new design)
   const useNewHero = shouldUseNewDesign('hero');
   const useNewServices = shouldUseNewDesign('services');
   const useNewTestimonials = shouldUseNewDesign('testimonials');
@@ -53,56 +106,44 @@ const Index = () => {
 
       <main>
         <ErrorBoundary>
-          <Suspense fallback={<Fallback size="lg" />}>
+          <Suspense fallback={<Fallback size="lg" label="Chargement de la page d'accueil" />}>
             {useNewHero ? <NewHeroSection /> : <HeroSection />}
           </Suspense>
         </ErrorBoundary>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <ServicesSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="services" fallbackHeight="60vh">
+          <ServicesSection />
+        </LazySection>
 
-        <CompanyInfoSection />
+        <LazySection id="company-info" fallbackHeight="40vh">
+          <CompanyInfoSection />
+        </LazySection>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <TestimonialsSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="testimonials" fallbackHeight="50vh">
+          <TestimonialsSection />
+        </LazySection>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <CallToActionSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="call-to-action" fallbackHeight="30vh">
+          <CallToActionSection />
+        </LazySection>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <BlogSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="blog" fallbackHeight="60vh">
+          <BlogSection />
+        </LazySection>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <TeamSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="team" fallbackHeight="60vh">
+          <TeamSection />
+        </LazySection>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <PartnersSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="partners" fallbackHeight="40vh">
+          <PartnersSection />
+        </LazySection>
 
-        <ErrorBoundary>
-          <Suspense fallback={<Fallback />}>
-            <SocialMediaSection />
-          </Suspense>
-        </ErrorBoundary>
+        <LazySection id="social-media" fallbackHeight="30vh">
+          <SocialMediaSection />
+        </LazySection>
         
-        {/* Toggle de design pour le développement */}
+        {/* Design toggle for development */}
         {process.env.NODE_ENV !== 'production' && <DesignToggle />}
       </main>
     </>

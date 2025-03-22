@@ -14,6 +14,7 @@ interface ApiContentWrapperProps<T> {
   loadingFallback?: React.ReactNode;
   errorFallback?: React.ReactNode;
   emptyMessage?: string;
+  maxRetries?: number;
 }
 
 export function ApiContentWrapper<T>({
@@ -25,29 +26,46 @@ export function ApiContentWrapper<T>({
   fallback,
   loadingFallback,
   errorFallback,
-  emptyMessage = "Aucune donnée disponible"
+  emptyMessage = "Aucune donnée disponible",
+  maxRetries = 1
 }: ApiContentWrapperProps<T>) {
-  // Composant réutilisable pour afficher l'état de chargement avec animation
+  // Reusable component for displaying loading state with animation
   const defaultLoadingFallback = (
     <div className="flex flex-col justify-center items-center h-64 gap-3 animate-fade-in">
-      <Spinner className="h-8 w-8 text-primary animate-bounce-subtle" />
-      <p className="text-sm text-muted-foreground animate-pulse-subtle">Chargement en cours...</p>
+      <Spinner 
+        className="h-8 w-8 text-primary animate-bounce-subtle" 
+        aria-label="Chargement des données"
+      />
+      <p 
+        className="text-sm text-muted-foreground animate-pulse-subtle"
+        aria-live="polite"
+      >
+        Chargement en cours...
+      </p>
     </div>
   );
 
-  // Animation conditionnelle pour le contenu lorsqu'il est chargé
+  // Conditional animation for content when loaded
   const ContentWithAnimation = ({ children }: { children: React.ReactNode }) => (
     <div 
       className={cn(
         "animate-fade-in transition-opacity duration-500",
         isLoading ? "opacity-0" : "opacity-100"
       )}
+      aria-busy={isLoading}
+      aria-live="polite"
     >
       {children}
     </div>
   );
 
-  // Gestion améliorée des erreurs et des états de chargement
+  const EmptyState = () => (
+    <div className="text-center py-8">
+      <p className="text-muted-foreground">{emptyMessage}</p>
+    </div>
+  );
+
+  // Improved handling of errors and loading states
   return (
     <ApiErrorBoundary
       isLoading={isLoading}
@@ -55,9 +73,18 @@ export function ApiContentWrapper<T>({
       retryFunction={refetch}
       loadingFallback={loadingFallback || defaultLoadingFallback}
       fallback={errorFallback}
+      maxRetries={maxRetries}
     >
       <ContentWithAnimation>
-        {data ? children(data) : fallback}
+        {data ? (
+          Array.isArray(data) && data.length === 0 ? (
+            <EmptyState />
+          ) : (
+            children(data)
+          )
+        ) : (
+          fallback
+        )}
       </ContentWithAnimation>
     </ApiErrorBoundary>
   );

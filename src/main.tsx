@@ -1,7 +1,9 @@
+
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
+import './lib/accessibilityStyles.css'
 import { QueryClient } from '@tanstack/react-query'
 import { AppProviders } from './providers/AppProviders.tsx'
 import { toast } from 'sonner'
@@ -56,6 +58,14 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// Add skip-to-content link for keyboard navigation
+const skipLink = document.createElement('a');
+skipLink.href = '#main-content';
+skipLink.className = 'skip-link';
+skipLink.textContent = 'Aller au contenu principal';
+document.body.prepend(skipLink);
+
+// Initialize application with optimized resources
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <AppProviders>

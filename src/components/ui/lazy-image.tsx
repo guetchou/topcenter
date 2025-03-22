@@ -9,6 +9,8 @@ interface LazyImageProps {
   width?: number;
   height?: number;
   placeholderColor?: string;
+  fallbackSrc?: string;
+  loading?: "lazy" | "eager";
 }
 
 export const LazyImage = ({ 
@@ -17,12 +19,19 @@ export const LazyImage = ({
   className, 
   width, 
   height, 
-  placeholderColor = "#f3f4f6" 
+  placeholderColor = "#f3f4f6",
+  fallbackSrc = "/placeholder.svg",
+  loading = "lazy"
 }: LazyImageProps) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageSrc, setImageSrc] = useState("");
+  const [hasError, setHasError] = useState(false);
   
   useEffect(() => {
+    // Reset states when src changes
+    setImageLoaded(false);
+    setHasError(false);
+    
     const img = new Image();
     img.src = src;
     
@@ -31,12 +40,23 @@ export const LazyImage = ({
       setImageLoaded(true);
     };
     
+    const onError = () => {
+      console.warn(`Failed to load image: ${src}`);
+      setHasError(true);
+      if (fallbackSrc) {
+        setImageSrc(fallbackSrc);
+        setImageLoaded(true);
+      }
+    };
+    
     img.addEventListener("load", onLoad);
+    img.addEventListener("error", onError);
     
     return () => {
       img.removeEventListener("load", onLoad);
+      img.removeEventListener("error", onError);
     };
-  }, [src]);
+  }, [src, fallbackSrc]);
   
   return (
     <div 
@@ -45,11 +65,14 @@ export const LazyImage = ({
         className
       )}
       style={{ width, height }}
+      role="img"
+      aria-label={alt}
     >
       {!imageLoaded && (
         <div 
           className="absolute inset-0 animate-pulse"
           style={{ backgroundColor: placeholderColor }}
+          aria-hidden="true"
         />
       )}
       
@@ -63,8 +86,15 @@ export const LazyImage = ({
           )}
           width={width}
           height={height}
-          loading="lazy"
+          loading={loading}
+          onError={() => setHasError(true)}
         />
+      )}
+
+      {hasError && !imageSrc && (
+        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground p-4">
+          <span className="text-sm">Image non disponible</span>
+        </div>
       )}
     </div>
   );

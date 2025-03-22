@@ -1,5 +1,5 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useOptimizedQuery } from "@/hooks/useOptimizedQuery";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Testimonial {
@@ -13,7 +13,7 @@ export interface Testimonial {
   date?: string;
 }
 
-// Témoignages de secours en cas d'indisponibilité du serveur
+// Fallback testimonials in case of server unavailability
 const fallbackTestimonials: Testimonial[] = [
   {
     id: "1",
@@ -45,9 +45,9 @@ const fallbackTestimonials: Testimonial[] = [
 ];
 
 export const useTestimonials = () => {
-  return useQuery({
-    queryKey: ['testimonials'],
-    queryFn: async () => {
+  return useOptimizedQuery(
+    ['testimonials'],
+    async () => {
       try {
         const { data, error } = await supabase
           .from('testimonials')
@@ -66,7 +66,11 @@ export const useTestimonials = () => {
         return fallbackTestimonials;
       }
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1
-  });
+    {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true
+    }
+  );
 };
