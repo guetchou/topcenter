@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,12 +23,15 @@ export const LiveChat = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [queuePosition, setQueuePosition] = useState(3);
   const [isConnectedToAgent, setIsConnectedToAgent] = useState(false);
+  const [useChatterPal, setUseChatterPal] = useState(false);
+  const [chatterpalLoaded, setChatterpalLoaded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const chatterpalContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Simulate queue position updates
   useEffect(() => {
-    if (isOpen && queuePosition > 0) {
+    if (isOpen && queuePosition > 0 && !useChatterPal) {
       const timer = setInterval(() => {
         setQueuePosition((prev) => {
           if (prev <= 1) {
@@ -40,14 +44,64 @@ export const LiveChat = () => {
       }, 5000);
       return () => clearInterval(timer);
     }
-  }, [isOpen, queuePosition]);
+  }, [isOpen, queuePosition, useChatterPal]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && !useChatterPal) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, useChatterPal]);
+
+  // Initialize ChatterPal when switched to that mode
+  useEffect(() => {
+    if (isOpen && useChatterPal && !chatterpalLoaded) {
+      initializeChatterPal();
+    }
+    
+    return () => {
+      // Cleanup ChatterPal when component unmounts
+      if (window.chatPal) {
+        try {
+          window.chatPal.destroy();
+        } catch (error) {
+          console.error("Error destroying ChatterPal:", error);
+        }
+      }
+    };
+  }, [isOpen, useChatterPal]);
+
+  const initializeChatterPal = () => {
+    try {
+      // Réinitialiser l'instance si elle existe
+      if (window.chatPal) {
+        try {
+          window.chatPal.destroy();
+        } catch (e) {
+          console.log("Pas d'instance précédente à détruire");
+        }
+      }
+      
+      // Configurer la nouvelle instance
+      window.chatPal = new window.ChatPal({
+        embedId: 'v8HfNRZjDyZ3',
+        remoteBaseUrl: 'https://chatappdemo.com/',
+        version: '8.3',
+        containerSelector: '#chatterpal-container',
+        position: 'internal',
+        width: '100%',
+        height: '100%'
+      });
+      
+      setChatterpalLoaded(true);
+    } catch (error) {
+      console.error("Erreur lors de l'initialisation de ChatterPal:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger le chat avec un agent humain. Veuillez réessayer."
+      });
+    }
+  };
 
   const connectToAgent = () => {
     setIsConnectedToAgent(true);
@@ -146,6 +200,15 @@ export const LiveChat = () => {
     URL.revokeObjectURL(url);
   };
 
+  const switchToChatBot = () => {
+    setUseChatterPal(false);
+  };
+
+  const switchToChatterPal = () => {
+    setUseChatterPal(true);
+    initializeChatterPal();
+  };
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {!isOpen ? (
@@ -161,14 +224,19 @@ export const LiveChat = () => {
           <div className="p-4 border-b flex justify-between items-center bg-primary text-primary-foreground rounded-t-lg">
             <div>
               <h3 className="font-semibold">Chat en direct</h3>
-              {!isConnectedToAgent && queuePosition > 0 && (
+              {!isConnectedToAgent && queuePosition > 0 && !useChatterPal && (
                 <p className="text-sm opacity-90">
                   Position dans la file : {queuePosition}
                 </p>
               )}
-              {isConnectedToAgent && (
+              {isConnectedToAgent && !useChatterPal && (
                 <p className="text-sm opacity-90">
                   Agent connecté
+                </p>
+              )}
+              {useChatterPal && (
+                <p className="text-sm opacity-90">
+                  Agent ChatterPal
                 </p>
               )}
             </div>
@@ -182,43 +250,75 @@ export const LiveChat = () => {
             </Button>
           </div>
 
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <ChatMessage
-                  key={message.id}
-                  content={message.content}
-                  sender={message.sender}
-                  timestamp={message.timestamp}
-                />
-              ))}
-              {isTyping && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Agent est en train d'écrire...
+          <div className="flex border-b">
+            <Button
+              variant={!useChatterPal ? "default" : "ghost"}
+              size="sm"
+              className="flex-1 rounded-none"
+              onClick={switchToChatBot}
+            >
+              Chat Standard
+            </Button>
+            <Button
+              variant={useChatterPal ? "default" : "ghost"}
+              size="sm"
+              className="flex-1 rounded-none"
+              onClick={switchToChatterPal}
+            >
+              Agent ChatterPal
+            </Button>
+          </div>
+
+          {!useChatterPal ? (
+            <>
+              <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+                <div className="space-y-4">
+                  {messages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      content={message.content}
+                      sender={message.sender}
+                      timestamp={message.timestamp}
+                    />
+                  ))}
+                  {isTyping && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Agent est en train d'écrire...
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              <ChatToolbar
+                newMessage={newMessage}
+                setNewMessage={setNewMessage}
+                handleSendMessage={handleSendMessage}
+                handleAttachFile={handleAttachFile}
+                handleVoiceMessage={handleVoiceMessage}
+              />
+
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={downloadHistory}
+                  className="mx-4 mb-2 text-xs"
+                >
+                  <Download className="w-3 h-3 mr-1" />
+                  Télécharger l'historique
+                </Button>
+              )}
+            </>
+          ) : (
+            <div id="chatterpal-container" ref={chatterpalContainerRef} className="flex-1 relative">
+              {!chatterpalLoaded && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  <span className="ml-2">Chargement de l'agent ChatterPal...</span>
                 </div>
               )}
             </div>
-          </ScrollArea>
-
-          <ChatToolbar
-            newMessage={newMessage}
-            setNewMessage={setNewMessage}
-            handleSendMessage={handleSendMessage}
-            handleAttachFile={handleAttachFile}
-            handleVoiceMessage={handleVoiceMessage}
-          />
-
-          {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={downloadHistory}
-              className="mx-4 mb-2 text-xs"
-            >
-              <Download className="w-3 h-3 mr-1" />
-              Télécharger l'historique
-            </Button>
           )}
         </div>
       )}
