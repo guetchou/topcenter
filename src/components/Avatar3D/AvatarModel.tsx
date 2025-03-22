@@ -1,78 +1,100 @@
 
-import { useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
-import { useGLTF, useAnimations } from '@react-three/drei';
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import * as THREE from 'three';
+import { GLTF } from 'three-stdlib';
 
-// Loading spinner component
-export const LoadingSpinner = () => (
-  <div className="w-full h-full flex items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-  </div>
-);
+type GLTFResult = GLTF & {
+  nodes: {
+    [key: string]: THREE.Mesh;
+  };
+  materials: {
+    [key: string]: THREE.Material;
+  };
+};
 
 interface AvatarModelProps {
   url: string;
+  position?: [number, number, number];
+  scale?: number;
+  rotation?: [number, number, number];
+  animate?: boolean;
 }
 
-export const AvatarModel = ({ url }: AvatarModelProps) => {
-  const group = useRef();
-  const { toast } = useToast();
+export function AvatarModel({
+  url,
+  position = [0, 0, 0],
+  scale = 1,
+  rotation = [0, 0, 0],
+  animate = true
+}: AvatarModelProps) {
+  const group = useRef<THREE.Group>(null);
+  const { scene } = useGLTF(url) as GLTFResult;
   
-  // Utilisation de useGLTF avec gestion d'erreur
-  let modelData;
-  try {
-    modelData = useGLTF(url);
-  } catch (error) {
-    console.error("Error loading GLTF model:", error);
-    toast({
-      title: "Erreur de chargement",
-      description: "Impossible de charger le modèle 3D. Veuillez réessayer.",
-      variant: "destructive"
-    });
-    return <LoadingSpinner />;
-  }
+  // Clone the scene to avoid modifying the cached original
+  const clonedScene = React.useMemo(() => {
+    return scene.clone();
+  }, [scene]);
 
-  const { scene, animations } = modelData;
-  const { actions, names } = useAnimations(animations, group);
-  
   useEffect(() => {
-    try {
-      if (scene) {
-        scene.scale.set(2, 2, 2); // Augmenté la taille pour une meilleure visibilité
-        scene.position.set(0, -1, 0);
-        scene.rotation.set(0, 0, 0);
-
-        if (names.includes('idle') && actions) {
-          actions['idle'].reset().fadeIn(0.5).play();
+    if (!clonedScene) return;
+    
+    // Apply materials or modifications to the cloned scene if needed
+    clonedScene.traverse((node) => {
+      if ((node as THREE.Mesh).isMesh) {
+        const mesh = node as THREE.Mesh;
+        // Example: You could modify materials here
+        if (mesh.material) {
+          // Apply material modifications if needed
         }
       }
-    } catch (error) {
-      console.error("Error in scene setup:", error);
-      toast({
-        title: "Erreur",
-        description: "Problème lors de la configuration de l'avatar",
-        variant: "destructive"
-      });
+    });
+    
+    // Add the cloned scene to our group
+    if (group.current) {
+      // Clear previous children
+      while (group.current.children.length > 0) {
+        group.current.remove(group.current.children[0]);
+      }
+      
+      // Add new scene
+      group.current.add(clonedScene);
     }
     
     return () => {
-      if (actions) {
-        Object.values(actions).forEach(action => action?.stop());
-      }
+      // Cleanup
+      clonedScene.traverse((node) => {
+        if ((node as THREE.Mesh).isMesh) {
+          const mesh = node as THREE.Mesh;
+          mesh.geometry.dispose();
+          
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach(material => material.dispose());
+          } else if (mesh.material) {
+            mesh.material.dispose();
+          }
+        }
+      });
     };
-  }, [scene, actions, names, toast]);
+  }, [clonedScene]);
 
-  useFrame((state) => {
-    if (group.current) {
-      group.current.rotation.y += 0.005;
+  // Animate the model
+  useFrame((_, delta) => {
+    if (animate && group.current) {
+      // Using type assertion to fix rotation property error
+      (group.current.rotation as THREE.Euler).y += delta * 0.5;
     }
   });
 
-  if (!scene) {
-    return <LoadingSpinner />;
-  }
+  return (
+    <group 
+      ref={group} 
+      position={new THREE.Vector3(...position)}
+      scale={scale}
+      rotation={new THREE.Euler(...rotation)}
+    />
+  );
+}
 
-  return <primitive ref={group} object={scene} dispose={null} />;
-};
+useGLTF.preload('/models/default-avatar.glb'); // Preload a default model

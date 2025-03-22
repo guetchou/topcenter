@@ -1,48 +1,60 @@
 
-import React from "react";
+import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
-interface StatProps {
-  title: string;
-  value: string | number;
+export interface StatProps {
   icon: React.ReactNode;
+  title: string;
+  value: number;
   change?: string;
-  color?: string;
-  progress?: number;
+  unit?: string;
+  isPositive?: boolean;
+  className?: string;
 }
 
-export const StatCard: React.FC<StatProps> = ({
-  title,
-  value,
-  icon,
-  change,
-  color = "text-emerald-500",
-  progress
+export const StatCard: React.FC<StatProps> = ({ 
+  icon, 
+  title, 
+  value, 
+  change, 
+  unit = "", 
+  isPositive = true,
+  className 
 }) => {
   return (
-    <Card className="overflow-hidden group hover:shadow-md transition-all duration-300 border-primary/10">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-          {icon}
-        </div>
-        <div className="flex items-end justify-between">
-          <div className="text-2xl font-bold group-hover:text-primary transition-colors">
-            {value}
-          </div>
-          {change && (
-            <div className={`text-xs ${color} flex items-center gap-1`}>
-              {change}
+    <Card className={cn("overflow-hidden", className)}>
+      <CardContent className="p-6">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <div className="flex items-baseline">
+              <h4 className="text-2xl font-bold">
+                {value.toLocaleString()}
+                {unit && <span className="text-lg ml-1">{unit}</span>}
+              </h4>
             </div>
-          )}
+          </div>
+          <div className="p-2 bg-primary/10 rounded-full">
+            {icon}
+          </div>
         </div>
-        {progress !== undefined && (
-          <Progress
-            value={progress}
-            className="h-1 mt-2 bg-primary/10"
-          />
+        
+        {change && (
+          <div className="mt-4 flex items-center">
+            {isPositive ? (
+              <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+            ) : (
+              <TrendingDown className="h-4 w-4 text-red-500 mr-1" />
+            )}
+            <span className={cn(
+              "text-sm font-medium",
+              isPositive ? "text-green-500" : "text-red-500"
+            )}>
+              {change}
+            </span>
+          </div>
         )}
       </CardContent>
     </Card>

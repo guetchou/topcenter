@@ -1,55 +1,55 @@
 
-export interface MessageType {
-  text: string;
-  isUser: boolean;
-  timestamp?: Date;
+// src/types/chat.ts
+export interface Message {
+  id: string;
+  content: string;
+  sender: 'user' | 'assistant' | 'system';
+  timestamp: number;
   status?: 'sending' | 'sent' | 'error';
-  type?: 'text' | 'suggestion' | 'quick_reply';
+  attachments?: Attachment[];
+  metadata?: Record<string, any>;
 }
 
-export interface QuickReply {
-  text: string;
-  action: string;
+export interface Attachment {
+  id: string;
+  type: 'image' | 'file' | 'audio' | 'video';
+  url: string;
+  name: string;
+  size?: number;
+  mimeType?: string;
 }
 
-export interface ChatContextType {
-  message: string;
-  setMessage: (message: string) => void;
-  messages: MessageType[];
-  setMessages: React.Dispatch<React.SetStateAction<MessageType[]>>;
-  isLoading: boolean;
-  selectedModel: string;
-  setSelectedModel: (model: string) => void;
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
-  transferring: boolean;
-  systemContext: string;
-  lastSentimentScore: number;
-  handleSendMessage: () => Promise<void>;
-  transferToHuman: () => void;
+export interface ChatChannel {
+  id: string;
+  name: string;
+  icon: string;
+  unreadCount: number;
+  lastMessage?: Message;
 }
 
-// Définition correcte des options de ChatPal
-export interface ChatPalOptions {
-  embedId: string;
-  remoteBaseUrl: string;
-  version: string;
-  containerSelector?: string;
-  position?: string;
-  width?: string;
-  height?: string;
-  language?: string;
+export interface ChatSession {
+  id: string;
+  channel: ChatChannel;
+  messages: Message[];
+  metadata?: Record<string, any>;
+  createdAt: number;
+  updatedAt: number;
 }
 
-// Interface de la classe ChatPal
-export interface ChatPal {
-  destroy: () => void;
+export interface ChatState {
+  activeChatId: string | null;
+  sessions: Record<string, ChatSession>;
+  isOpen: boolean;
+  isMinimized: boolean;
 }
 
-// Déclaration globale corrigée
-declare global {
-  interface Window {
-    ChatPal: new (options: ChatPalOptions) => ChatPal;
-    chatPal?: ChatPal;
-  }
-}
+export type ChatAction = 
+  | { type: 'SEND_MESSAGE'; chatId: string; message: Message }
+  | { type: 'RECEIVE_MESSAGE'; chatId: string; message: Message }
+  | { type: 'OPEN_CHAT' }
+  | { type: 'CLOSE_CHAT' }
+  | { type: 'MINIMIZE_CHAT' }
+  | { type: 'MAXIMIZE_CHAT' }
+  | { type: 'SET_ACTIVE_CHAT'; chatId: string }
+  | { type: 'CREATE_SESSION'; session: ChatSession }
+  | { type: 'DELETE_SESSION'; chatId: string };
