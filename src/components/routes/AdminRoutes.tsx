@@ -1,41 +1,38 @@
 
-/**
- * Ce composant est déprécié, utilisez ProtectedRoute avec requireAdmin=true
- * directement dans App.tsx
- * 
- * Exemple:
- * <Route path="/admin" element={
- *   <ProtectedRoute requireAdmin={true}>
- *     <CMSLayout />
- *   </ProtectedRoute>
- * }>
- */
-
-import { Navigate, Routes, Route } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import Dashboard from '@/pages/Dashboard';
-import NewsAdmin from '@/pages/NewsAdmin';
-import Settings from '@/pages/Settings';
+import { Route, Routes } from 'react-router-dom';
+import Dashboard from '@/pages/admin/Dashboard';
 import UserManagement from '@/pages/admin/UserManagement';
+import CMSLayout from '@/pages/admin/CMSLayout';
+import ArticlesPage from '@/pages/admin/articles/ArticlesPage';
+import ArticleEditor from '@/pages/admin/articles/ArticleEditor';
+import CategoriesPage from '@/pages/admin/categories/CategoriesPage';
+import MediasPage from '@/pages/admin/medias/MediasPage';
+import MenusPage from '@/pages/admin/menus/MenusPage';
+import SettingsPage from '@/pages/admin/settings/SettingsPage';
+import { AdminRoute } from '../auth/AdminRoute';
+import AdminSettings from '@/pages/admin/AdminSettings';
 
 export const AdminRoutes = () => {
-  const { user, impersonatedUser } = useAuth();
-  const activeUser = impersonatedUser || user;
-
-  // Vérifier si l'utilisateur est admin ou super_admin
-  if (!activeUser || (activeUser.role !== 'admin' && activeUser.role !== 'super_admin')) {
-    return <Navigate to="/login" replace />;
-  }
-
   return (
-    <Routes>
-      <Route index element={<Dashboard />} />
-      <Route path="news" element={<NewsAdmin />} />
-      <Route path="settings" element={<Settings />} />
-      {activeUser.role === 'super_admin' && (
+    <AdminRoute>
+      <Routes>
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="users" element={<UserManagement />} />
-      )}
-    </Routes>
+        <Route path="settings" element={<AdminSettings />} />
+        
+        {/* Routes CMS */}
+        <Route path="cms" element={<CMSLayout />}>
+          <Route index element={<ArticlesPage />} />
+          <Route path="articles" element={<ArticlesPage />} />
+          <Route path="articles/new" element={<ArticleEditor />} />
+          <Route path="articles/:id" element={<ArticleEditor />} />
+          <Route path="categories" element={<CategoriesPage />} />
+          <Route path="medias" element={<MediasPage />} />
+          <Route path="menus" element={<MenusPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+      </Routes>
+    </AdminRoute>
   );
 };
 

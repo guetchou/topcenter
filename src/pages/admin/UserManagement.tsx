@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -6,41 +7,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { UserRole, DbUserRole } from "@/types/auth";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Eye,
-  UserPlus,
-  Shield,
-  Search,
-  RefreshCw,
-  UserCog,
-  AlertCircle
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { UserPlus, Search, RefreshCw } from "lucide-react";
+import UserTable from "@/components/admin/UserManagement/UserTable";
+import AddUserDialog from "@/components/admin/UserManagement/AddUserDialog";
+import PromoteUserDialog from "@/components/admin/UserManagement/PromoteUserDialog";
+import UserManagementDialog from "@/components/admin/UserManagement/UserManagementDialog";
 
 interface User {
   id: string;
@@ -55,14 +26,13 @@ const UserManagement = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newUserEmail, setNewUserEmail] = useState("");
-  const [newUserPassword, setNewUserPassword] = useState("");
-  const [newUserFullName, setNewUserFullName] = useState("");
-  const [newUserRole, setNewUserRole] = useState("client");
   const [isAddingUser, setIsAddingUser] = useState(false);
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [isPromotingUser, setIsPromotingUser] = useState(false);
   const [promotionRole, setPromotionRole] = useState<string>("super_admin");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -130,14 +100,13 @@ const UserManagement = () => {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => 
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.full_name && user.full_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    user.role.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleAddUser = async () => {
-    if (!newUserEmail || !newUserPassword || !newUserFullName) {
+  const handleAddUser = async (userData: {
+    email: string;
+    password: string;
+    fullName: string;
+    role: string;
+  }) => {
+    if (!userData.email || !userData.password || !userData.fullName) {
       toast({
         title: "Champs manquants",
         description: "Veuillez remplir tous les champs obligatoires",
@@ -149,35 +118,29 @@ const UserManagement = () => {
     setIsAddingUser(true);
     try {
       const { data, error } = await supabase.auth.admin.createUser({
-        email: newUserEmail,
-        password: newUserPassword,
+        email: userData.email,
+        password: userData.password,
         email_confirm: true,
-        user_metadata: { full_name: newUserFullName }
+        user_metadata: { full_name: userData.fullName }
       });
 
       if (error) throw error;
-      
-      const roleValue: DbUserRole = newUserRole as DbUserRole;
       
       await supabase
         .from('user_roles')
         .insert({ 
           user_id: data.user.id, 
-          role: roleValue 
+          role: userData.role
         });
 
       fetchUsers();
       
       toast({
         title: "Utilisateur créé",
-        description: `L'utilisateur ${newUserEmail} a été créé avec succès`,
+        description: `L'utilisateur ${userData.email} a été créé avec succès`,
       });
-      
-      setNewUserEmail("");
-      setNewUserPassword("");
-      setNewUserFullName("");
-      setNewUserRole("client");
-      
+
+      setIsAddUserDialogOpen(false);
     } catch (error: any) {
       console.error("Erreur lors de la création de l'utilisateur:", error);
       toast({
@@ -207,13 +170,10 @@ const UserManagement = () => {
     }
   };
 
-  // Updated to handle both super_admin and master_admin promotions
   const handlePromoteUser = async () => {
     if (!selectedUserId) return;
     
     try {
-      // If we have a specific method for promoting to master admin we'd use it here
-      // For now, we're using the same method for both types of promotion
       await promoteToSuperAdmin(selectedUserId);
       toast({
         title: "Promotion réussie",
@@ -232,6 +192,20 @@ const UserManagement = () => {
     }
   };
 
+  const openUserDialog = (userId: string) => {
+    const user = users.find(u => u.id === userId) || null;
+    setSelectedUser(user);
+    setSelectedUserId(userId);
+    setIsUserDialogOpen(true);
+  };
+
+  const handlePromoteClick = () => {
+    if (!selectedUser) return;
+    setPromotionRole(selectedUser.role === 'super_admin' ? 'master_admin' : 'super_admin');
+    setIsUserDialogOpen(false);
+    setIsPromotingUser(true);
+  };
+
   return (
     <div className="container mx-auto py-8">
       <div className="flex justify-between items-center mb-6">
@@ -241,83 +215,10 @@ const UserManagement = () => {
             <RefreshCw className="h-4 w-4 mr-2" />
             Actualiser
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Ajouter un utilisateur
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Ajouter un nouvel utilisateur</DialogTitle>
-                <DialogDescription>
-                  Créez un nouvel utilisateur et assignez-lui un rôle.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label htmlFor="fullName">Nom complet</label>
-                  <Input
-                    id="fullName"
-                    value={newUserFullName}
-                    onChange={(e) => setNewUserFullName(e.target.value)}
-                    placeholder="Nom complet"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="email">Email</label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={newUserEmail}
-                    onChange={(e) => setNewUserEmail(e.target.value)}
-                    placeholder="Email"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="password">Mot de passe</label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={newUserPassword}
-                    onChange={(e) => setNewUserPassword(e.target.value)}
-                    placeholder="Mot de passe"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label htmlFor="role">Rôle</label>
-                  <Select value={newUserRole} onValueChange={setNewUserRole}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un rôle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="client">Client</SelectItem>
-                      <SelectItem value="commercial_agent">Agent Commercial</SelectItem>
-                      <SelectItem value="support_agent">Agent Support</SelectItem>
-                      <SelectItem value="admin">Administrateur</SelectItem>
-                      <SelectItem value="super_admin">Super Administrateur</SelectItem>
-                      {user?.role === 'master_admin' && (
-                        <SelectItem value="master_admin">Master Administrateur</SelectItem>
-                      )}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddUser} disabled={isAddingUser}>
-                  {isAddingUser ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Création en cours...
-                    </>
-                  ) : (
-                    "Créer l'utilisateur"
-                  )}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setIsAddUserDialogOpen(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Ajouter un utilisateur
+          </Button>
         </div>
       </div>
 
@@ -337,141 +238,44 @@ const UserManagement = () => {
 
       <Card>
         <div className="p-4">
-          {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : filteredUsers.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Date de création</TableHead>
-                  <TableHead>Dernière connexion</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>{user.full_name || "-"}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>
-                      <Badge 
-                        variant={user.role === "master_admin" ? "outline" :
-                               user.role === "super_admin" ? "destructive" : 
-                               user.role === "admin" ? "default" : 
-                               user.role.includes("agent") ? "secondary" : "outline"}
-                        className={user.role === "master_admin" ? "border-purple-600 text-purple-600" : ""}
-                      >
-                        {user.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{new Date(user.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      {user.last_sign_in_at 
-                        ? new Date(user.last_sign_in_at).toLocaleDateString() 
-                        : "Jamais connecté"}
-                    </TableCell>
-                    <TableCell className="flex justify-end gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleImpersonate(user.id)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setSelectedUserId(user.id)}
-                          >
-                            <UserCog className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Gérer l'utilisateur</DialogTitle>
-                            <DialogDescription>
-                              {user.email}
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4 py-4">
-                            {user.role !== 'master_admin' && (
-                              <Button 
-                                variant="outline" 
-                                className="w-full"
-                                onClick={() => {
-                                  setIsPromotingUser(true);
-                                  setPromotionRole(user.role === 'super_admin' ? 'master_admin' : 'super_admin');
-                                  setSelectedUserId(user.id);
-                                }}
-                              >
-                                <Shield className="h-4 w-4 mr-2" />
-                                {user.role === 'super_admin' ? 'Promouvoir en Master Admin' : 'Promouvoir en Super Admin'}
-                              </Button>
-                            )}
-                            
-                            <Button 
-                              variant="outline" 
-                              className="w-full"
-                              onClick={() => handleImpersonate(user.id)}
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              Se connecter en tant que cet utilisateur
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8">
-              <AlertCircle className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-              <p>Aucun utilisateur trouvé</p>
-            </div>
-          )}
+          <UserTable 
+            users={users}
+            isLoading={loading}
+            searchTerm={searchTerm}
+            handleImpersonate={handleImpersonate}
+            openUserDialog={openUserDialog}
+          />
         </div>
       </Card>
 
-      <Dialog open={isPromotingUser} onOpenChange={setIsPromotingUser}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {promotionRole === 'master_admin' ? 'Promouvoir en Master Admin' : 'Promouvoir en Super Admin'}
-            </DialogTitle>
-            <DialogDescription>
-              Êtes-vous sûr de vouloir promouvoir cet utilisateur en {promotionRole === 'master_admin' ? 'Master Admin' : 'Super Admin'}? 
-              Cette action lui donnera un accès complet à toutes les fonctionnalités.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setIsPromotingUser(false);
-                setSelectedUserId(null);
-              }}
-            >
-              Annuler
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={handlePromoteUser}
-            >
-              Promouvoir
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Dialogs */}
+      <AddUserDialog 
+        isOpen={isAddUserDialogOpen}
+        onClose={() => setIsAddUserDialogOpen(false)}
+        onAddUser={handleAddUser}
+        isAddingUser={isAddingUser}
+        currentUserRole={user?.role}
+      />
+
+      <PromoteUserDialog 
+        isOpen={isPromotingUser}
+        onClose={() => setIsPromotingUser(false)}
+        onPromote={handlePromoteUser}
+        promotionRole={promotionRole}
+      />
+
+      <UserManagementDialog 
+        isOpen={isUserDialogOpen}
+        onClose={() => setIsUserDialogOpen(false)}
+        user={selectedUser}
+        onPromote={handlePromoteClick}
+        onImpersonate={() => {
+          if (selectedUserId) {
+            setIsUserDialogOpen(false);
+            handleImpersonate(selectedUserId);
+          }
+        }}
+      />
     </div>
   );
 };
