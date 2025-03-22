@@ -13,6 +13,7 @@ export const LiveChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [useChatterPal, setUseChatterPal] = useState(false);
   const [chatterpalLoaded, setChatterpalLoaded] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("perplexity"); // Add missing state for model
   const { toast } = useToast();
   const {
     messages,
@@ -53,6 +54,8 @@ export const LiveChat = () => {
       ) : (
         <div className="w-96 h-[32rem] bg-white rounded-lg shadow-xl border animate-fade-in flex flex-col">
           <ChatHeader 
+            selectedModel={selectedModel}  // Add the missing required prop
+            setSelectedModel={setSelectedModel}  // Add the missing required prop
             isConnectedToAgent={isConnectedToAgent}
             queuePosition={queuePosition}
             useChatterPal={useChatterPal}
