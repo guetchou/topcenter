@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { ThemeToggle } from "../ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { LogIn, Menu, Search } from "lucide-react";
-import { useMenus } from "@/hooks/useMenus";
+import { useMenus, MenuItem } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { MobileMenu } from "./MobileMenu";
 import { DesktopNav } from "./DesktopNav";
@@ -46,12 +46,12 @@ export function DynamicNav() {
     }
   };
 
-  // Fallback menu items quand l'API est inaccessible
-  const fallbackMenuItems = [
-    { label: "Accueil", href: "/" },
-    { label: "À propos", href: "/about" },
-    { label: "Services", href: "/services" },
-    { label: "Contact", href: "/contact" },
+  // Fallback menu items quand l'API est inaccessible - Updated to match MenuItem interface
+  const fallbackMenuItems: MenuItem[] = [
+    { title: "Accueil", path: "/" },
+    { title: "À propos", path: "/about" },
+    { title: "Services", path: "/services" },
+    { title: "Contact", path: "/contact" },
   ];
 
   const menuItemsToUse = isServerUnavailable || menusError ? fallbackMenuItems : primaryMenuItems;

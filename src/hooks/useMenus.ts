@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
@@ -12,6 +13,7 @@ export interface MenusState {
   primaryMenuItems: MenuItem[];
   footerMenuItems: MenuItem[];
   isLoading: boolean;
+  error: Error | null;
 }
 
 export const useMenus = () => {
@@ -83,10 +85,11 @@ export const useMenus = () => {
       },
     ],
     isLoading: false,
+    error: null,
   });
 
   const loadMenus = async () => {
-    setState(prev => ({ ...prev, isLoading: true }));
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
       // Récupérer le menu principal
@@ -121,12 +124,17 @@ export const useMenus = () => {
       setState({
         primaryMenuItems: primaryMenu.items ? parseJsonToMenuItems(primaryMenu.items as Json[]) : state.primaryMenuItems,
         footerMenuItems: footerMenu.items ? parseJsonToMenuItems(footerMenu.items as Json[]) : state.footerMenuItems,
-        isLoading: false
+        isLoading: false,
+        error: null
       });
       
     } catch (error) {
       console.error('Erreur lors du chargement des menus:', error);
-      setState(prev => ({ ...prev, isLoading: false }));
+      setState(prev => ({ 
+        ...prev, 
+        isLoading: false, 
+        error: error instanceof Error ? error : new Error('Erreur lors du chargement des menus')
+      }));
     }
   };
 
@@ -136,6 +144,7 @@ export const useMenus = () => {
 
   return {
     ...state,
+    refetch: loadMenus,
     reloadMenus: loadMenus
   };
 };

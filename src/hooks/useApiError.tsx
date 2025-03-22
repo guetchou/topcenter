@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import { AlertTriangle } from "lucide-react"; // Changed from Radix UI to Lucide React
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
 
@@ -83,7 +83,7 @@ export const useApiError = () => {
     
     return (
       <Alert variant="destructive" className="mb-4">
-        <ExclamationTriangleIcon className="h-4 w-4" />
+        <AlertTriangle className="h-4 w-4" /> {/* Changed from ExclamationTriangleIcon to AlertTriangle */}
         <AlertTitle>Erreur</AlertTitle>
         <AlertDescription className="flex flex-col gap-2">
           <p>{isServerUnavailable 
