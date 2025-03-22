@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import api from "@/services/api";
+import { useApiError } from "./useApiError";
 
 interface PageContent {
   id: string;
@@ -17,6 +18,8 @@ interface PageContent {
 }
 
 export const usePageContent = (pageKey: string) => {
+  const { handleError } = useApiError();
+
   return useQuery({
     queryKey: ['page-content', pageKey],
     queryFn: async (): Promise<PageContent | null> => {
@@ -41,6 +44,8 @@ export const usePageContent = (pageKey: string) => {
         } : null;
       } catch (error) {
         console.error(`Erreur dans usePageContent pour ${pageKey}:`, error);
+        // Utiliser handleError pour standardiser la gestion des erreurs
+        handleError(error as Error);
         throw error;
       }
     },

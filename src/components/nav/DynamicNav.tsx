@@ -11,14 +11,17 @@ import { UserProfileMenu } from "./UserProfileMenu";
 import { MobileMenu } from "./MobileMenu";
 import { DesktopNav } from "./DesktopNav";
 import { DesignToggle } from "../DesignToggle";
+import { useApiError } from "@/hooks/useApiError";
+import { ApiErrorBoundary } from "@/components/ApiErrorBoundary";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { primaryMenuItems } = useMenus();
+  const { primaryMenuItems, isLoading: menusLoading, error: menusError, refetch: refetchMenus } = useMenus();
   const location = useLocation();
   const { user, impersonatedUser, logout, stopImpersonation } = useAuth();
+  const { isServerUnavailable } = useApiError();
   
   const activeUser = impersonatedUser || user;
 
@@ -43,6 +46,16 @@ export function DynamicNav() {
     }
   };
 
+  // Fallback menu items quand l'API est inaccessible
+  const fallbackMenuItems = [
+    { label: "Accueil", href: "/" },
+    { label: "À propos", href: "/about" },
+    { label: "Services", href: "/services" },
+    { label: "Contact", href: "/contact" },
+  ];
+
+  const menuItemsToUse = isServerUnavailable || menusError ? fallbackMenuItems : primaryMenuItems;
+
   return (
     <header className={`sticky top-0 z-40 w-full transition-all duration-300 ${
       scrolled 
@@ -58,7 +71,14 @@ export function DynamicNav() {
               className="h-8 w-auto"
             />
           </Link>
-          <DesktopNav items={primaryMenuItems} />
+          <ApiErrorBoundary 
+            error={menusError as Error} 
+            isLoading={menusLoading}
+            retryFunction={refetchMenus}
+            fallback={<DesktopNav items={fallbackMenuItems} />}
+          >
+            <DesktopNav items={menuItemsToUse} />
+          </ApiErrorBoundary>
         </div>
 
         <div className="flex items-center gap-2">
@@ -119,10 +139,9 @@ export function DynamicNav() {
       <MobileMenu
         open={isMenuOpen}
         setOpen={setIsMenuOpen}
-        items={primaryMenuItems}
+        items={menuItemsToUse}
         isAuthenticated={!!activeUser}
         onLogout={handleLogout}
       />
     </header>
   );
-}
