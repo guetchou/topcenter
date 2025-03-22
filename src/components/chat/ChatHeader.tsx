@@ -1,46 +1,48 @@
 
 import { Button } from "@/components/ui/button";
-import { X, Bot, User } from "lucide-react";
-import { ModelSelector } from "./ModelSelector";
+import { X } from "lucide-react";
 
 interface ChatHeaderProps {
-  activeTab: string;
-  selectedModel: string;
-  setSelectedModel: (model: string) => void;
+  isConnectedToAgent: boolean;
+  queuePosition: number;
+  useChatterPal: boolean;
   onClose: () => void;
 }
 
 export const ChatHeader = ({ 
-  activeTab, 
-  selectedModel, 
-  setSelectedModel, 
+  isConnectedToAgent, 
+  queuePosition, 
+  useChatterPal, 
   onClose 
 }: ChatHeaderProps) => {
   return (
-    <div className="p-4 border-b flex items-center justify-between bg-primary/5 rounded-t-lg">
-      <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-          {activeTab === "ai" ? (
-            <Bot className="w-5 h-5 text-primary" />
-          ) : (
-            <User className="w-5 h-5 text-primary" />
-          )}
-        </div>
-        <span className="font-medium">
-          {activeTab === "ai" ? "Assistant TopCenter" : "Support Client"}
-        </span>
-      </div>
-      <div className="flex items-center gap-2">
-        {activeTab === "ai" && (
-          <ModelSelector 
-            selectedModel={selectedModel} 
-            onModelChange={setSelectedModel} 
-          />
+    <div className="p-4 border-b flex justify-between items-center bg-primary text-primary-foreground rounded-t-lg">
+      <div>
+        <h3 className="font-semibold">Chat en direct</h3>
+        {!isConnectedToAgent && queuePosition > 0 && !useChatterPal && (
+          <p className="text-sm opacity-90">
+            Position dans la file : {queuePosition}
+          </p>
         )}
-        <Button variant="ghost" size="icon" onClick={onClose}>
-          <X className="w-4 h-4" />
-        </Button>
+        {isConnectedToAgent && !useChatterPal && (
+          <p className="text-sm opacity-90">
+            Agent connecté
+          </p>
+        )}
+        {useChatterPal && (
+          <p className="text-sm opacity-90">
+            Agent ChatterPal
+          </p>
+        )}
       </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onClose}
+        className="hover:bg-primary/20"
+      >
+        <X className="w-4 h-4" />
+      </Button>
     </div>
   );
 };
