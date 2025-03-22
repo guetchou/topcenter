@@ -1,8 +1,8 @@
 
 import axios from 'axios';
-import { setupRequestInterceptor, setupResponseInterceptor } from './interceptors';
-import { checkServerAvailability, serverStatusUtils } from './serverStatus';
-import { errorHandlerUtils } from './errorHandler';
+import { setupInterceptors } from './interceptors';
+import { setupErrorHandlers } from './errorHandler';
+import { markServerAsAvailable, markServerAsUnavailable, serverIsAvailable } from './serverStatus';
 
 // Create an axios instance with base configuration
 const api = axios.create({
@@ -16,14 +16,14 @@ const api = axios.create({
 });
 
 // Setup interceptors
-setupRequestInterceptor(api);
-setupResponseInterceptor(api);
+setupInterceptors(api);
+setupErrorHandlers(api);
 
 // Export combined API utilities
 export const apiUtils = {
-  checkServerAvailability,
-  ...serverStatusUtils,
-  ...errorHandlerUtils
+  serverIsAvailable,
+  markServerAsAvailable,
+  markServerAsUnavailable
 };
 
 export default api;
