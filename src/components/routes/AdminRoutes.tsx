@@ -3,7 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import { AdminDashboard } from "@/pages/admin/Dashboard";
 import { SettingsPage } from "@/pages/admin/settings/SettingsPage";
 import { CMSLayout } from "@/pages/admin/CMSLayout";
-import { UserManagement } from "@/pages/admin/UserManagement";
+import UserManagement from "@/pages/admin/UserManagement";
 import { UserCredentialsPage } from "@/pages/admin/settings/UserCredentialsPage";
 import { CredentialsDocPage } from "@/pages/admin/CredentialsDocPage";
 

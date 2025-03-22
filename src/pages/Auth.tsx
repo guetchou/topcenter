@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
 import { Logo } from '@/components/Logo';
+import { NetworkStatus } from '@/components/NetworkStatus';
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const Auth = () => {
   const { login, loginWithGoogle, register, user, isLoading } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -35,6 +37,7 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormLoading(true);
+    setErrorMessage(null);
 
     try {
       if (isLogin) {
@@ -52,7 +55,8 @@ const Auth = () => {
       navigate(from, { replace: true });
     } catch (error: any) {
       console.error("Erreur d'authentification:", error);
-      toast.error(error.response?.data?.message || "Erreur d'authentification");
+      setErrorMessage(error.message || "Erreur d'authentification");
+      toast.error(error.message || "Erreur d'authentification");
     } finally {
       setFormLoading(false);
     }
@@ -61,11 +65,13 @@ const Auth = () => {
   const handleGoogleLogin = async () => {
     try {
       setFormLoading(true);
+      setErrorMessage(null);
       await loginWithGoogle();
       // Note: La redirection est gérée par OAuth et AuthCallback component
     } catch (error: any) {
       console.error("Erreur de connexion avec Google:", error);
-      toast.error("Erreur de connexion avec Google");
+      setErrorMessage(error.message || "Erreur de connexion avec Google");
+      toast.error(error.message || "Erreur de connexion avec Google");
     } finally {
       setFormLoading(false);
     }
@@ -81,6 +87,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <NetworkStatus />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mb-4 flex justify-center">
@@ -94,6 +101,12 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm">
+              {errorMessage}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
@@ -175,6 +188,14 @@ const Auth = () => {
             </svg>
             Continuer avec Google
           </Button>
+          
+          <div className="mt-4 text-center text-sm text-muted-foreground">
+            <p>
+              Identifiants de démonstration:<br />
+              - Email: admin@topcenter.app<br />
+              - Mot de passe: password123
+            </p>
+          </div>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
