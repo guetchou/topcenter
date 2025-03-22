@@ -23,13 +23,20 @@ export function NetworkStatus() {
     setLastServerCheckTime(now);
     
     try {
+      // Create a controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout
+      
       // Check a reliable server resource that should always be available
       const response = await fetch(`/lovable-uploads/logo-topcenter.png?t=${now}`, { 
         method: 'HEAD',
         cache: 'no-store',
         headers: { 'pragma': 'no-cache' },
-        timeout: 5000 // 5 second timeout
+        signal: controller.signal
       });
+      
+      // Clear the timeout
+      clearTimeout(timeoutId);
       
       const newServerStatus = response.ok;
       const previousStatus = serverReachable;
