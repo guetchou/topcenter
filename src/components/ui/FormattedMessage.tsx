@@ -1,6 +1,8 @@
 
 import React from 'react';
-import { FormattedMessage as ReactIntlFormattedMessage, FormattedMessageProps } from 'react-intl';
+import { FormattedMessage as ReactIntlFormattedMessage, IntlShape } from 'react-intl';
+
+type FormattedMessageProps = Parameters<typeof ReactIntlFormattedMessage>[0];
 
 /**
  * Wrapper autour du composant FormattedMessage de react-intl

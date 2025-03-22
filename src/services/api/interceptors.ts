@@ -1,65 +1,42 @@
 
-import { InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosInstance, AxiosHeaders } from 'axios';
-import { checkServerAvailability } from './serverStatus';
-import { handleApiError } from './errorHandler';
+import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { markServerAsAvailable, markServerAsUnavailable } from './serverStatus';
 
-/**
- * Setup request interceptor for an Axios instance
- * @param axiosInstance The Axios instance to configure
- */
-export const setupRequestInterceptor = (axiosInstance: AxiosInstance): void => {
-  axiosInstance.interceptors.request.use(
-    async (config: InternalAxiosRequestConfig) => {
-      // Check if online before sending request
-      if (!navigator.onLine) {
-        return Promise.reject(
-          new Error('You are currently offline. Please reconnect to the internet.')
-        );
-      }
+export function setupInterceptors(api: AxiosInstance) {
+  // Intercepteur de requête
+  api.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+      // Récupérer le token d'authentification du localStorage
+      const token = localStorage.getItem('authToken');
       
-      // For authentication or important routes, also check server availability
-      const isImportantRoute = 
-        config.url?.includes('/auth/') || 
-        config.method === 'post' || 
-        config.method === 'put' || 
-        config.method === 'delete';
-        
-      if (isImportantRoute) {
-        const isServerAvailable = await checkServerAvailability();
-        if (!isServerAvailable) {
-          return Promise.reject(
-            new Error('The service is temporarily unavailable. Please try again later.')
-          );
-        }
-      }
-      
-      // Add authentication token if available
-      const token = localStorage.getItem('auth_token');
+      // Si un token existe, l'ajouter à l'en-tête Authorization
       if (token) {
-        // Ensure headers is an AxiosHeaders instance
-        if (!config.headers) {
-          config.headers = new AxiosHeaders();
-        }
-        config.headers.set('Authorization', `Bearer ${token}`);
+        config.headers = config.headers || {};
+        config.headers['Authorization'] = `Bearer ${token}`;
       }
       
       return config;
     },
-    (error) => {
+    (error: AxiosError) => {
+      console.error('Request error:', error);
       return Promise.reject(error);
     }
   );
-};
 
-/**
- * Setup response interceptor for an Axios instance
- * @param axiosInstance The Axios instance to configure
- */
-export const setupResponseInterceptor = (axiosInstance: AxiosInstance): void => {
-  axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => response,
+  // Intercepteur de réponse
+  api.interceptors.response.use(
+    (response: AxiosResponse) => {
+      // Marquer le serveur comme disponible en cas de réponse réussie
+      markServerAsAvailable();
+      return response;
+    },
     (error: AxiosError) => {
-      return Promise.reject(handleApiError(error));
+      // Si la demande a échoué en raison d'un problème de réseau ou d'un timeout
+      if (error.code === 'ECONNABORTED' || error.message === 'Network Error' || !error.response) {
+        markServerAsUnavailable();
+      }
+      
+      return Promise.reject(error);
     }
   );
-};
+}

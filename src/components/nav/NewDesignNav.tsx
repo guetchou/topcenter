@@ -1,17 +1,24 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { AnimationWrapper, AnimationSequence } from "../AnimationWrapper";
+import { AnimationWrapper } from "../AnimationWrapper";
 import { useSearch } from "@/contexts/SearchContext";
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 import { Button } from "../ui/button";
 import { GlobalSearch } from "../GlobalSearch";
 import { NavLinks } from "./NavLinks";
 import { MobileNavMenu } from "./MobileNavMenu";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useAuth } from "@/hooks/useAuth";
+import { FormattedMessage } from "react-intl";
 
 export function NewDesignNav() {
   const { openSearch } = useSearch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, impersonatedUser } = useAuth();
+  
+  const activeUser = impersonatedUser || user;
   
   // Handle keyboard navigation for accessibility
   useEffect(() => {
@@ -39,8 +46,8 @@ export function NewDesignNav() {
   }, [openSearch, isMenuOpen]);
   
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" role="banner">
-      <div className="container flex h-16 items-center justify-between">
+    <div className="container mx-auto">
+      <div className="flex h-16 items-center justify-between">
         <div className="flex items-center">
           <AnimationWrapper type="fade-in" duration={300}>
             <Link 
@@ -68,6 +75,22 @@ export function NewDesignNav() {
               <span className="text-xs">⌘</span>K
             </kbd>
           </Button>
+          
+          <LanguageSwitcher />
+          <ThemeToggle />
+          
+          {!activeUser && (
+            <Button 
+              variant="default" 
+              size="sm"
+              asChild
+              className="hidden md:flex items-center gap-1"
+            >
+              <Link to="/login">
+                <FormattedMessage id="nav.login" defaultMessage="Connexion" />
+              </Link>
+            </Button>
+          )}
           
           <Button
             variant="ghost"
@@ -102,6 +125,6 @@ export function NewDesignNav() {
           <GlobalSearch />
         </div>
       </div>
-    </header>
+    </div>
   );
 }

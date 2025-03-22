@@ -8,6 +8,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useSearch } from '@/contexts/SearchContext';
 import { useAuth } from '@/hooks/useAuth';
+import { FormattedMessage } from 'react-intl';
 
 export const NavigationActions: React.FC = () => {
   const { openSearch } = useSearch();

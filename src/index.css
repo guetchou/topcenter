@@ -38,7 +38,7 @@
     --input: 24 5% 90%;
     --ring: 24 60% 50%;
  
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
  
   .dark {
@@ -79,9 +79,40 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
 }
 
 @layer utilities {
-  /* Utility classes for animations and hover effects are in transitions.css */
+  /* Glassmorphism effects */
+  .glass {
+    @apply backdrop-blur-lg bg-white/10 border border-white/20;
+  }
+  
+  .glass-dark {
+    @apply backdrop-blur-lg bg-black/30 border border-white/10;
+  }
+  
+  /* Text gradient effects */
+  .text-gradient {
+    @apply bg-gradient-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
+  }
+  
+  /* Card effects */
+  .card-hover {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+  
+  /* Button effects */
+  .btn-glow {
+    @apply relative overflow-hidden;
+  }
+  
+  .btn-glow::after {
+    @apply content-[''] absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300;
+  }
+  
+  .btn-glow:hover::after {
+    @apply opacity-100;
+  }
 }

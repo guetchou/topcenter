@@ -1,63 +1,74 @@
 
-/**
- * Server status utilities
- */
+// État de disponibilité du serveur
+let isServerAvailable = true;
 
-// Cache for server availability checks
-export const serverStatusCache = {
-  lastChecked: 0,
-  isAvailable: true,
-  checkInterval: 30000 // 30 seconds
-};
+// Dernière fois que le statut a été mis à jour
+let lastStatusUpdate = Date.now();
+
+// Temps minimum entre les notifications (5 minutes)
+const NOTIFICATION_THROTTLE = 5 * 60 * 1000;
 
 /**
- * Checks if the server is accessible
- * @param force Force a fresh check regardless of cache
- * @returns Promise<boolean> indicating if server is available
+ * Vérifie si le serveur est disponible
  */
-export const checkServerAvailability = async (force = false): Promise<boolean> => {
+export function serverIsAvailable(): boolean {
+  return isServerAvailable;
+}
+
+/**
+ * Marquer le serveur comme indisponible
+ */
+export function markServerAsUnavailable(): void {
   const now = Date.now();
   
-  // Use cached result if the last check was recent and not forced
-  if (!force && (now - serverStatusCache.lastChecked < serverStatusCache.checkInterval)) {
-    return serverStatusCache.isAvailable;
-  }
-  
-  try {
-    // HEAD request to a static resource that should always be available
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+  // Ne mettre à jour le statut que si nous étions auparavant disponibles
+  // ou si assez de temps s'est écoulé depuis la dernière notification
+  if (isServerAvailable || (now - lastStatusUpdate > NOTIFICATION_THROTTLE)) {
+    isServerAvailable = false;
+    lastStatusUpdate = now;
     
-    const response = await fetch('/lovable-uploads/logo-topcenter.png', { 
-      method: 'HEAD',
-      cache: 'no-store',
-      headers: { 'pragma': 'no-cache' },
-      signal: controller.signal
+    // Déclencher un événement personnalisé pour notifier l'application
+    const event = new CustomEvent('server-status-change', { 
+      detail: { available: false } 
     });
+    window.dispatchEvent(event);
     
-    clearTimeout(timeoutId);
+    console.warn('API server is unavailable');
+  }
+}
+
+/**
+ * Marquer le serveur comme disponible
+ */
+export function markServerAsAvailable(): void {
+  const now = Date.now();
+  
+  // Ne mettre à jour le statut que si nous étions auparavant indisponibles
+  // ou si assez de temps s'est écoulé depuis la dernière notification
+  if (!isServerAvailable || (now - lastStatusUpdate > NOTIFICATION_THROTTLE)) {
+    isServerAvailable = true;
+    lastStatusUpdate = now;
     
-    // Update cache
-    serverStatusCache.lastChecked = now;
-    serverStatusCache.isAvailable = response.ok;
+    // Déclencher un événement personnalisé pour notifier l'application
+    const event = new CustomEvent('server-status-change', { 
+      detail: { available: true } 
+    });
+    window.dispatchEvent(event);
     
-    return response.ok;
+    console.info('API server is available');
+  }
+}
+
+/**
+ * Fonction pour tester manuellement la disponibilité du serveur
+ */
+export async function testServerAvailability(apiInstance: any): Promise<boolean> {
+  try {
+    await apiInstance.get('/health');
+    markServerAsAvailable();
+    return true;
   } catch (error) {
-    console.error("Server check failed:", error);
-    
-    // Update cache
-    serverStatusCache.lastChecked = now;
-    serverStatusCache.isAvailable = false;
-    
+    markServerAsUnavailable();
     return false;
   }
-};
-
-// Export additional utility methods
-export const serverStatusUtils = {
-  getServerStatus: () => serverStatusCache.isAvailable,
-  refreshServerStatus: () => checkServerAvailability(true),
-  setCheckInterval: (interval: number) => {
-    serverStatusCache.checkInterval = interval;
-  }
-};
+}

@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
@@ -18,7 +19,7 @@ export const TestimonialCard = ({
   avatarUrl,
 }: TestimonialCardProps) => {
   return (
-    <Card className="overflow-hidden transition-all hover-lift">
+    <Card className="overflow-hidden card-hover border border-border/40">
       <CardContent className="p-6">
         <div className="flex items-center gap-4 mb-4">
           <Avatar className="w-12 h-12 ring-2 ring-primary/20">
@@ -29,7 +30,7 @@ export const TestimonialCard = ({
             />
           </Avatar>
           <div>
-            <h4 className="font-semibold text-primary">{name}</h4>
+            <h4 className="font-semibold text-gradient">{name}</h4>
             <p className="text-sm text-muted-foreground">{role}</p>
           </div>
         </div>
@@ -44,7 +45,7 @@ export const TestimonialCard = ({
           ))}
         </div>
         <p className="text-muted-foreground hover:text-foreground transition-colors">
-          {content}
+          "{content}"
         </p>
       </CardContent>
     </Card>
