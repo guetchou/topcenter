@@ -1,61 +1,40 @@
 
-import { NavLink } from "react-router-dom";
-import { BookOpen, Image, FolderTree, Menu as MenuIcon, Settings } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AdminNavLinks } from './AdminNavLinks';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { Logo } from '@/components/Logo';
+import { useAuth } from '@/hooks/useAuth';
 
-const menuItems = [
-  {
-    title: "Articles",
-    icon: BookOpen,
-    href: "/admin/articles"
-  },
-  {
-    title: "Médias",
-    icon: Image,
-    href: "/admin/medias"
-  },
-  {
-    title: "Catégories",
-    icon: FolderTree,
-    href: "/admin/categories"
-  },
-  {
-    title: "Menus",
-    icon: MenuIcon,
-    href: "/admin/menus"
-  },
-  {
-    title: "Paramètres",
-    icon: Settings,
-    href: "/admin/settings"
-  }
-];
-
-export const Sidebar = () => {
+export function Sidebar() {
+  const { user } = useAuth();
+  
+  const userRole = user?.role || 'client';
+  
   return (
-    <div className="border-r bg-card h-screen p-4">
-      <div className="space-y-4">
-        <div className="px-3 py-2">
-          <h2 className="mb-2 px-4 text-lg font-semibold">Administration</h2>
+    <div className="flex h-screen border-r">
+      <div className="flex w-full flex-col gap-2">
+        <div className="flex h-14 items-center border-b px-4">
+          <Logo className="w-32 h-8" />
+          <span className="ml-2 text-sm font-semibold">Admin</span>
         </div>
-        <nav className="space-y-1">
-          {menuItems.map((item) => (
-            <NavLink
-              key={item.href}
-              to={item.href}
-              className={({ isActive }) =>
-                cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all hover:bg-accent",
-                  isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground"
-                )
-              }
-            >
-              <item.icon className="h-4 w-4" />
-              {item.title}
-            </NavLink>
-          ))}
-        </nav>
+        <ScrollArea className="flex-1 px-2">
+          <div className="space-y-4 py-4">
+            <AdminNavLinks />
+            <Separator />
+            <div className="px-3 py-2">
+              <h2 className="mb-2 text-xs font-semibold">Votre compte</h2>
+              <div className="space-y-1">
+                <p className="text-xs">
+                  Connecté en tant que <span className="font-medium">{user?.email}</span>
+                </p>
+                <p className="text-xs capitalize">
+                  Rôle: <span className="font-medium">{userRole.replace('_', ' ')}</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );
-};
+}

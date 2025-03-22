@@ -1,15 +1,15 @@
+
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Json } from "@/integrations/supabase/types";
+import { GeneralSettingsTab } from "@/components/admin/settings/GeneralSettingsTab";
+import { MetaSettingsTab } from "@/components/admin/settings/MetaSettingsTab";
+import { SocialSettingsTab } from "@/components/admin/settings/SocialSettingsTab";
 
 interface SiteSettings {
   site_name: string;
@@ -80,6 +80,33 @@ export const SettingsPage = () => {
     }
   };
 
+  const updateSettings = (key: string, value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const updateMetaSettings = (key: string, value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      meta_settings: {
+        ...prev.meta_settings,
+        [key]: value
+      }
+    }));
+  };
+
+  const updateSocialMedia = (key: string, value: string) => {
+    setSettings(prev => ({
+      ...prev,
+      social_media: {
+        ...prev.social_media,
+        [key]: value
+      }
+    }));
+  };
+
   if (isLoading) {
     return <div>Chargement...</div>;
   }
@@ -99,174 +126,36 @@ export const SettingsPage = () => {
           <TabsTrigger value="general">Général</TabsTrigger>
           <TabsTrigger value="meta">SEO & Métadonnées</TabsTrigger>
           <TabsTrigger value="social">Réseaux sociaux</TabsTrigger>
+          <TabsTrigger value="credentials">Identifiants</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general">
-          <Card>
-            <CardHeader>
-              <CardTitle>Paramètres généraux</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="site_name">Nom du site</Label>
-                <Input 
-                  id="site_name"
-                  value={settings.site_name}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    site_name: e.target.value
-                  }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="site_description">Description du site</Label>
-                <Textarea
-                  id="site_description"
-                  value={settings.site_description}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    site_description: e.target.value
-                  }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="contact_email">Email de contact</Label>
-                <Input
-                  id="contact_email"
-                  type="email"
-                  value={settings.contact_email}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    contact_email: e.target.value
-                  }))}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <GeneralSettingsTab 
+            settings={settings} 
+            updateSettings={updateSettings}
+          />
         </TabsContent>
 
         <TabsContent value="meta">
-          <Card>
-            <CardHeader>
-              <CardTitle>SEO & Métadonnées</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title_suffix">Suffixe du titre</Label>
-                <Input
-                  id="title_suffix"
-                  value={settings.meta_settings.title_suffix}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    meta_settings: {
-                      ...prev.meta_settings,
-                      title_suffix: e.target.value
-                    }
-                  }))}
-                  placeholder="ex: | Mon Site"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="default_meta_description">Description meta par défaut</Label>
-                <Textarea
-                  id="default_meta_description"
-                  value={settings.meta_settings.default_meta_description}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    meta_settings: {
-                      ...prev.meta_settings,
-                      default_meta_description: e.target.value
-                    }
-                  }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="google_analytics_id">ID Google Analytics</Label>
-                <Input
-                  id="google_analytics_id"
-                  value={settings.meta_settings.google_analytics_id || ""}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    meta_settings: {
-                      ...prev.meta_settings,
-                      google_analytics_id: e.target.value
-                    }
-                  }))}
-                  placeholder="ex: G-XXXXXXXXXX"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <MetaSettingsTab 
+            metaSettings={settings.meta_settings} 
+            updateMetaSettings={updateMetaSettings}
+          />
         </TabsContent>
 
         <TabsContent value="social">
-          <Card>
-            <CardHeader>
-              <CardTitle>Réseaux sociaux</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="facebook">Facebook</Label>
-                <Input
-                  id="facebook"
-                  value={settings.social_media.facebook || ""}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    social_media: {
-                      ...prev.social_media,
-                      facebook: e.target.value
-                    }
-                  }))}
-                  placeholder="URL de votre page Facebook"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="twitter">Twitter</Label>
-                <Input
-                  id="twitter"
-                  value={settings.social_media.twitter || ""}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    social_media: {
-                      ...prev.social_media,
-                      twitter: e.target.value
-                    }
-                  }))}
-                  placeholder="URL de votre compte Twitter"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="instagram">Instagram</Label>
-                <Input
-                  id="instagram"
-                  value={settings.social_media.instagram || ""}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    social_media: {
-                      ...prev.social_media,
-                      instagram: e.target.value
-                    }
-                  }))}
-                  placeholder="URL de votre compte Instagram"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="linkedin">LinkedIn</Label>
-                <Input
-                  id="linkedin"
-                  value={settings.social_media.linkedin || ""}
-                  onChange={(e) => setSettings(prev => ({
-                    ...prev,
-                    social_media: {
-                      ...prev.social_media,
-                      linkedin: e.target.value
-                    }
-                  }))}
-                  placeholder="URL de votre page LinkedIn"
-                />
-              </div>
-            </CardContent>
-          </Card>
+          <SocialSettingsTab 
+            socialMedia={settings.social_media} 
+            updateSocialMedia={updateSocialMedia}
+          />
+        </TabsContent>
+
+        <TabsContent value="credentials">
+          <iframe 
+            src="/admin/credentials" 
+            className="w-full h-[calc(100vh-300px)] border-none"
+            title="Gestion des identifiants"
+          />
         </TabsContent>
       </Tabs>
     </div>
