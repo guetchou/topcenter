@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -16,6 +15,7 @@ import { PerformanceMonitor } from "@/components/PerformanceMonitor";
 import { ChatContainer } from "@/components/chat/ChatContainer";
 import { shouldUseNewDesign } from "@/lib/designUtils";
 import { PageTransition } from "@/components/PageTransition";
+import { ChatPalScripts } from "@/components/chat/ChatPalScripts";
 
 // Pages
 import Index from "@/pages/Index";
@@ -52,40 +52,7 @@ import MenusPage from "@/pages/admin/menus/MenusPage";
 import SettingsPage from "@/pages/admin/settings/SettingsPage";
 import UserManagement from "@/pages/admin/UserManagement";
 import { useAuth } from "@/hooks/useAuth";
-
-// Chat Pal Script Integration
-const ChatPalScript = () => {
-  React.useEffect(() => {
-    // Remove previous instance if it exists
-    if (window.chatPal) {
-      try {
-        window.chatPal.destroy();
-      } catch (err) {
-        console.log("No instance to destroy");
-      }
-    }
-    
-    // Initialize ChatPal
-    window.chatPal = new window.ChatPal({
-      embedId: 'v8HfNRZjDyZ3',
-      remoteBaseUrl: 'https://chatappdemo.com/',
-      version: '8.3'
-    });
-
-    return () => {
-      // Clean up when component unmounts
-      if (window.chatPal) {
-        try {
-          window.chatPal.destroy();
-        } catch (err) {
-          console.log("Error destroying ChatPal instance:", err);
-        }
-      }
-    };
-  }, []);
-
-  return null;
-};
+import ChatBotsSettingsPage from "@/pages/admin/settings/ChatBotsSettingsPage";
 
 const App = () => {
   const { user, isAuthenticated } = useAuth();
@@ -164,6 +131,7 @@ const App = () => {
                   <Route path="settings" element={<SettingsPage />} />
                   <Route path="users" element={<UserManagement />} />
                   <Route path="deploy" element={<DeployDashboard />} />
+                  <Route path="chatbots" element={<ChatBotsSettingsPage />} />
                 </Route>
                 
                 <Route path="*" element={<NotFound />} />
@@ -172,7 +140,7 @@ const App = () => {
             
             <Footer />
             <ChatContainer />
-            <ChatPalScript />
+            <ChatPalScripts />
             <UIToaster />
             <Toaster position="bottom-right" richColors />
             <PerformanceMonitor />

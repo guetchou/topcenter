@@ -5,12 +5,13 @@ import { useIntl } from '@/components/IntlProvider';
 import { FormattedMessage } from 'react-intl';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Search, X } from 'lucide-react';
+import { Menu, Search, X, LogIn } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useSearch } from '@/contexts/SearchContext';
 import { AnimationWrapper } from '@/components/AnimationWrapper';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 const ResponsiveNavigation: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,6 +19,9 @@ const ResponsiveNavigation: React.FC = () => {
   const location = useLocation();
   const { openSearch } = useSearch();
   const isMobile = useIsMobile();
+  const { user, impersonatedUser } = useAuth();
+  
+  const activeUser = impersonatedUser || user;
 
   // Fermer le menu lors du changement de route
   useEffect(() => {
@@ -70,6 +74,12 @@ const ResponsiveNavigation: React.FC = () => {
               <FormattedMessage id="nav.services" defaultMessage="Services" />
             </Link>
             <Link 
+              to="/news" 
+              className="text-sm font-medium text-muted-foreground px-3 py-2 rounded-md hover:bg-accent transition-colors"
+            >
+              <FormattedMessage id="nav.news" defaultMessage="Actualités" />
+            </Link>
+            <Link 
               to="/blog" 
               className="text-sm font-medium text-muted-foreground px-3 py-2 rounded-md hover:bg-accent transition-colors"
             >
@@ -105,6 +115,20 @@ const ResponsiveNavigation: React.FC = () => {
 
           <LanguageSwitcher />
           <ThemeToggle />
+          
+          {!activeUser && (
+            <Button 
+              variant="default" 
+              size="sm"
+              asChild
+              className="hidden md:flex gap-1"
+            >
+              <Link to="/login">
+                <LogIn className="h-4 w-4" />
+                <FormattedMessage id="nav.login" defaultMessage="Connexion" />
+              </Link>
+            </Button>
+          )}
 
           {/* Menu mobile burger */}
           <div className="md:hidden">
@@ -140,6 +164,13 @@ const ResponsiveNavigation: React.FC = () => {
                     <FormattedMessage id="nav.services" defaultMessage="Services" />
                   </Link>
                   <Link 
+                    to="/news" 
+                    className="text-lg font-medium py-2 border-b border-border/50 hover:bg-accent/50 px-2 rounded-md transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <FormattedMessage id="nav.news" defaultMessage="Actualités" />
+                  </Link>
+                  <Link 
                     to="/blog" 
                     className="text-lg font-medium py-2 border-b border-border/50 hover:bg-accent/50 px-2 rounded-md transition-colors"
                     onClick={() => setIsMenuOpen(false)}
@@ -161,9 +192,22 @@ const ResponsiveNavigation: React.FC = () => {
                     <FormattedMessage id="nav.contact" defaultMessage="Contact" />
                   </Link>
 
+                  {!activeUser && (
+                    <Button
+                      variant="default"
+                      className="mt-4"
+                      asChild
+                    >
+                      <Link to="/login">
+                        <LogIn className="h-4 w-4 mr-2" />
+                        <FormattedMessage id="nav.login" defaultMessage="Connexion" />
+                      </Link>
+                    </Button>
+                  )}
+
                   <Button
-                    variant="default"
-                    className="mt-4"
+                    variant="outline"
+                    className="mt-2"
                     onClick={() => {
                       openSearch();
                       setIsMenuOpen(false);

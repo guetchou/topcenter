@@ -49,24 +49,12 @@ const NewHeroSection = () => {
       />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
+        <div className="grid md:grid-cols-1 gap-8 items-center mx-auto max-w-3xl text-center">
           <HeroContent 
             onCallNow={handleCallNow} 
             onQuoteRequest={handleQuoteRequest}
             onConnect={handleConnect}
           />
-          
-          <div className="hidden md:block">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-secondary/20 to-secondary/40 blur-2xl"></div>
-              <img 
-                src="/lovable-uploads/agent-topcenter1.png" 
-                alt="Agent TopCenter" 
-                className="relative rounded-xl shadow-lg object-cover w-full max-w-lg mx-auto animate-scale-in"
-                style={{ animationDelay: "0.3s" }}
-              />
-            </div>
-          </div>
         </div>
       </div>
     </section>

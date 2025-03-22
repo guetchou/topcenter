@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { shouldUseNewDesign } from "@/lib/designUtils";
 import { DesignToggle } from "@/components/DesignToggle";
 import { useInView } from "react-intersection-observer";
+import { NewsHighlightSection } from "@/components/sections/NewsHighlightSection";
 
 // Lazy loading original sections
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
@@ -113,6 +114,10 @@ const Index = () => {
 
         <LazySection id="services" fallbackHeight="60vh">
           <ServicesSection />
+        </LazySection>
+
+        <LazySection id="news" fallbackHeight="50vh">
+          <NewsHighlightSection />
         </LazySection>
 
         <LazySection id="company-info" fallbackHeight="40vh">

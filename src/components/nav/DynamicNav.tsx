@@ -5,7 +5,7 @@ import { SearchDialog } from "./SearchDialog";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { LogIn, Menu, Search } from "lucide-react";
+import { LogIn, Menu, Search, Globe } from "lucide-react";
 import { useMenus, MenuItem } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { MobileMenu } from "./MobileMenu";
@@ -13,6 +13,12 @@ import { DesktopNav } from "./DesktopNav";
 import { DesignToggle } from "../DesignToggle";
 import { useApiError } from "@/hooks/useApiError";
 import { ApiErrorBoundary } from "@/components/ApiErrorBoundary";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -51,6 +57,7 @@ export function DynamicNav() {
     { title: "Accueil", path: "/" },
     { title: "À propos", path: "/about" },
     { title: "Services", path: "/services" },
+    { title: "Actualités", path: "/news" },
     { title: "FAQ", path: "/faq" },
     { title: "Contact", path: "/contact" },
   ];
@@ -72,6 +79,9 @@ export function DynamicNav() {
               className="h-8 w-auto"
             />
           </Link>
+        </div>
+
+        <div className="flex-grow flex items-center justify-center">
           <ApiErrorBoundary 
             error={menusError} 
             isLoading={menusLoading}
@@ -83,6 +93,22 @@ export function DynamicNav() {
         </div>
 
         <div className="flex items-center gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Changer de langue">
+                <Globe className="h-5 w-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <span className="mr-2">🇫🇷</span> Français
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <span className="mr-2">🇬🇧</span> English
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <Button
             variant="ghost"
             size="icon"
