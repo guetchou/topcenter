@@ -5,7 +5,7 @@ import { SearchDialog } from "./SearchDialog";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, Search } from "lucide-react";
+import { LogIn, Menu, Search } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
 import { MobileMenu } from "./MobileMenu";
@@ -82,10 +82,26 @@ export function DynamicNav() {
           {/* Only show design toggle in development mode */}
           {process.env.NODE_ENV !== 'production' && <DesignToggle />}
 
-          <UserProfileMenu 
-            activeUser={activeUser}
-            handleLogout={handleLogout}
-          />
+          {!activeUser && (
+            <Button 
+              variant="default" 
+              size="sm" 
+              asChild
+              className="gap-1"
+            >
+              <Link to="/login">
+                <LogIn className="h-4 w-4" />
+                <span>Connexion</span>
+              </Link>
+            </Button>
+          )}
+
+          {activeUser && (
+            <UserProfileMenu 
+              activeUser={activeUser}
+              handleLogout={handleLogout}
+            />
+          )}
 
           <Button
             variant="ghost"
