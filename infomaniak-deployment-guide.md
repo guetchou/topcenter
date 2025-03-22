@@ -9,7 +9,8 @@ Ce guide explique comment déployer l'application TopCenter sur un hébergement 
 3. [Déploiement sur Infomaniak](#déploiement-sur-infomaniak)
 4. [Configuration du nom de domaine](#configuration-du-nom-de-domaine)
 5. [Mise en place de l'environnement de production](#mise-en-place-de-lenvironnement-de-production)
-6. [Dépannage](#dépannage)
+6. [Déploiement automatique avec GitHub Actions](#déploiement-automatique-avec-github-actions)
+7. [Dépannage](#dépannage)
 
 ## Prérequis
 
@@ -94,7 +95,7 @@ Ce guide explique comment déployer l'application TopCenter sur un hébergement 
    pm2 startup
    ```
 
-### 3. Déploiement du frontend
+### 3. Déploiement manuel du frontend (alternative au déploiement automatique)
 
 1. Connectez-vous à votre hébergement via FTP
 2. Naviguez vers le dossier root de votre site (par exemple, `www/votre-domaine.com`)
@@ -132,6 +133,38 @@ Ce guide explique comment déployer l'application TopCenter sur un hébergement 
 
 1. Dans le Manager Infomaniak, allez dans "Hébergement Web & Cloud" > Votre hébergement > "Sauvegardes"
 2. Configurez la fréquence des sauvegardes automatiques
+
+## Déploiement automatique avec GitHub Actions
+
+Pour automatiser le déploiement de votre application vers Infomaniak à chaque push sur la branche principale, vous pouvez utiliser GitHub Actions avec FTP.
+
+### 1. Configuration des secrets GitHub
+
+Ajoutez les secrets suivants dans votre dépôt GitHub (Settings → Secrets and variables → Actions):
+
+| Nom | Description | Exemple |
+|-----|-------------|---------|
+| `FTP_SERVER` | Adresse du serveur FTP d'Infomaniak | ftp.cluster0xy.hosting.infomaniak.ch |
+| `FTP_USER` | Nom d'utilisateur FTP | user_ftp |
+| `FTP_PASS` | Mot de passe FTP | votre_mot_de_passe |
+| `VITE_SUPABASE_URL` | URL de votre projet Supabase | https://votre-projet.supabase.co |
+| `VITE_SUPABASE_ANON_KEY` | Clé anonyme Supabase | votre_clé_anonyme |
+
+### 2. Workflow GitHub Actions
+
+Un fichier `.github/workflows/deploy.yml` a été créé dans votre projet. Ce workflow:
+- Est déclenché à chaque push sur la branche `main`
+- Installe les dépendances et exécute les tests
+- Build le projet avec les variables d'environnement nécessaires
+- Déploie les fichiers générés vers votre hébergement Infomaniak via FTP
+
+### 3. Dépannage du déploiement automatique
+
+Si le déploiement automatique échoue, vérifiez:
+- Les logs du workflow dans GitHub Actions
+- Assurez-vous que les secrets sont correctement configurés
+- Vérifiez que les informations FTP sont correctes
+- Assurez-vous que l'utilisateur FTP a les droits d'écriture sur le dossier cible
 
 ## Dépannage
 

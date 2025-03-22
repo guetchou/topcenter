@@ -1,86 +1,107 @@
 
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
-import { useApiError } from "./useApiError";
-import { toast } from "sonner";
+import { useState, useEffect } from "react";
 
-type OptimizedQueryOptions<TData, TError> = Omit<UseQueryOptions<TData, TError, TData>, 'queryKey' | 'queryFn'> & {
-  showSuccessToast?: boolean;
-  successToastMessage?: string;
-  showErrorToast?: boolean;
-  errorToastMessage?: string;
-  staleTime?: number;
-  refetchOnWindowFocus?: boolean;
-  refetchOnReconnect?: boolean;
-  refetchInterval?: number | false;
-  refetchIntervalInBackground?: boolean;
-};
+// Options spécifiques pour notre hook optimisé
+export interface OptimizedQueryOptions<TData, TError> 
+  extends Omit<UseQueryOptions<TData, TError, TData, any[]>, 'queryKey' | 'queryFn'> {
+  queryKey: any[];
+  queryFn: () => Promise<TData>;
+  retryOnReconnect?: boolean;
+  offlineData?: TData;
+  gcTime?: number; // Remplacement de cacheTime qui est obsolète
+}
 
-export function useOptimizedQuery<TData, TError = Error>(
-  queryKey: string[],
-  queryFn: () => Promise<TData>,
-  options?: OptimizedQueryOptions<TData, TError>
-) {
-  const { isServerUnavailable, checkServerAvailability } = useApiError();
-  const [connectionPaused, setConnectionPaused] = useState(false);
-  
-  // Only refetch when online
+/**
+ * Hook personnalisé qui étend useQuery avec des fonctionnalités d'optimisation
+ * - Gestion de l'état offline avec données de secours
+ * - Nouvelle tentative automatique lors de la reconnexion
+ * - Mise en cache avancée
+ */
+export function useOptimizedQuery<TData, TError = Error>({
+  queryKey,
+  queryFn,
+  retryOnReconnect = true,
+  offlineData,
+  ...options
+}: OptimizedQueryOptions<TData, TError>) {
+  // État pour suivre la connectivité réseau
+  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+
+  // Surveiller les changements de connectivité
   useEffect(() => {
-    const handleOnline = async () => {
-      if (connectionPaused) {
-        const serverAvailable = await checkServerAvailability();
-        if (serverAvailable) {
-          setConnectionPaused(false);
-          toast.success("Reconnecté au serveur", {
-            description: "Les données sont à nouveau synchronisées."
-          });
-        }
-      }
-    };
-    
-    const handleOffline = () => {
-      setConnectionPaused(true);
-      toast.warning("Mode hors connexion", {
-        description: "Les données affichées peuvent ne pas être à jour."
-      });
-    };
-    
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [checkServerAvailability, connectionPaused]);
-  
-  return useQuery({
-    queryKey,
-    queryFn,
-    staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
-    gcTime: options?.cacheTime || 10 * 60 * 1000, // 10 minutes default
-    retry: options?.retry !== undefined ? options.retry : 1,
-    refetchOnWindowFocus: options?.refetchOnWindowFocus !== undefined ? options.refetchOnWindowFocus : false,
-    refetchOnReconnect: options?.refetchOnReconnect !== undefined ? options.refetchOnReconnect : true,
-    refetchIntervalInBackground: false,
-    enabled: !connectionPaused && !isServerUnavailable && (options?.enabled !== undefined ? options.enabled : true),
-    // Utiliser le mécanisme d'événements de TanStack Query v5
-    meta: {
-      onSuccess: (data: TData) => {
-        if (options?.showSuccessToast) {
-          toast.success(options.successToastMessage || "Données mises à jour");
-        }
-      },
-      onError: (error: TError) => {
-        if (error instanceof Error && error.message.includes('network')) {
-          setConnectionPaused(true);
-        }
-        
-        if (options?.showErrorToast) {
-          toast.error(options.errorToastMessage || "Erreur lors du chargement des données");
+  }, []);
+
+  // Étendre les options avec des configurations optimisées
+  const optimizedOptions: UseQueryOptions<TData, TError, TData, any[]> = {
+    ...options,
+    // Si nous sommes hors ligne, ne pas faire de requêtes au serveur
+    enabled: options.enabled !== false && (isOnline || !!offlineData),
+    // Tenter à nouveau la requête lorsque l'application revient en ligne
+    retry: isOnline ? options.retry : false,
+    // Utiliser gcTime au lieu de cacheTime (obsolète dans la dernière version)
+    gcTime: options.gcTime || 5 * 60 * 1000, // 5 minutes par défaut
+    // Stratégie pour les données périmées
+    staleTime: options.staleTime || 60 * 1000, // 1 minute par défaut
+    // Fonction qui sera invoquée lorsque la requête est réussie
+    onSuccess: (data, ...rest) => {
+      // Stocker ces données dans le localStorage pour y accéder hors connexion
+      if (offlineData) {
+        try {
+          localStorage.setItem(
+            `query-${queryKey.join('-')}`, 
+            JSON.stringify(data)
+          );
+        } catch (error) {
+          console.warn('Impossible de mettre en cache les données :', error);
         }
       }
+      
+      if (options.onSuccess) {
+        options.onSuccess(data, ...rest);
+      }
     },
-    ...options
+  };
+
+  // Si nous sommes hors ligne et avons des données de secours
+  if (!isOnline && offlineData) {
+    // Essayer de récupérer les données mises en cache précédemment
+    try {
+      const cachedData = localStorage.getItem(`query-${queryKey.join('-')}`);
+      if (cachedData) {
+        const parsedData = JSON.parse(cachedData) as TData;
+        return useQuery<TData, TError>({
+          queryKey,
+          queryFn: () => Promise.resolve(parsedData),
+          ...optimizedOptions,
+        });
+      }
+    } catch (error) {
+      console.warn('Erreur lors de la récupération des données en cache :', error);
+    }
+
+    // Utiliser les données de secours si aucune donnée mise en cache n'est disponible
+    return useQuery<TData, TError>({
+      queryKey,
+      queryFn: () => Promise.resolve(offlineData as TData),
+      ...optimizedOptions,
+    });
+  }
+
+  // Comportement normal lorsque nous sommes en ligne
+  return useQuery<TData, TError>({
+    queryKey,
+    queryFn,
+    ...optimizedOptions,
   });
 }
