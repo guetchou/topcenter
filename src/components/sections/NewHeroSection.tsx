@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { MoveRight, PhoneCall, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,23 @@ import { toast } from "sonner";
 
 const NewHeroSection = () => {
   const navigate = useNavigate();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  // Images pour le carrousel en arrière-plan
+  const backgroundImages = [
+    "/lovable-uploads/staff-tce.jpg",
+    "/lovable-uploads/agent-topcenter1.png",
+    "/lovable-uploads/equipe-topcenter.jpg"
+  ];
+
+  // Effet pour changer l'image d'arrière-plan automatiquement
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % backgroundImages.length);
+    }, 5000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const handleCallNow = () => {
     // Simuler un appel ou demande de contact
@@ -25,6 +42,19 @@ const NewHeroSection = () => {
 
   return (
     <section className="relative bg-gradient-to-r from-primary/90 to-primary py-20 text-white overflow-hidden">
+      {/* Carrousel en arrière-plan avec effet de transition */}
+      <div className="absolute inset-0 z-0">
+        {backgroundImages.map((image, index) => (
+          <div 
+            key={index} 
+            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${
+              index === currentSlide ? "opacity-10" : "opacity-0"
+            }`}
+            style={{backgroundImage: `url(${image})`}}
+          />
+        ))}
+      </div>
+      
       <div className="container mx-auto px-4 relative z-10">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
@@ -85,10 +115,6 @@ const NewHeroSection = () => {
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="absolute inset-0 z-0 opacity-10">
-        <div className="absolute inset-0 bg-[url('/lovable-uploads/staff-tce.jpg')] bg-cover bg-center"></div>
       </div>
     </section>
   );
