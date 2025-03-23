@@ -1,10 +1,15 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageType } from "@/types/chat";
 import { Lightbulb } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateContextualSuggestions } from "@/utils/intentAnalyzer";
+
+// Define the MessageType we're using
+interface MessageType {
+  text: string;
+  isUser: boolean;
+}
 
 interface ContextualSuggestionsProps {
   currentMessage: string;

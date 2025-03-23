@@ -1,9 +1,18 @@
+
 import { useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageType } from "@/types/chat";
+import { Message } from "@/types/chat";
 import { analyzeUserIntent } from "@/utils/intentAnalyzer";
 import { analyzeSentiment } from "@/utils/sentimentAnalyzer";
+
+// Define a local interface that matches what we're actually using
+interface MessageType {
+  text: string;
+  isUser: boolean;
+  timestamp?: Date;
+  status?: 'sending' | 'sent' | 'error';
+}
 
 export const useAIChat = () => {
   const [message, setMessage] = useState("");
@@ -182,11 +191,11 @@ IMPORTANT:
     setLastSentimentScore(userSentiment.score);
 
     // Créer le message utilisateur avec timestamp et statut
-    const newMessage = { 
+    const newMessage: MessageType = { 
       text: message, 
       isUser: true,
       timestamp: new Date(),
-      status: 'sending' as const
+      status: 'sending'
     };
     
     setMessages(prev => [...prev, newMessage]);
@@ -227,9 +236,13 @@ IMPORTANT:
       if (response.error) throw response.error;
 
       // Mettre à jour le statut du message utilisateur à 'sent'
-      setMessages(prev => prev.map(msg => 
-        msg === newMessage ? { ...msg, status: 'sent' as const } : msg
-      ));
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.text === newMessage.text && msg.isUser === newMessage.isUser
+            ? { ...msg, status: 'sent' } 
+            : msg
+        )
+      );
 
       const aiResponseText = response.data.choices[0].message.content;
       
@@ -238,7 +251,7 @@ IMPORTANT:
         .replace("[INCERTAIN]", "")
         .replace("[TRANSFERT_RECOMMANDÉ]", "");
       
-      const botResponse = { 
+      const botResponse: MessageType = { 
         text: cleanedResponse, 
         isUser: false,
         timestamp: new Date()
@@ -264,9 +277,13 @@ IMPORTANT:
       console.error("Erreur lors de l'envoi du message:", error);
       
       // Mettre à jour le statut du message utilisateur à 'error'
-      setMessages(prev => prev.map(msg => 
-        msg === newMessage ? { ...msg, status: 'error' as const } : msg
-      ));
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.text === newMessage.text && msg.isUser === newMessage.isUser
+            ? { ...msg, status: 'error' } 
+            : msg
+        )
+      );
       
       setMessages(prev => [...prev, { 
         text: "Désolé, une erreur est survenue. Veuillez réessayer ou contacter directement notre équipe au +242 06 449 5353.", 

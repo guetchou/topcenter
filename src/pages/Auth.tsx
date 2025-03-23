@@ -1,323 +1,261 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Separator } from '@/components/ui/separator';
-import { Logo } from '@/components/Logo';
-import { NetworkStatus } from '@/components/NetworkStatus';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ServerOff, AlertTriangle, Info } from 'lucide-react';
-
-// Environment detection helper
-const isDevelopment = () => {
-  return window.location.hostname === 'localhost' || 
-         window.location.hostname === '127.0.0.1' || 
-         window.location.hostname.includes('vercel.app');
-};
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, ArrowRight, Check, Loader2, LogIn } from 'lucide-react';
 
 const Auth = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState('login');
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, loginWithGoogle, register, user, isLoading } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
-  const [formLoading, setFormLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [serverAvailable, setServerAvailable] = useState(true);
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: '',
-  });
-
-  // Déterminer la redirection en fonction de l'état de location ou utiliser un chemin par défaut
-  const from = (location.state as any)?.from?.pathname || '/dashboard';
-
-  // Vérifier la disponibilité du serveur au chargement
-  useEffect(() => {
-    const checkServerStatus = async () => {
-      try {
-        const response = await fetch('/lovable-uploads/logo-topcenter.png', { 
-          method: 'HEAD',
-          signal: AbortSignal.timeout(5000)
-        });
-        setServerAvailable(response.ok);
-      } catch (error) {
-        console.error("Server check failed:", error);
-        setServerAvailable(false);
-      }
-    };
-    
-    checkServerStatus();
-  }, []);
-
-  useEffect(() => {
-    // Si l'utilisateur est déjà connecté, rediriger vers la page de destination
-    if (user && !isLoading) {
-      navigate(from, { replace: true });
-    }
-  }, [user, isLoading, navigate, from]);
-
-  const handleDirectAccess = async () => {
-    setFormLoading(true);
-    try {
-      // En mode développement, on utilise un email par défaut
-      const devEmail = "admin@topcenter.app";
-      // On peut laisser le mot de passe vide en développement
-      await login(devEmail, "password123", true);
-      navigate(from, { replace: true });
-      toast.success("Accès direct en mode développement");
-    } catch (error: any) {
-      console.error("Erreur d'accès direct:", error);
-      setErrorMessage(error.message || "Erreur d'authentification");
-      toast.error(error.message || "Erreur d'authentification");
-    } finally {
-      setFormLoading(false);
-    }
+  
+  // Extract redirect URL from location state or default to dashboard
+  const from = location.state?.from?.pathname || '/';
+  
+  // Check if we are in development mode
+  const isDevelopment = () => {
+    return window.location.hostname === 'localhost' || 
+           window.location.hostname === '127.0.0.1' || 
+           window.location.hostname.includes('vercel.app');
   };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormLoading(true);
-    setErrorMessage(null);
-
+    setError(null);
+    setIsLoading(true);
+    
     try {
-      // Vérifier à nouveau la disponibilité du serveur avant la soumission
-      if (!navigator.onLine) {
-        throw new Error("Vous êtes hors ligne. Veuillez vous reconnecter à Internet pour vous connecter.");
-      }
-      
-      if (!serverAvailable) {
-        throw new Error("Le service est temporairement indisponible. Veuillez réessayer plus tard.");
-      }
-
-      if (isLogin) {
-        // En mode développement, nous pouvons ignorer la vérification du mot de passe
-        const isDevMode = isDevelopment();
-        await login(formData.email, formData.password, isDevMode);
-      } else {
-        await register(formData.email, formData.password, formData.fullName);
-        // Pour le processus d'inscription, ne pas naviguer tout de suite
-        // car l'utilisateur doit d'abord confirmer son email
-        setIsLogin(true);
-        setFormData(prev => ({ ...prev, fullName: '' }));
-        toast.success("Compte créé avec succès. Vous pouvez maintenant vous connecter.");
-        setFormLoading(false);
-        return;
-      }
-      navigate(from, { replace: true });
-    } catch (error: any) {
-      console.error("Erreur d'authentification:", error);
-      setErrorMessage(error.message || "Erreur d'authentification");
-      
-      // Mettre à jour le statut du serveur si l'erreur est liée à sa disponibilité
-      if (error.message.includes("indisponible") || error.message.includes("connexion au serveur")) {
-        setServerAvailable(false);
-      }
-      
-      toast.error(error.message || "Erreur d'authentification");
+      await login(email, password, true);
+      navigate(from);
+    } catch (err: any) {
+      console.error('Erreur de connexion:', err);
+      setError(err.message || 'Erreur de connexion. Veuillez réessayer.');
     } finally {
-      setFormLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const handleGoogleLogin = async () => {
+  
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!fullName || !email || !password) {
+      setError('Veuillez remplir tous les champs.');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères.');
+      return;
+    }
+    
+    setError(null);
+    setIsLoading(true);
+    
     try {
-      setFormLoading(true);
-      setErrorMessage(null);
+      await register(email, password, fullName);
+      setIsSuccess(true);
       
-      // Vérifier la disponibilité du serveur avant de tenter la connexion Google
-      if (!serverAvailable) {
-        throw new Error("Le service est temporairement indisponible. Veuillez réessayer plus tard.");
-      }
-      
-      await loginWithGoogle();
-      // Note: La redirection est gérée par OAuth et AuthCallback component
-    } catch (error: any) {
-      console.error("Erreur de connexion avec Google:", error);
-      setErrorMessage(error.message || "Erreur de connexion avec Google");
-      toast.error(error.message || "Erreur de connexion avec Google");
+      // Rediriger vers la connexion après un délai
+      setTimeout(() => {
+        setActiveTab('login');
+        setIsSuccess(false);
+      }, 3000);
+    } catch (err: any) {
+      console.error('Erreur d\'inscription:', err);
+      setError(err.message || 'Erreur d\'inscription. Veuillez réessayer.');
     } finally {
-      setFormLoading(false);
+      setIsLoading(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
+  
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <NetworkStatus />
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mb-4 flex justify-center">
-            <Logo />
-          </div>
-          <CardTitle>{isLogin ? "Connexion" : "Créer un compte"}</CardTitle>
-          <CardDescription>
-            {isLogin 
-              ? "Connectez-vous à votre espace TopCenter" 
-              : "Créez un compte pour accéder à tous nos services"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {!serverAvailable && (
-            <Alert variant="destructive" className="mb-4">
-              <ServerOff className="h-4 w-4" />
-              <AlertTitle>Service indisponible</AlertTitle>
-              <AlertDescription>
-                Le serveur est temporairement indisponible. Veuillez réessayer plus tard 
-                ou contactez le support si le problème persiste.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {errorMessage && serverAvailable && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-          
-          {isDevelopment() && (
-            <Alert variant="info" className="mb-4">
-              <Info className="h-4 w-4" />
-              <AlertTitle>Mode développement</AlertTitle>
-              <AlertDescription>
-                Vous pouvez accéder directement à l'application sans mot de passe en mode développement.
-              </AlertDescription>
-              <Button 
-                onClick={handleDirectAccess} 
-                className="w-full mt-2" 
-                variant="outline"
-                disabled={formLoading || !serverAvailable}
-              >
-                Accéder directement
-              </Button>
-            </Alert>
-          )}
-          
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">Nom complet</Label>
-                <Input
-                  id="fullName"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    fullName: e.target.value
-                  }))}
-                  required={!isLogin}
-                  disabled={!serverAvailable}
-                />
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-4">
+      <div className="w-full max-w-md">
+        {isDevelopment() && (
+          <Alert className="mb-4 bg-blue-50 border-blue-200">
+            <AlertDescription className="text-blue-800 flex items-center">
+              <div className="bg-blue-100 p-1 rounded-full mr-2">
+                <AlertCircle className="h-4 w-4 text-blue-500" />
               </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  email: e.target.value
-                }))}
-                required
-                disabled={!serverAvailable}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  password: e.target.value
-                }))}
-                required={!isDevelopment()}
-                disabled={!serverAvailable}
-              />
-            </div>
-            
-            {isLogin && (
-              <div className="text-right">
-                <Link to="/reset-password" className="text-sm text-primary hover:underline">
-                  Mot de passe oublié?
-                </Link>
-              </div>
-            )}
-            
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={formLoading || !serverAvailable}
-            >
-              {formLoading ? (
-                <span className="flex items-center gap-2">
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-b-transparent"></span>
-                  {isLogin ? "Connexion..." : "Création..."}
-                </span>
-              ) : (isLogin ? "Se connecter" : "Créer un compte")}
-            </Button>
-          </form>
-
-          <div className="relative my-6">
-            <Separator />
-            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-card px-2 text-xs text-muted-foreground">
-              OU
-            </span>
-          </div>
-
-          <Button 
-            variant="outline" 
-            className="w-full" 
-            onClick={handleGoogleLogin}
-            disabled={formLoading || !serverAvailable}
-          >
-            <svg className="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-            </svg>
-            Continuer avec Google
-          </Button>
+              Mode développement : Accès simplifié activé
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="login">Connexion</TabsTrigger>
+            <TabsTrigger value="register">Inscription</TabsTrigger>
+          </TabsList>
           
-          {isDevelopment() && (
-            <div className="mt-4 text-center text-sm text-muted-foreground">
-              <p>
-                En mode développement, vous pouvez utiliser n'importe quel email
-                et le système ignorera la vérification du mot de passe.
-              </p>
-            </div>
-          )}
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            {isLogin ? "Pas encore de compte?" : "Déjà un compte?"}{" "}
-            <button 
-              type="button"
-              className="text-primary hover:underline"
-              onClick={() => setIsLogin(!isLogin)}
-              disabled={!serverAvailable}
-            >
-              {isLogin ? "S'inscrire" : "Se connecter"}
-            </button>
-          </p>
-        </CardFooter>
-      </Card>
+          <TabsContent value="login">
+            <Card>
+              <CardHeader>
+                <CardTitle>Connexion</CardTitle>
+                <CardDescription>
+                  Accédez à votre compte TopCenter ou créez-en un nouveau.
+                </CardDescription>
+              </CardHeader>
+              <form onSubmit={handleLogin}>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email"
+                      type="email" 
+                      placeholder="votre@email.com" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="password">Mot de passe</Label>
+                      <Link 
+                        to="/reset-password" 
+                        className="text-xs text-muted-foreground hover:text-primary"
+                      >
+                        Mot de passe oublié?
+                      </Link>
+                    </div>
+                    <Input 
+                      id="password"
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Connexion en cours...
+                      </>
+                    ) : (
+                      <>
+                        <LogIn className="mr-2 h-4 w-4" />
+                        Se connecter
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="register">
+            <Card>
+              <CardHeader>
+                <CardTitle>Créer un compte</CardTitle>
+                <CardDescription>
+                  Rejoignez TopCenter et profitez de nos services de centre d'appel.
+                </CardDescription>
+              </CardHeader>
+              <form onSubmit={handleRegister}>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Nom complet</Label>
+                    <Input 
+                      id="fullName"
+                      type="text" 
+                      placeholder="Prénom Nom" 
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-email">Email</Label>
+                    <Input 
+                      id="register-email"
+                      type="email" 
+                      placeholder="votre@email.com" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="register-password">Mot de passe</Label>
+                    <Input 
+                      id="register-password"
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Au moins 6 caractères
+                    </p>
+                  </div>
+                  
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {isSuccess && (
+                    <Alert>
+                      <Check className="h-4 w-4" />
+                      <AlertDescription>
+                        Inscription réussie! Vous allez être redirigé vers la page de connexion.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    type="submit" 
+                    className="w-full" 
+                    disabled={isLoading || isSuccess}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Inscription en cours...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="mr-2 h-4 w-4" />
+                        S'inscrire
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </form>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

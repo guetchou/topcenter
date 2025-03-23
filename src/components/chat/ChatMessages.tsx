@@ -1,10 +1,17 @@
 
 import { useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { MessageType } from "@/types/chat";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { CheckCircle2, Clock } from "lucide-react";
+
+// Define the type we're actually using in this component
+interface MessageType {
+  text: string;
+  isUser: boolean;
+  timestamp?: Date;
+  status?: 'sending' | 'sent' | 'error';
+}
 
 interface ChatMessagesProps {
   messages: MessageType[];
