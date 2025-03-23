@@ -1,22 +1,27 @@
 
+interface ChatPalInstance {
+  destroy: () => void;
+}
+
 interface ChatPalOptions {
   embedId: string;
   remoteBaseUrl: string;
   version: string;
   containerSelector?: string;
-  position?: string;
+  position?: 'internal' | 'fixed';
   width?: string;
   height?: string;
-  language?: string;
 }
 
-interface ChatPal {
-  destroy: () => void;
+interface ChatPalConstructor {
+  new (options: ChatPalOptions): ChatPalInstance;
 }
 
 declare global {
   interface Window {
-    ChatPal: new (options: ChatPalOptions) => ChatPal;
-    chatPal?: ChatPal;
+    ChatPal: ChatPalConstructor;
+    chatPal?: ChatPalInstance;
   }
 }
+
+export {};

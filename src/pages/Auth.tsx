@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -86,7 +85,7 @@ const Auth = () => {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-100 to-slate-200 p-4">
       <div className="w-full max-w-md">
         {isDevelopment() && (
-          <Alert className="mb-4 bg-blue-50 border-blue-200">
+          <Alert className="mb-4 bg-blue-50 border-blue-200" variant="default">
             <AlertDescription className="text-blue-800 flex items-center">
               <div className="bg-blue-100 p-1 rounded-full mr-2">
                 <AlertCircle className="h-4 w-4 text-blue-500" />
