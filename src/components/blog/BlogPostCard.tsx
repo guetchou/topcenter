@@ -15,22 +15,23 @@ interface BlogPostCardProps {
 export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate }) => {
   const navigate = useNavigate();
 
+  // Use a default image if none is provided
+  const imageUrl = article.featured_image_url || 'https://images.unsplash.com/photo-1519389950473-47ba0277781c';
+
   return (
     <Card 
       className="hover-lift overflow-hidden cursor-pointer flex flex-col h-full group"
       onClick={() => navigate(`/blog/${article.id}`)}
     >
       <div className="flex flex-col h-full">
-        {article.featured_image_url && (
-          <div className="relative h-48 overflow-hidden">
-            <img
-              src={article.featured_image_url}
-              alt={article.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-        )}
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={imageUrl}
+            alt={article.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
         <CardContent className="p-6 flex-1 flex flex-col">
           <div className="flex items-center text-sm text-muted-foreground mb-2">
             <Calendar className="w-4 h-4 mr-2" />
@@ -40,7 +41,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate 
             {article.title}
           </h3>
           <p className="text-muted-foreground mb-4 flex-1 line-clamp-3">
-            {article.excerpt || ''}
+            {article.excerpt || article.content.substring(0, 150) + '...'}
           </p>
           <div className="flex items-center justify-between mt-auto">
             <Badge variant="outline">{article.category}</Badge>
@@ -53,5 +54,3 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate 
     </Card>
   );
 };
-
-export default BlogPostCard;

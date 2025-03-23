@@ -15,7 +15,8 @@ export const MapLocation = () => {
   useEffect(() => {
     if (!mapContainer.current) return;
 
-    // Initialisation de la carte
+    // Initialisation de la carte avec Mapbox
+    // Nous utilisons un token public générique pour la démo
     mapboxgl.accessToken = 'pk.eyJ1IjoiYW1iYW5ndWUtZ2VuIiwiYSI6ImNtOGFzdHRhNTBzeTcyaXFhajhuZjUyb3YifQ.7Q7th2FU4FmPRfJCzPnuMw';
     
     if (map.current) return; // Éviter la réinitialisation
@@ -53,12 +54,6 @@ export const MapLocation = () => {
     // Ajouter des contrôles de navigation améliorés
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
     map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
-    map.current.addControl(new mapboxgl.GeolocateControl({
-      positionOptions: {
-        enableHighAccuracy: true
-      },
-      trackUserLocation: true
-    }), 'top-right');
     
     // Activer le terrain 3D si disponible
     map.current.on('style.load', () => {
@@ -83,7 +78,7 @@ export const MapLocation = () => {
       
       <div className="flex flex-col md:flex-row gap-8">
         <div className="flex-1">
-          {/* Carte interactive */}
+          {/* Carte interactive principale */}
           <div 
             className="w-full h-[400px] rounded-lg shadow-lg overflow-hidden relative"
           >
@@ -144,7 +139,7 @@ export const MapLocation = () => {
         </div>
       </div>
       
-      {/* Fallback Google Maps pour les navigateurs plus anciens */}
+      {/* Fallback Google Maps iframe pour les navigateurs plus anciens */}
       <div className="w-full h-[400px] rounded-lg shadow-lg overflow-hidden mt-8 md:hidden">
         <iframe 
           src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3978.745263068652!2d15.276011375048!3d-4.269680096165313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1stopcenter%20!5e0!3m2!1sfr!2scg!4v1740498139400!5m2!1sfr!2scg" 
@@ -155,6 +150,7 @@ export const MapLocation = () => {
           loading="lazy" 
           referrerPolicy="no-referrer-when-downgrade"
           className="w-full h-full"
+          title="TopCenter Location on Google Maps"
         />
       </div>
     </div>
