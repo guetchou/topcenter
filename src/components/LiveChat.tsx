@@ -42,12 +42,12 @@ export const LiveChat = () => {
   useEffect(() => {
     if (useWebSocket) {
       // Convert from WebSocket messages to MessageType
-      const convertedMessages = wsMessages.map(msg => ({
+      const convertedMessages: MessageType[] = wsMessages.map(msg => ({
         id: msg.id,
         text: msg.content,
         isUser: msg.sender === 'user',
         timestamp: new Date(msg.timestamp),
-        sender: msg.sender === 'user' ? 'user' : 'agent' as 'user' | 'agent' | 'assistant' | 'system'
+        sender: msg.sender as 'user' | 'agent' | 'assistant' | 'system'
       }));
       setMessages(convertedMessages);
     } else {

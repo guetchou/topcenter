@@ -150,4 +150,5 @@ export const createChatAdapter = (config: ChatAdapterConfig): ChatAdapterInterfa
   return new ChatAdapter(config);
 };
 
-export { ChatProviderType, ChatAdapterConfig, ChatAdapterInterface };
+// Use "export type" for type re-exports when isolatedModules is enabled
+export type { ChatProviderType, ChatAdapterConfig, ChatAdapterInterface };
