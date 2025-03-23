@@ -16,6 +16,7 @@ interface ChatHeaderProps {
   isConnectedToAgent: boolean;
   queuePosition: number;
   useChatterPal: boolean;
+  activeTab?: string; // Ajout de cette prop qui manquait
   useWebSocket?: boolean;
   onClose: () => void;
 }
@@ -26,6 +27,7 @@ export const ChatHeader = ({
   isConnectedToAgent,
   queuePosition,
   useChatterPal,
+  activeTab, // Nouvelle prop
   useWebSocket = false,
   onClose
 }: ChatHeaderProps) => {
@@ -34,7 +36,7 @@ export const ChatHeader = ({
   return (
     <div className="p-3 border-b flex items-center justify-between bg-gradient-to-r from-muted/50 to-white">
       <div className="flex items-center gap-2">
-        {useChatterPal ? (
+        {useChatterPal || (activeTab === "chatterpal") ? (
           <>
             <Bot size={18} className="text-primary animate-pulse" />
             <span className="font-medium">ChatterPal</span>
@@ -64,15 +66,15 @@ export const ChatHeader = ({
       </div>
 
       <div className="flex items-center gap-2">
-        {useChatterPal && (
+        {(useChatterPal || activeTab === "chatterpal") && (
           <ModelSelector
-            models={[
-              { id: "gemini", name: "Gemini" },
-              { id: "perplexity", name: "Perplexity" },
-              { id: "llama", name: "Llama 3" }
+            value={selectedModel}
+            onChange={setSelectedModel}
+            options={[
+              { value: "gemini", label: "Gemini" },
+              { value: "perplexity", label: "Perplexity" },
+              { value: "llama", label: "Llama 3" }
             ]}
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
           />
         )}
 

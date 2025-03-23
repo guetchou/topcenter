@@ -141,10 +141,13 @@ const ChatPanel = ({
       "border-primary/10"
     )}>
       <ChatHeader 
-        activeTab={activeTab} 
+        activeTab={activeTab}
         selectedModel={selectedModel} 
         setSelectedModel={setSelectedModel} 
-        onClose={onClose} 
+        onClose={onClose}
+        useChatterPal={activeTab === "chatterpal"}
+        isConnectedToAgent={!isLoading}
+        queuePosition={0}
       />
 
       <ChatTabs 

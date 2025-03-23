@@ -54,7 +54,7 @@ export type ChatAction =
   | { type: 'CREATE_SESSION'; session: ChatSession }
   | { type: 'DELETE_SESSION'; chatId: string };
 
-// Interface MessageType fully compatible with Message
+// Interface MessageType qui est compatible avec Message
 export interface MessageType {
   id: string;
   text: string;
@@ -64,7 +64,7 @@ export interface MessageType {
   sender: 'user' | 'agent' | 'assistant' | 'system';
 }
 
-// Declare global interface for ChatPal
+// Déclaration d'interface globale pour ChatPal
 declare global {
   interface Window {
     chatPal?: {

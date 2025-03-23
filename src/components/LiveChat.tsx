@@ -47,7 +47,7 @@ export const LiveChat = () => {
         text: msg.content,
         isUser: msg.sender === 'user',
         timestamp: new Date(msg.timestamp),
-        sender: msg.sender === 'user' ? 'user' : 'agent'
+        sender: msg.sender === 'user' ? 'user' : 'agent' as 'user' | 'agent' | 'assistant' | 'system'
       }));
       setMessages(convertedMessages);
     } else {
