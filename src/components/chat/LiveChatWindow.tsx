@@ -8,6 +8,7 @@ import { MessageType } from "@/types/chat";
 
 interface LiveChatWindowProps {
   useChatterPal: boolean;
+  useWebSocket?: boolean;
   messages: MessageType[];
   newMessage: string;
   setNewMessage: (message: string) => void;
@@ -17,11 +18,13 @@ interface LiveChatWindowProps {
   isConnectedToAgent: boolean;
   onToggleStandard: () => void;
   onToggleChatterPal: () => void;
+  onToggleWebSocket?: () => void;
   onClose: () => void;
 }
 
 export const LiveChatWindow = ({
   useChatterPal,
+  useWebSocket = false,
   messages,
   newMessage,
   setNewMessage,
@@ -31,6 +34,7 @@ export const LiveChatWindow = ({
   isConnectedToAgent,
   onToggleStandard,
   onToggleChatterPal,
+  onToggleWebSocket,
   onClose
 }: LiveChatWindowProps) => {
   const [selectedModel, setSelectedModel] = useState("perplexity");
@@ -48,13 +52,16 @@ export const LiveChatWindow = ({
         isConnectedToAgent={isConnectedToAgent}
         queuePosition={queuePosition}
         useChatterPal={useChatterPal}
+        useWebSocket={useWebSocket}
         onClose={onClose}
       />
 
       <ChatToggle 
         useChatterPal={useChatterPal}
+        useWebSocket={useWebSocket}
         onToggleStandard={onToggleStandard}
         onToggleChatterPal={onToggleChatterPal}
+        onToggleWebSocket={onToggleWebSocket}
       />
 
       {!useChatterPal ? (
@@ -66,6 +73,7 @@ export const LiveChatWindow = ({
           isTyping={isTyping}
           queuePosition={queuePosition}
           isConnectedToAgent={isConnectedToAgent}
+          isWebSocket={useWebSocket}
         />
       ) : (
         <ChatterPalInterface onLoad={handleChatterPalLoaded} />

@@ -5,9 +5,10 @@
  */
 
 import { Message, MessageType } from '@/types/chat';
+import { v4 as uuidv4 } from 'uuid';
 
 // Types d'adaptateurs de chat supportés
-export type ChatProviderType = 'internal' | 'chatterpal' | 'external';
+export type ChatProviderType = 'internal' | 'chatterpal' | 'external' | 'websocket';
 
 // Configuration pour l'adaptateur
 export interface ChatAdapterConfig {
@@ -15,6 +16,7 @@ export interface ChatAdapterConfig {
   apiUrl?: string;
   headers?: Record<string, string>;
   authToken?: string;
+  wsUrl?: string;
 }
 
 // Interface de l'adaptateur
@@ -33,6 +35,7 @@ export class ChatAdapter implements ChatAdapterInterface {
   private config: ChatAdapterConfig;
   private connected: boolean = false;
   private messageCallback?: (message: Message) => void;
+  private wsConnection?: WebSocket;
 
   constructor(config: ChatAdapterConfig) {
     this.config = config;
@@ -43,10 +46,12 @@ export class ChatAdapter implements ChatAdapterInterface {
    */
   static toMessageType(message: Message): MessageType {
     return {
+      id: message.id,
       text: message.content,
       isUser: message.sender === 'user',
       timestamp: new Date(message.timestamp),
-      status: message.status
+      status: message.status,
+      sender: message.sender
     };
   }
 
@@ -55,10 +60,10 @@ export class ChatAdapter implements ChatAdapterInterface {
    */
   static fromMessageType(messageType: MessageType): Message {
     return {
-      id: Math.random().toString(36).substring(2, 9),
+      id: messageType.id || uuidv4(),
       content: messageType.text,
-      sender: messageType.isUser ? 'user' : 'assistant',
-      timestamp: messageType.timestamp?.getTime() || Date.now(),
+      sender: messageType.sender,
+      timestamp: messageType.timestamp.getTime(),
       status: messageType.status
     };
   }
@@ -72,7 +77,7 @@ export class ChatAdapter implements ChatAdapterInterface {
     }
 
     const message: Message = {
-      id: Math.random().toString(36).substring(2, 9),
+      id: uuidv4(),
       content,
       sender: 'user',
       timestamp: Date.now(),
@@ -102,7 +107,7 @@ export class ChatAdapter implements ChatAdapterInterface {
         if (data.response) {
           setTimeout(() => {
             const botMessage: Message = {
-              id: Math.random().toString(36).substring(2, 9),
+              id: uuidv4(),
               content: data.response.text,
               sender: 'assistant',
               timestamp: Date.now()
@@ -119,6 +124,22 @@ export class ChatAdapter implements ChatAdapterInterface {
           window.chatPal.sendMessage(content);
         } else {
           console.warn('ChatterPal API not available');
+          message.status = 'error';
+        }
+      } else if (this.config.provider === 'websocket') {
+        // Envoyer via WebSocket
+        if (this.wsConnection && this.wsConnection.readyState === WebSocket.OPEN) {
+          this.wsConnection.send(JSON.stringify({
+            type: 'chat_message',
+            data: {
+              content,
+              senderId: 'user',
+              timestamp: Date.now()
+            }
+          }));
+          message.status = 'sent';
+        } else {
+          console.warn('WebSocket connection not available');
           message.status = 'error';
         }
       }
@@ -181,6 +202,9 @@ export class ChatAdapter implements ChatAdapterInterface {
           console.warn('ChatterPal not initialized');
           return false;
         }
+      } else if (this.config.provider === 'websocket') {
+        // Établir la connexion WebSocket
+        return this.connectWebSocket();
       }
 
       // Pour le provider interne ou autres, on marque simplement comme connecté
@@ -190,6 +214,63 @@ export class ChatAdapter implements ChatAdapterInterface {
       console.error('Error connecting to chat service:', error);
       return false;
     }
+  }
+
+  /**
+   * Établit une connexion WebSocket
+   */
+  private connectWebSocket(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (!this.config.wsUrl) {
+        console.error('WebSocket URL is not defined');
+        resolve(false);
+        return;
+      }
+
+      this.wsConnection = new WebSocket(this.config.wsUrl);
+
+      this.wsConnection.onopen = () => {
+        console.log('WebSocket connection established');
+        this.connected = true;
+        resolve(true);
+      };
+
+      this.wsConnection.onclose = () => {
+        console.log('WebSocket connection closed');
+        this.connected = false;
+        
+        // Reconnexion automatique après un délai
+        setTimeout(() => {
+          if (this.messageCallback) {
+            this.connectWebSocket();
+          }
+        }, 5000);
+      };
+
+      this.wsConnection.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        resolve(false);
+      };
+
+      this.wsConnection.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'chat_message' && this.messageCallback) {
+            const message: Message = {
+              id: data.id || uuidv4(),
+              content: data.data.content,
+              sender: data.data.senderId || 'assistant',
+              timestamp: data.data.timestamp || Date.now()
+            };
+            
+            this.messageCallback(message);
+          }
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
+        }
+      };
+    });
   }
 
   /**
@@ -204,6 +285,10 @@ export class ChatAdapter implements ChatAdapterInterface {
         if (typeof window.chatPal.destroy === 'function') {
           window.chatPal.destroy();
         }
+      } else if (this.config.provider === 'websocket' && this.wsConnection) {
+        // Fermer la connexion WebSocket
+        this.wsConnection.close();
+        this.wsConnection = undefined;
       }
 
       this.connected = false;

@@ -2,6 +2,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Bell } from 'lucide-react';
+import { wsService } from '@/services/websocketService';
 
 type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
@@ -49,6 +50,32 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     }
   }, []);
+  
+  // Connect to WebSocket for real-time notifications
+  useEffect(() => {
+    // Only connect if notifications are enabled
+    if (notificationsEnabled) {
+      wsService.connect().then(connected => {
+        if (connected) {
+          console.log("Connected to WebSocket for system notifications");
+        }
+      });
+      
+      // Register for system notifications
+      const unregister = wsService.on('system_notification', (data) => {
+        addNotification(
+          data.title || 'Notification système',
+          data.message,
+          data.type || 'info'
+        );
+      });
+      
+      // Clean up
+      return () => {
+        unregister();
+      };
+    }
+  }, [notificationsEnabled]);
 
   const addNotification = (title: string, message: string, type: NotificationType = 'info') => {
     const newNotification: Notification = {

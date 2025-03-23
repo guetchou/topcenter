@@ -1,14 +1,10 @@
 
-import { useState, useEffect, useRef } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2 } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { ChatMessage } from "../ChatMessage";
-import { ChatToolbar } from "../ChatToolbar";
+import { useRef, useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { SendHorizonal, Wifi } from "lucide-react";
+import { ChatMessage } from "@/components/ChatMessage";
+import { cn } from "@/lib/utils";
 import { MessageType } from "@/types/chat";
 
 interface ChatInterfaceProps {
@@ -19,6 +15,7 @@ interface ChatInterfaceProps {
   isTyping: boolean;
   queuePosition: number;
   isConnectedToAgent: boolean;
+  isWebSocket?: boolean;
 }
 
 export const ChatInterface = ({
@@ -28,53 +25,29 @@ export const ChatInterface = ({
   handleSendMessage,
   isTyping,
   queuePosition,
-  isConnectedToAgent
+  isConnectedToAgent,
+  isWebSocket = false
 }: ChatInterfaceProps) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (isConnectedToAgent) {
+      inputRef.current?.focus();
     }
-  }, [messages]);
-
-  const handleAttachFile = () => {
-    toast({
-      title: "Pièce jointe",
-      description: "La fonctionnalité d'attachement de fichiers sera bientôt disponible.",
-    });
-  };
-
-  const handleVoiceMessage = () => {
-    toast({
-      title: "Message vocal",
-      description: "La fonctionnalité de messages vocaux sera bientôt disponible.",
-    });
-  };
-
-  const downloadHistory = () => {
-    const history = messages
-      .map((msg) => 
-        `[${format(msg.timestamp, 'dd/MM/yyyy HH:mm', { locale: fr })}] ${msg.sender}: ${msg.text}`
-      )
-      .join('\n');
-    
-    const blob = new Blob([history], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chat-history-${format(new Date(), 'dd-MM-yyyy')}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
+  }, [isConnectedToAgent]);
 
   return (
-    <>
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+    <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
           {messages.map((message) => (
             <ChatMessage
@@ -84,34 +57,66 @@ export const ChatInterface = ({
               timestamp={message.timestamp}
             />
           ))}
+
           {isTyping && (
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Agent est en train d'écrire...
+            <div className="flex w-full max-w-md">
+              <div className="bg-secondary text-secondary-foreground rounded-lg px-4 py-2">
+                <div className="flex space-x-1 items-center h-6">
+                  <div className="w-2 h-2 rounded-full bg-current animate-bounce"></div>
+                  <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "0.2s" }}></div>
+                  <div className="w-2 h-2 rounded-full bg-current animate-bounce" style={{ animationDelay: "0.4s" }}></div>
+                </div>
+              </div>
             </div>
           )}
+
+          <div ref={messagesEndRef} />
         </div>
-      </ScrollArea>
+      </div>
 
-      <ChatToolbar
-        newMessage={newMessage}
-        setNewMessage={setNewMessage}
-        handleSendMessage={handleSendMessage}
-        handleAttachFile={handleAttachFile}
-        handleVoiceMessage={handleVoiceMessage}
-      />
+      {queuePosition > 0 && !isConnectedToAgent && !isWebSocket ? (
+        <div className="p-4 bg-amber-50 border-t text-center">
+          <p className="text-sm text-amber-800">
+            Vous êtes en file d'attente ({queuePosition} {queuePosition === 1 ? "personne" : "personnes"} avant vous)
+          </p>
+        </div>
+      ) : isWebSocket && !isConnectedToAgent ? (
+        <div className="p-4 bg-blue-50 border-t text-center flex items-center justify-center gap-2">
+          <Wifi className="w-4 h-4 text-blue-600 animate-pulse" />
+          <p className="text-sm text-blue-800">
+            Connexion au chat en temps réel en cours...
+          </p>
+        </div>
+      ) : null}
 
-      {messages.length > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={downloadHistory}
-          className="mx-4 mb-2 text-xs"
+      <div className="p-3 border-t">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendMessage();
+          }}
+          className="flex gap-2"
         >
-          <Download className="w-3 h-3 mr-1" />
-          Télécharger l'historique
-        </Button>
-      )}
-    </>
+          <Input
+            ref={inputRef}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Écrivez votre message..."
+            className="flex-1"
+            disabled={!isConnectedToAgent && !isWebSocket}
+          />
+          <Button
+            type="submit"
+            disabled={!newMessage.trim() || (!isConnectedToAgent && !isWebSocket)}
+            className={cn(
+              "transition-all",
+              newMessage.trim() && (isConnectedToAgent || isWebSocket) ? "opacity-100" : "opacity-50"
+            )}
+          >
+            <SendHorizonal className="w-4 h-4" />
+          </Button>
+        </form>
+      </div>
+    </div>
   );
 };

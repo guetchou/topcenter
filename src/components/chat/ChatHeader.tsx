@@ -1,50 +1,101 @@
 
-import React from "react";
-import { X } from "lucide-react";
+import { X, Bot, User, Settings, Wifi } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { ModelSelector } from "./ModelSelector";
+import { cn } from "@/lib/utils";
 
-export interface ChatHeaderProps {
+interface ChatHeaderProps {
   selectedModel: string;
-  setSelectedModel: React.Dispatch<React.SetStateAction<string>>;
+  setSelectedModel: (model: string) => void;
+  isConnectedToAgent: boolean;
+  queuePosition: number;
+  useChatterPal: boolean;
+  useWebSocket?: boolean;
   onClose: () => void;
-  activeTab?: string;
-  isConnectedToAgent?: boolean;
-  queuePosition?: number;
-  useChatterPal?: boolean;
 }
 
 export const ChatHeader = ({
   selectedModel,
   setSelectedModel,
-  onClose,
-  activeTab,
   isConnectedToAgent,
   queuePosition,
-  useChatterPal
+  useChatterPal,
+  useWebSocket = false,
+  onClose
 }: ChatHeaderProps) => {
+  const isWaiting = queuePosition > 0 && !isConnectedToAgent;
+  
   return (
-    <div className="flex items-center justify-between p-4 border-b">
+    <div className="p-3 border-b flex items-center justify-between bg-gradient-to-r from-muted/50 to-white">
       <div className="flex items-center gap-2">
-        <h3 className="font-semibold">
-          {activeTab === "ai" ? "Assistant IA" : "Chat en direct"}
-        </h3>
-        {activeTab === "ai" && (
-          <ModelSelector
-            selectedModel={selectedModel}
-            onModelChange={setSelectedModel}
-          />
+        {useChatterPal ? (
+          <>
+            <Bot size={18} className="text-primary animate-pulse" />
+            <span className="font-medium">ChatterPal</span>
+          </>
+        ) : useWebSocket ? (
+          <>
+            <Wifi size={18} className={cn(
+              isConnectedToAgent ? "text-green-500" : "text-orange-500",
+              "animate-pulse"
+            )} />
+            <span className="font-medium">
+              {isConnectedToAgent 
+                ? "Chat en temps réel" 
+                : "Connexion en cours..."}
+            </span>
+          </>
+        ) : (
+          <>
+            <User size={18} />
+            <span className="font-medium">
+              {isConnectedToAgent ? "Agent connecté" : isWaiting 
+                ? `En attente (#${queuePosition})` 
+                : "Support client"}
+            </span>
+          </>
         )}
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="rounded-full"
-        onClick={onClose}
-      >
-        <X className="h-4 w-4" />
-        <span className="sr-only">Fermer</span>
-      </Button>
+
+      <div className="flex items-center gap-2">
+        {useChatterPal && (
+          <ModelSelector
+            models={[
+              { id: "gemini", name: "Gemini" },
+              { id: "perplexity", name: "Perplexity" },
+              { id: "llama", name: "Llama 3" }
+            ]}
+            selectedModel={selectedModel}
+            onSelectModel={setSelectedModel}
+          />
+        )}
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <Settings size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>
+              Options de chat
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              Télécharger historique
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X size={18} />
+        </Button>
+      </div>
     </div>
   );
 };

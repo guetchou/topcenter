@@ -54,23 +54,23 @@ export type ChatAction =
   | { type: 'CREATE_SESSION'; session: ChatSession }
   | { type: 'DELETE_SESSION'; chatId: string };
 
-// Interface MessageType compatible with Message
+// Interface MessageType fully compatible with Message
 export interface MessageType {
   id: string;
   text: string;
   isUser: boolean;
   timestamp: Date;
   status?: 'sending' | 'sent' | 'error';
-  sender: 'user' | 'agent';
+  sender: 'user' | 'agent' | 'assistant' | 'system';
 }
 
-// Declare global interface for ChatPal without duplicate modifiers
+// Declare global interface for ChatPal
 declare global {
   interface Window {
     chatPal?: {
       sendMessage: (message: string) => void;
       destroy: () => void;
     };
-    ChatPal?: new (config: any) => any;
+    ChatPal?: any;
   }
 }
