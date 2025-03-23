@@ -9,16 +9,10 @@ import { ChatToolbar } from "../ChatToolbar";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "agent";
-  timestamp: Date;
-}
+import { MessageType } from "@/types/chat";
 
 interface ChatInterfaceProps {
-  messages: Message[];
+  messages: MessageType[];
   newMessage: string;
   setNewMessage: (message: string) => void;
   handleSendMessage: () => void;
@@ -63,7 +57,7 @@ export const ChatInterface = ({
   const downloadHistory = () => {
     const history = messages
       .map((msg) => 
-        `[${format(msg.timestamp, 'dd/MM/yyyy HH:mm', { locale: fr })}] ${msg.sender}: ${msg.content}`
+        `[${format(msg.timestamp, 'dd/MM/yyyy HH:mm', { locale: fr })}] ${msg.sender}: ${msg.text}`
       )
       .join('\n');
     
@@ -85,7 +79,7 @@ export const ChatInterface = ({
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
-              content={message.content}
+              content={message.text}
               sender={message.sender}
               timestamp={message.timestamp}
             />

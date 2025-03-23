@@ -7,9 +7,11 @@ import { v4 as uuidv4 } from 'uuid';
 export const useChatMessages = (useAdapter = false) => {
   const [messages, setMessages] = useState<MessageType[]>([
     {
+      id: uuidv4(),
       text: 'Bienvenue chez TopCenter ! Comment puis-je vous aider aujourd\'hui ?',
       isUser: false,
-      timestamp: new Date()
+      timestamp: new Date(),
+      sender: 'agent'
     }
   ]);
   const [newMessage, setNewMessage] = useState('');
@@ -28,10 +30,12 @@ export const useChatMessages = (useAdapter = false) => {
   useEffect(() => {
     if (useAdapter && adapterMessages.length > 0) {
       const convertedMessages = adapterMessages.map((msg: Message): MessageType => ({
+        id: msg.id,
         text: msg.content,
         isUser: msg.sender === 'user',
         timestamp: new Date(msg.timestamp),
-        status: msg.status
+        status: msg.status,
+        sender: msg.sender === 'user' ? 'user' : 'agent'
       }));
       
       setMessages(convertedMessages);
@@ -41,10 +45,10 @@ export const useChatMessages = (useAdapter = false) => {
   // Fonction utilitaire pour convertir MessageType en Message
   const convertToMessage = (messageType: MessageType): Message => {
     return {
-      id: uuidv4(),
+      id: messageType.id,
       content: messageType.text,
-      sender: messageType.isUser ? 'user' : 'assistant',
-      timestamp: messageType.timestamp?.getTime() || Date.now(),
+      sender: messageType.sender,
+      timestamp: messageType.timestamp.getTime(),
       status: messageType.status
     };
   };
@@ -53,10 +57,12 @@ export const useChatMessages = (useAdapter = false) => {
     if (!newMessage.trim()) return;
 
     const userMessageObj: MessageType = {
+      id: uuidv4(),
       text: newMessage,
       isUser: true,
       timestamp: new Date(),
-      status: 'sending'
+      status: 'sending',
+      sender: 'user'
     };
 
     // Ajouter le message de l'utilisateur aux messages
@@ -73,9 +79,11 @@ export const useChatMessages = (useAdapter = false) => {
         // Simulation d'une réponse pour le mode sans adaptateur
         setTimeout(() => {
           const botReply: MessageType = {
+            id: uuidv4(),
             text: `Je suis là pour vous aider concernant "${newMessage}". Comment puis-je vous assister davantage ?`,
             isUser: false,
-            timestamp: new Date()
+            timestamp: new Date(),
+            sender: 'agent'
           };
           
           setMessages(prevMessages => [...prevMessages, botReply]);

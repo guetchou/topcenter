@@ -3,7 +3,7 @@
 export interface Message {
   id: string;
   content: string;
-  sender: 'user' | 'assistant' | 'system';
+  sender: 'user' | 'assistant' | 'system' | 'agent';
   timestamp: number;
   status?: 'sending' | 'sent' | 'error';
   attachments?: Attachment[];
@@ -54,15 +54,17 @@ export type ChatAction =
   | { type: 'CREATE_SESSION'; session: ChatSession }
   | { type: 'DELETE_SESSION'; chatId: string };
 
-// Interface MessageType compatible avec Message pour faciliter la transition
+// Interface MessageType compatible with Message
 export interface MessageType {
+  id: string;
   text: string;
   isUser: boolean;
-  timestamp?: Date;
+  timestamp: Date;
   status?: 'sending' | 'sent' | 'error';
+  sender: 'user' | 'agent';
 }
 
-// Déclaration globale pour ChatPal sans duplication de déclaration
+// Declare global interface for ChatPal without duplicate modifiers
 declare global {
   interface Window {
     chatPal?: {
