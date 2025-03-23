@@ -1,27 +1,48 @@
 
-import { authenticationService } from "./authenticationService";
-import { userService } from "./userService";
-import { adminService } from "./adminService";
-import { AuthServiceInterface } from "./types";
-import { authStoreService } from "./authStore";
+import { authenticationService } from './authenticationService';
+import { userService } from './userService';
+import { adminService } from './adminService';
 
-// Combiner tous les services d'authentification en un seul service exporté
-export const authService: AuthServiceInterface = {
-  checkUser: userService.checkUser,
-  login: authenticationService.login,
-  loginWithGoogle: authenticationService.loginWithGoogle,
-  register: authenticationService.register,
-  resetPassword: authenticationService.resetPassword,
-  updatePassword: authenticationService.updatePassword,
-  logout: authenticationService.logout,
-  impersonateUser: adminService.impersonateUser,
-  stopImpersonation: adminService.stopImpersonation,
-  promoteToSuperAdmin: adminService.promoteToSuperAdmin
+export const authService = {
+  // Authentication methods
+  login: async (email: string, password: string, devMode = false) => {
+    return authenticationService.login(email, password, devMode);
+  },
+  loginWithGoogle: async () => {
+    return authenticationService.loginWithGoogle();
+  },
+  register: async (email: string, password: string, fullName: string) => {
+    return authenticationService.register(email, password, fullName);
+  },
+  logout: async () => {
+    return authenticationService.logout();
+  },
+  resetPassword: async (email: string) => {
+    return authenticationService.resetPassword(email);
+  },
+  checkUser: async () => {
+    return authenticationService.checkUser();
+  },
+  
+  // User methods
+  updateUserProfile: async (updates: any) => {
+    return userService.updateProfile(updates);
+  },
+  
+  // Admin methods
+  getUsers: async () => {
+    return adminService.getUsers();
+  },
+  createUser: async (userData: any) => {
+    return adminService.createUser(userData);
+  },
+  deleteUser: async (userId: string) => {
+    return adminService.deleteUser(userId);
+  },
+  impersonateUser: async (userId: string) => {
+    return adminService.impersonateUser(userId);
+  },
+  stopImpersonation: async () => {
+    return adminService.stopImpersonation();
+  }
 };
-
-// Vérifier l'état d'authentification au chargement
-window.addEventListener('load', () => {
-  userService.checkUser();
-});
-
-export default authService;

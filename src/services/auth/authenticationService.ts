@@ -1,190 +1,135 @@
 
-import api from "../api";
-import { toast } from "sonner";
-import { AuthUser } from "@/types/auth";
-import { authStoreService } from "./authStore";
+import { authStore } from './authStore';
+import { authModule } from '@/integrations/api/modules/authModule';
 
-// Fonction utilitaire pour vérifier la disponibilité du serveur
-const verifyServerAvailable = async () => {
-  if (!navigator.onLine) {
-    throw new Error("Vous êtes hors ligne. Veuillez vous reconnecter à Internet pour vous connecter.");
-  }
-  
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
-    
-    const response = await fetch('/lovable-uploads/logo-topcenter.png', { 
-      method: 'HEAD',
-      signal: controller.signal
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!response.ok) {
-      throw new Error("Impossible de se connecter au serveur. Veuillez réessayer plus tard.");
-    }
-    
-    return true;
-  } catch (error) {
-    console.error("Server availability check failed:", error);
-    throw new Error("Le service est temporairement indisponible. Veuillez réessayer plus tard.");
-  }
+// Helper for development mode
+const isDevelopment = () => {
+  return window.location.hostname === 'localhost' || 
+         window.location.hostname === '127.0.0.1' || 
+         window.location.hostname.includes('vercel.app');
 };
 
-// Service pour les opérations d'authentification avec NestJS et JWT
 export const authenticationService = {
-  // Connexion avec email et mot de passe
-  login: async (email: string, password: string) => {
+  login: async (email: string, password: string, devMode = false) => {
+    authStore.setState({ isLoading: true });
+    
     try {
-      // Vérifier d'abord si le serveur est accessible
-      await verifyServerAvailable();
+      // Si on est en mode développement et devMode est true, on utilise le mode dev
+      const { data, error } = await authModule.signIn({ email, password }, devMode && isDevelopment());
       
-      // Procéder à la connexion
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+      if (error) throw error;
       
-      // Stocker le token dans le localStorage
-      localStorage.setItem('auth_token', token);
+      if (data && data.user) {
+        authStore.setState({ 
+          user: data.user,
+          isAuthenticated: true,
+          isLoading: false
+        });
+        return data.user;
+      }
       
-      // Mettre à jour le store avec les informations utilisateur
-      authStoreService.setUser(user);
-      
-      return user;
+      throw new Error('Erreur de connexion: données utilisateur manquantes');
     } catch (error: any) {
-      console.error("Erreur de connexion:", error);
-      
-      // Message d'erreur plus informatif
-      if (error.response?.status === 503) {
-        throw new Error("Le service est temporairement indisponible. Veuillez réessayer plus tard.");
-      } else if (error.code === "ERR_NETWORK" || error.message.includes("fetch")) {
-        throw new Error("Problème de connexion au serveur. Vérifiez votre connexion Internet ou réessayez plus tard.");
-      } else if (error.response?.status === 401) {
-        throw new Error("Email ou mot de passe incorrect.");
-      } else {
-        throw error;
-      }
+      authStore.setState({ isLoading: false });
+      throw error;
     }
   },
-
-  // Connexion avec Google OAuth
+  
   loginWithGoogle: async () => {
+    authStore.setState({ isLoading: true });
+    
     try {
-      // Vérifier d'abord si le serveur est accessible
-      await verifyServerAvailable();
+      // Rediriger vers l'auth Google via Supabase ou autre provider
+      // Cette partie dépend de votre implémentation spécifique
       
-      window.location.href = `${api.defaults.baseURL}/auth/google`;
-    } catch (error) {
-      console.error("Erreur de connexion avec Google:", error);
+      // Pour simulation, on va juste lancer une erreur
+      throw new Error('Google login not implemented yet');
+    } catch (error: any) {
+      authStore.setState({ isLoading: false });
       throw error;
     }
   },
-
-  // Inscription d'un nouvel utilisateur
+  
   register: async (email: string, password: string, fullName: string) => {
+    authStore.setState({ isLoading: true });
+    
     try {
-      if (!navigator.onLine) {
-        throw new Error("Vous êtes hors ligne. Veuillez vous reconnecter à Internet.");
-      }
+      const { data, error } = await authModule.signUp({ email, password });
       
-      const response = await api.post('/auth/register', {
-        email,
-        password,
-        fullName
-      });
+      if (error) throw error;
       
-      const { token, user } = response.data;
-      
-      // Stocker le token dans le localStorage
-      localStorage.setItem('auth_token', token);
-      
-      // Mettre à jour le store avec les informations utilisateur
-      authStoreService.setUser(user);
-      
-      return user;
-    } catch (error) {
-      console.error("Erreur d'inscription:", error);
+      authStore.setState({ isLoading: false });
+      return data;
+    } catch (error: any) {
+      authStore.setState({ isLoading: false });
       throw error;
     }
   },
-
-  // Demande de réinitialisation de mot de passe
+  
+  logout: async () => {
+    authStore.setState({ isLoading: true });
+    
+    try {
+      const { error } = await authModule.signOut();
+      
+      if (error) throw error;
+      
+      authStore.setState({ 
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        impersonatedUser: null
+      });
+    } catch (error: any) {
+      authStore.setState({ isLoading: false });
+      throw error;
+    }
+  },
+  
   resetPassword: async (email: string) => {
     try {
-      if (!navigator.onLine) {
-        throw new Error("Vous êtes hors ligne. Veuillez vous reconnecter à Internet.");
-      }
+      const { data, error } = await authModule.resetPasswordForEmail(email);
       
-      await api.post('/auth/reset-password', { email });
-      toast.success("Instructions de réinitialisation envoyées à votre email");
-    } catch (error) {
-      console.error("Erreur de réinitialisation de mot de passe:", error);
+      if (error) throw error;
+      
+      return data;
+    } catch (error: any) {
       throw error;
     }
   },
-
-  // Mise à jour du mot de passe
-  updatePassword: async (password: string) => {
-    try {
-      if (!navigator.onLine) {
-        throw new Error("Vous êtes hors ligne. Veuillez vous reconnecter à Internet.");
-      }
-      
-      await api.post('/auth/update-password', { password });
-      toast.success("Mot de passe mis à jour avec succès");
-    } catch (error) {
-      console.error("Erreur de mise à jour du mot de passe:", error);
-      throw error;
+  
+  checkUser: async () => {
+    // Ne pas afficher le loader pour cette vérification silencieuse
+    const currentState = authStore.getState();
+    
+    if (currentState.isLoading || currentState.isAuthenticated) {
+      return;
     }
-  },
-
-  // Déconnexion de l'utilisateur
-  logout: async () => {
+    
+    authStore.setState({ isLoading: true });
+    
     try {
-      if (navigator.onLine) {
-        await api.post('/auth/logout');
-      }
-      localStorage.removeItem('auth_token');
-      authStoreService.resetAuth();
-      toast.success("Déconnexion réussie");
-    } catch (error) {
-      console.error("Erreur lors de la déconnexion:", error);
-      localStorage.removeItem('auth_token');
-      authStoreService.resetAuth();
-    }
-  },
-
-  // Vérification du token
-  checkAuthToken: async (): Promise<AuthUser | null> => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return null;
+      const { data, error } = await authModule.getUser();
       
-      if (!navigator.onLine) {
-        // En mode hors ligne, on pourrait implémenter une logique pour
-        // permettre à l'utilisateur de continuer à utiliser l'application
-        // avec des fonctionnalités limitées
-        return null;
+      if (error) {
+        console.error('Error checking user:', error);
+        authStore.setState({ isLoading: false });
+        return;
       }
       
-      // Vérifier si le serveur est accessible avant de faire la requête
-      try {
-        await verifyServerAvailable();
-      } catch (error) {
-        // Si le serveur n'est pas accessible, on retourne null
-        // mais on ne supprime pas le token pour permettre une reconnexion future
-        return null;
+      if (data && data.user) {
+        authStore.setState({ 
+          user: data.user,
+          isAuthenticated: true,
+          isLoading: false
+        });
+        return data.user;
+      } else {
+        authStore.setState({ isLoading: false });
       }
-      
-      const response = await api.get('/auth/me');
-      return response.data.user;
-    } catch (error) {
-      console.error("Error checking auth token:", error);
-      // En cas d'erreur (token invalide), on supprime le token
-      if (error.response?.status === 401) {
-        localStorage.removeItem('auth_token');
-      }
-      return null;
+    } catch (error: any) {
+      console.error('Error checking user:', error);
+      authStore.setState({ isLoading: false });
     }
   }
 };

@@ -12,7 +12,8 @@ export const useAuth = (): {
   isAuthenticated: boolean;
   isLoading: boolean;
   impersonatedUser: AuthUser | null;
-} & AuthActions => {
+  login: (email: string, password: string, devMode?: boolean) => Promise<void>;
+} & Omit<AuthActions, 'login'> => {
   // Get the store state
   const { 
     user, 
@@ -36,6 +37,15 @@ export const useAuth = (): {
     checkUserAuth();
   }, []);
   
+  // Override login to support dev mode
+  const login = async (email: string, password: string, devMode = false) => {
+    try {
+      await authService.login(email, password, devMode);
+    } catch (error) {
+      throw error;
+    }
+  };
+  
   // Combine state and actions
   return {
     // State
@@ -45,6 +55,7 @@ export const useAuth = (): {
     impersonatedUser,
     
     // Actions
-    ...authService
+    login,
+    ...authService,
   };
 };

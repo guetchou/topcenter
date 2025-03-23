@@ -2,14 +2,35 @@
 import { processResponse } from '../utils';
 import api from '@/services/api';
 
+// Environment detection helper
+const isDevelopment = () => {
+  return window.location.hostname === 'localhost' || 
+         window.location.hostname === '127.0.0.1' || 
+         window.location.hostname.includes('vercel.app');
+};
+
 // Module pour l'authentification
 export const authModule = {
   signUp: async (credentials: { email: string; password: string }) => {
     return processResponse(api.post('/auth/register', credentials));
   },
   
-  signIn: async (credentials: { email: string; password: string }) => {
+  signIn: async (credentials: { email: string; password: string }, devMode = false) => {
     try {
+      // En mode développement, on peut simuler une connexion réussie
+      if (devMode && isDevelopment()) {
+        const mockResponse = {
+          token: 'dev-mode-token',
+          user: {
+            id: 1,
+            email: credentials.email,
+            fullName: 'Utilisateur Dev'
+          }
+        };
+        localStorage.setItem('auth_token', mockResponse.token);
+        return { data: mockResponse, error: null };
+      }
+      
       const response = await api.post('/auth/login', credentials);
       if (response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
@@ -37,6 +58,22 @@ export const authModule = {
   
   getSession: async () => {
     try {
+      // En mode développement, on peut simuler une session active
+      if (isDevelopment() && localStorage.getItem('auth_token') === 'dev-mode-token') {
+        return { 
+          data: { 
+            session: {
+              user: {
+                id: 1,
+                email: 'admin@topcenter.app',
+                fullName: 'Utilisateur Dev'
+              }
+            } 
+          }, 
+          error: null 
+        };
+      }
+      
       const token = localStorage.getItem('auth_token');
       if (!token) {
         return { data: { session: null }, error: null };
@@ -51,6 +88,21 @@ export const authModule = {
   
   getUser: async () => {
     try {
+      // En mode développement, on peut simuler un utilisateur connecté
+      if (isDevelopment() && localStorage.getItem('auth_token') === 'dev-mode-token') {
+        return { 
+          data: { 
+            user: {
+              id: 1,
+              email: 'admin@topcenter.app',
+              fullName: 'Utilisateur Dev',
+              role: 'admin'
+            } 
+          }, 
+          error: null 
+        };
+      }
+      
       const token = localStorage.getItem('auth_token');
       if (!token) {
         return { data: { user: null }, error: null };

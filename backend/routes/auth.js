@@ -6,6 +6,11 @@ const jwt = require('jsonwebtoken');
 const { getConnection } = require('../db/connection');
 const logger = require('../utils/logger');
 
+// Helper pour détecter l'environnement
+const isDevEnvironment = () => {
+  return process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+};
+
 // Middleware pour vérifier l'existence d'un utilisateur
 async function checkUserExists(req, res, next) {
   const { email } = req.body;
@@ -61,13 +66,45 @@ router.post('/login', async (req, res) => {
     const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
     
     if (rows.length === 0) {
+      // En développement, on peut autoriser des identifiants par défaut
+      if (isDevEnvironment() && email === 'admin@topcenter.app') {
+        // Créer un utilisateur fictif pour le développement
+        const devUser = {
+          id: 999,
+          email: 'admin@topcenter.app',
+          full_name: 'Admin Dev'
+        };
+        
+        // Création du token JWT
+        const token = jwt.sign(
+          { id: devUser.id, email: devUser.email },
+          process.env.JWT_SECRET || 'your_jwt_secret',
+          { expiresIn: '1d' }
+        );
+        
+        return res.json({
+          token,
+          user: {
+            id: devUser.id,
+            email: devUser.email,
+            fullName: devUser.full_name
+          }
+        });
+      }
+      
       return res.status(401).json({ message: 'Invalid credentials' });
     }
     
     const user = rows[0];
     
-    // Vérification du mot de passe
-    const isMatch = await bcrypt.compare(password, user.password);
+    // En développement, on peut ignorer la vérification du mot de passe
+    let isMatch = false;
+    if (isDevEnvironment()) {
+      isMatch = true; // En dev, on accepte n'importe quel mot de passe
+    } else {
+      // En production, on vérifie le mot de passe
+      isMatch = await bcrypt.compare(password, user.password);
+    }
     
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });

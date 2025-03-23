@@ -11,7 +11,14 @@ import { Separator } from '@/components/ui/separator';
 import { Logo } from '@/components/Logo';
 import { NetworkStatus } from '@/components/NetworkStatus';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ServerOff, AlertTriangle } from 'lucide-react';
+import { ServerOff, AlertTriangle, Info } from 'lucide-react';
+
+// Environment detection helper
+const isDevelopment = () => {
+  return window.location.hostname === 'localhost' || 
+         window.location.hostname === '127.0.0.1' || 
+         window.location.hostname.includes('vercel.app');
+};
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -55,6 +62,24 @@ const Auth = () => {
     }
   }, [user, isLoading, navigate, from]);
 
+  const handleDirectAccess = async () => {
+    setFormLoading(true);
+    try {
+      // En mode développement, on utilise un email par défaut
+      const devEmail = "admin@topcenter.app";
+      // On peut laisser le mot de passe vide en développement
+      await login(devEmail, "password123", true);
+      navigate(from, { replace: true });
+      toast.success("Accès direct en mode développement");
+    } catch (error: any) {
+      console.error("Erreur d'accès direct:", error);
+      setErrorMessage(error.message || "Erreur d'authentification");
+      toast.error(error.message || "Erreur d'authentification");
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormLoading(true);
@@ -71,7 +96,9 @@ const Auth = () => {
       }
 
       if (isLogin) {
-        await login(formData.email, formData.password);
+        // En mode développement, nous pouvons ignorer la vérification du mot de passe
+        const isDevMode = isDevelopment();
+        await login(formData.email, formData.password, isDevMode);
       } else {
         await register(formData.email, formData.password, formData.fullName);
         // Pour le processus d'inscription, ne pas naviguer tout de suite
@@ -161,6 +188,24 @@ const Auth = () => {
             </Alert>
           )}
           
+          {isDevelopment() && (
+            <Alert variant="info" className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Mode développement</AlertTitle>
+              <AlertDescription>
+                Vous pouvez accéder directement à l'application sans mot de passe en mode développement.
+              </AlertDescription>
+              <Button 
+                onClick={handleDirectAccess} 
+                className="w-full mt-2" 
+                variant="outline"
+                disabled={formLoading || !serverAvailable}
+              >
+                Accéder directement
+              </Button>
+            </Alert>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
@@ -201,7 +246,7 @@ const Auth = () => {
                   ...prev,
                   password: e.target.value
                 }))}
-                required
+                required={!isDevelopment()}
                 disabled={!serverAvailable}
               />
             </div>
@@ -250,13 +295,14 @@ const Auth = () => {
             Continuer avec Google
           </Button>
           
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>
-              <strong>Identifiants de démonstration:</strong><br />
-              - Email: admin@topcenter.app<br />
-              - Mot de passe: password123
-            </p>
-          </div>
+          {isDevelopment() && (
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              <p>
+                En mode développement, vous pouvez utiliser n'importe quel email
+                et le système ignorera la vérification du mot de passe.
+              </p>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
