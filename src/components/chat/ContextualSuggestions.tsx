@@ -26,9 +26,15 @@ export const ContextualSuggestions = ({
   useEffect(() => {
     // Seulement générer des suggestions si le message actuel a une certaine longueur
     if (currentMessage && currentMessage.length > 3) {
+      // Convertir les messages pour la compatibilité avec le format attendu par generateContextualSuggestions
+      const formattedMessages = messages.map(msg => ({
+        text: msg.text,
+        isUser: msg.isUser
+      }));
+      
       const contextualSuggestions = generateContextualSuggestions(
         currentMessage,
-        messages
+        formattedMessages
       );
       setSuggestions(contextualSuggestions);
       setIsVisible(contextualSuggestions.length > 0);
