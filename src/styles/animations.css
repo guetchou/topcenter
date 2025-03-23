@@ -83,6 +83,37 @@
   }
 }
 
+@keyframes fade-slide {
+  0% {
+    opacity: 0;
+    transform: scale(1.05) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes zoom-fade {
+  0% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ken-burns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
 .animate-bounce-subtle {
   animation: bounce-subtle 3s ease-in-out infinite;
 }
@@ -115,6 +146,18 @@
   background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite linear;
+}
+
+.animate-fade-slide {
+  animation: fade-slide 0.8s forwards;
+}
+
+.animate-zoom-fade {
+  animation: zoom-fade 0.8s forwards;
+}
+
+.animate-ken-burns {
+  animation: ken-burns 7s ease-in-out infinite alternate;
 }
 
 .hover-lift {

@@ -20,7 +20,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate 
 
   return (
     <Card 
-      className="hover-lift overflow-hidden cursor-pointer flex flex-col h-full group"
+      className="hover-lift overflow-hidden cursor-pointer flex flex-col h-full group shadow-md border-border/40"
       onClick={() => navigate(`/blog/${article.id}`)}
     >
       <div className="flex flex-col h-full">
@@ -28,7 +28,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate 
           <img
             src={imageUrl}
             alt={article.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
@@ -44,7 +44,7 @@ export const BlogPostCard: React.FC<BlogPostCardProps> = ({ article, formatDate 
             {article.excerpt || article.content.substring(0, 150) + '...'}
           </p>
           <div className="flex items-center justify-between mt-auto">
-            <Badge variant="outline">{article.category}</Badge>
+            <Badge variant="outline" className="animate-pulse-slow">{article.category}</Badge>
             <Button variant="ghost" size="sm" className="group/btn">
               Lire plus <ArrowRight className="ml-1 w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
             </Button>

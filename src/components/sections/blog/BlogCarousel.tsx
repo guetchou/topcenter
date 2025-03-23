@@ -6,7 +6,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BlogPost } from "@/types/blog";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 import { cn } from "@/lib/utils";
-import { chatAnimations } from "@/utils/chatAnimations";
 
 interface BlogCarouselProps {
   articles: BlogPost[];
@@ -97,7 +96,7 @@ export const BlogCarousel: React.FC<BlogCarouselProps> = ({
               >
                 <div className={cn(
                   "h-full transform transition-transform duration-500",
-                  activeIndex === index && chatAnimations.popIn
+                  activeIndex === index && "animate-pop-in"
                 )}>
                   <BlogPostCard 
                     article={article} 

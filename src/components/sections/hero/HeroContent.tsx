@@ -14,21 +14,22 @@ export const HeroContent = ({
   onQuoteRequest
 }: HeroContentProps) => {
   return (
-    <div>
-      <h1 className="text-4xl md:text-5xl font-bold mb-6 animate-fade-in">
+    <div className="animate-fade-slide">
+      <h1 className="text-4xl md:text-5xl font-bold mb-6">
         Solutions de Centre d'Appels Professionnelles au Congo
       </h1>
-      <p className="text-lg md:text-xl mb-8 text-white/90 animate-fade-in" style={{ animationDelay: "0.2s" }}>
+      <p className="text-lg md:text-xl mb-8 text-white/90" style={{ animationDelay: "0.2s" }}>
         Améliorez votre relation client avec TopCenter, votre partenaire en solutions innovantes
         et services personnalisés
       </p>
       
-      <div className="flex flex-col sm:flex-row gap-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center" style={{ animationDelay: "0.4s" }}>
         <Button
           size="lg"
           variant="secondary"
-          className="font-medium group"
+          className="font-medium group animate-pop-in"
           onClick={onCallNow}
+          style={{ animationDelay: "0.6s" }}
         >
           <PhoneCall className="w-4 h-4 mr-2" />
           Démarrer maintenant
@@ -38,8 +39,9 @@ export const HeroContent = ({
         <Button
           size="lg"
           variant="outline"
-          className="bg-transparent text-white border-white hover:bg-white/10"
+          className="bg-transparent text-white border-white hover:bg-white/10 animate-pop-in"
           onClick={onQuoteRequest}
+          style={{ animationDelay: "0.8s" }}
         >
           <Mail className="w-4 h-4 mr-2" />
           Demander un devis
