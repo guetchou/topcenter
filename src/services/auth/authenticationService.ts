@@ -1,5 +1,5 @@
 
-import { authStore } from './authStore';
+import { authStore } from '@/stores/authStore';
 import { authModule } from '@/integrations/api/modules/authModule';
 
 // Helper for development mode
