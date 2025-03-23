@@ -54,7 +54,7 @@ export type ChatAction =
   | { type: 'CREATE_SESSION'; session: ChatSession }
   | { type: 'DELETE_SESSION'; chatId: string };
 
-// Add MessageType interface for component compatibility
+// Interface MessageType compatible avec Message pour faciliter la transition
 export interface MessageType {
   text: string;
   isUser: boolean;
@@ -62,7 +62,7 @@ export interface MessageType {
   status?: 'sending' | 'sent' | 'error';
 }
 
-// Définition de l'interface ChatterPal pour le type global Window
+// Déclaration globale pour ChatPal sans duplication de déclaration
 declare global {
   interface Window {
     chatPal?: {

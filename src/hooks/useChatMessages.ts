@@ -2,6 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { MessageType, Message } from '@/types/chat';
 import { useChatAdapter } from '@/hooks/useChatAdapter';
+import { v4 as uuidv4 } from 'uuid';
 
 export const useChatMessages = (useAdapter = false) => {
   const [messages, setMessages] = useState<MessageType[]>([
@@ -36,6 +37,17 @@ export const useChatMessages = (useAdapter = false) => {
       setMessages(convertedMessages);
     }
   }, [useAdapter, adapterMessages]);
+
+  // Fonction utilitaire pour convertir MessageType en Message
+  const convertToMessage = (messageType: MessageType): Message => {
+    return {
+      id: uuidv4(),
+      content: messageType.text,
+      sender: messageType.isUser ? 'user' : 'assistant',
+      timestamp: messageType.timestamp?.getTime() || Date.now(),
+      status: messageType.status
+    };
+  };
 
   const handleSendMessage = useCallback(async () => {
     if (!newMessage.trim()) return;

@@ -8,12 +8,13 @@ import { ChatterPalInterface } from "./chat/ChatterPalInterface";
 import { ChatHeader } from "./chat/ChatHeader";
 import { ChatToggle } from "./chat/ChatToggle";
 import { useChatMessages } from "../hooks/useChatMessages";
+import { MessageType } from "@/types/chat";
 
 export const LiveChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [useChatterPal, setUseChatterPal] = useState(false);
   const [chatterpalLoaded, setChatterpalLoaded] = useState(false);
-  const [selectedModel, setSelectedModel] = useState("perplexity"); // Add missing state for model
+  const [selectedModel, setSelectedModel] = useState("perplexity");
   const { toast } = useToast();
   const {
     messages,
@@ -54,8 +55,8 @@ export const LiveChat = () => {
       ) : (
         <div className="w-96 h-[32rem] bg-white rounded-lg shadow-xl border animate-fade-in flex flex-col">
           <ChatHeader 
-            selectedModel={selectedModel}  // Add the missing required prop
-            setSelectedModel={setSelectedModel}  // Add the missing required prop
+            selectedModel={selectedModel}
+            setSelectedModel={setSelectedModel}
             isConnectedToAgent={isConnectedToAgent}
             queuePosition={queuePosition}
             useChatterPal={useChatterPal}
@@ -70,7 +71,7 @@ export const LiveChat = () => {
 
           {!useChatterPal ? (
             <ChatInterface 
-              messages={messages}
+              messages={messages as MessageType[]}
               newMessage={newMessage}
               setNewMessage={setNewMessage}
               handleSendMessage={handleSendMessage}
