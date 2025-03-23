@@ -1,103 +1,97 @@
 
-import { useState, useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useState, useCallback, useEffect } from 'react';
+import { MessageType, Message } from '@/types/chat';
+import { useChatAdapter } from '@/hooks/useChatAdapter';
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "agent";
-  timestamp: Date;
-}
-
-export const useChatMessages = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [newMessage, setNewMessage] = useState("");
+export const useChatMessages = (useAdapter = false) => {
+  const [messages, setMessages] = useState<MessageType[]>([
+    {
+      text: 'Bienvenue chez TopCenter ! Comment puis-je vous aider aujourd\'hui ?',
+      isUser: false,
+      timestamp: new Date()
+    }
+  ]);
+  const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [queuePosition, setQueuePosition] = useState(3);
   const [isConnectedToAgent, setIsConnectedToAgent] = useState(false);
-  const { toast } = useToast();
 
-  // Simulate queue position updates
+  // Initialiser l'adaptateur de chat si nécessaire
+  const {
+    messages: adapterMessages,
+    sendMessage: sendAdapterMessage,
+    isLoading
+  } = useChatAdapter(useAdapter ? { provider: 'internal' } : undefined);
+
+  // Convertir les messages de l'adaptateur au format MessageType
   useEffect(() => {
-    if (queuePosition > 0 && !isConnectedToAgent) {
-      const timer = setInterval(() => {
-        setQueuePosition((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            connectToAgent();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 5000);
-      return () => clearInterval(timer);
+    if (useAdapter && adapterMessages.length > 0) {
+      const convertedMessages = adapterMessages.map((msg: Message): MessageType => ({
+        text: msg.content,
+        isUser: msg.sender === 'user',
+        timestamp: new Date(msg.timestamp),
+        status: msg.status
+      }));
+      
+      setMessages(convertedMessages);
     }
-  }, [queuePosition, isConnectedToAgent]);
+  }, [useAdapter, adapterMessages]);
 
-  const playNotificationSound = () => {
-    const audio = new Audio("/notification.mp3");
-    audio.play().catch(() => {
-      console.log("Audio playback failed");
-    });
-  };
-
-  const connectToAgent = () => {
-    setIsConnectedToAgent(true);
-    playNotificationSound();
-    toast({
-      title: "Agent connecté",
-      description: "Un agent est maintenant disponible pour vous aider.",
-    });
-    
-    // Simulate agent first message
-    setTimeout(() => {
-      addMessage({
-        id: Date.now().toString(),
-        content: "Bonjour, je suis Sarah. Comment puis-je vous aider aujourd'hui ?",
-        sender: "agent",
-        timestamp: new Date(),
-      });
-    }, 1000);
-  };
-
-  const addMessage = (message: Message) => {
-    setMessages((prev) => [...prev, message]);
-    playNotificationSound();
-  };
-
-  const getAutoResponse = (message: string): string => {
-    const responses = [
-      "Je comprends votre demande. Pouvez-vous me donner plus de détails ?",
-      "Merci pour votre message. Je vais vous aider avec cela.",
-      "Bien sûr, je peux vous aider avec ça.",
-      "Laissez-moi vérifier cela pour vous.",
-    ];
-    return responses[Math.floor(Math.random() * responses.length)];
-  };
-
-  const handleSendMessage = () => {
+  const handleSendMessage = useCallback(async () => {
     if (!newMessage.trim()) return;
 
-    addMessage({
-      id: Date.now().toString(),
-      content: newMessage,
-      sender: "user",
+    const userMessageObj: MessageType = {
+      text: newMessage,
+      isUser: true,
       timestamp: new Date(),
-    });
+      status: 'sending'
+    };
 
-    setNewMessage("");
+    // Ajouter le message de l'utilisateur aux messages
+    setMessages(prevMessages => [...prevMessages, userMessageObj]);
+    setNewMessage('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      if (useAdapter) {
+        // Utiliser l'adaptateur pour envoyer le message
+        await sendAdapterMessage(newMessage);
+        // La réponse sera ajoutée automatiquement via le callback de l'adaptateur
+      } else {
+        // Simulation d'une réponse pour le mode sans adaptateur
+        setTimeout(() => {
+          const botReply: MessageType = {
+            text: `Je suis là pour vous aider concernant "${newMessage}". Comment puis-je vous assister davantage ?`,
+            isUser: false,
+            timestamp: new Date()
+          };
+          
+          setMessages(prevMessages => [...prevMessages, botReply]);
+          setIsTyping(false);
+          
+          // Simuler une connexion à un agent après quelques messages
+          if (messages.length > 4 && queuePosition > 0) {
+            setQueuePosition(prev => Math.max(0, prev - 1));
+          }
+          
+          if (queuePosition === 0 && !isConnectedToAgent) {
+            setIsConnectedToAgent(true);
+          }
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'envoi du message:', error);
+      
+      // Mettre à jour le statut du message en cas d'erreur
+      setMessages(prevMessages => 
+        prevMessages.map(msg => 
+          msg === userMessageObj ? { ...msg, status: 'error' } : msg
+        )
+      );
+      
       setIsTyping(false);
-      addMessage({
-        id: (Date.now() + 1).toString(),
-        content: getAutoResponse(newMessage),
-        sender: "agent",
-        timestamp: new Date(),
-      });
-    }, 2000);
-  };
+    }
+  }, [newMessage, messages.length, queuePosition, isConnectedToAgent, useAdapter, sendAdapterMessage]);
 
   return {
     messages,

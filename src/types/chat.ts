@@ -61,3 +61,14 @@ export interface MessageType {
   timestamp?: Date;
   status?: 'sending' | 'sent' | 'error';
 }
+
+// Définition de l'interface ChatterPal pour le type global Window
+declare global {
+  interface Window {
+    chatPal?: {
+      sendMessage: (message: string) => void;
+      destroy: () => void;
+    };
+    ChatPal?: new (config: any) => any;
+  }
+}
