@@ -54,7 +54,6 @@ export interface ChatContextState extends ChatState {
 // Déclarer l'interface pour ChatPal dans le namespace global
 declare global {
   interface Window {
-    ChatPal: any;
-    chatPal: any;
+    ChatPal?: any; // Utiliser le point d'interrogation pour rendre la propriété optionnelle
   }
 }

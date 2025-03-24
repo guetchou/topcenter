@@ -2,23 +2,40 @@
 import React, { useState } from 'react';
 import PocketBaseAdminTest from '@/components/admin/PocketBaseAdminTest';
 import PocketBaseCollections from '@/components/admin/PocketBaseCollections';
+import PocketBaseStatus from '@/components/PocketBaseStatus';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { pb, adminLogin } from '@/integrations/pocketbase/client';
+import { pb, adminLogin, checkServerAvailability } from '@/integrations/pocketbase/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ApiErrorBoundary } from '@/components/ApiErrorBoundary';
 
 const PocketBaseDashboard: React.FC = () => {
   const [adminEmail, setAdminEmail] = useState('admin@topcenter.cg');
   const [adminPassword, setAdminPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(pb.authStore.isValid);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await adminLogin(adminEmail, adminPassword);
-    if (result.success) {
-      setIsLoggedIn(true);
+    setIsLoading(true);
+    
+    // Vérifier d'abord la disponibilité du serveur
+    const serverAvailable = await checkServerAvailability();
+    
+    if (!serverAvailable) {
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      const result = await adminLogin(adminEmail, adminPassword);
+      if (result.success) {
+        setIsLoggedIn(true);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -36,8 +53,13 @@ const PocketBaseDashboard: React.FC = () => {
         </p>
       </div>
 
+      {/* Afficher le statut de connexion PocketBase */}
+      <div className="mb-6">
+        <PocketBaseStatus />
+      </div>
+
       {isLoggedIn ? (
-        <>
+        <ApiErrorBoundary>
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-xl font-semibold">
@@ -145,7 +167,7 @@ const PocketBaseDashboard: React.FC = () => {
               </Card>
             </TabsContent>
           </Tabs>
-        </>
+        </ApiErrorBoundary>
       ) : (
         <div className="max-w-md mx-auto">
           <Card>
@@ -177,8 +199,8 @@ const PocketBaseDashboard: React.FC = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">
-                  Se connecter
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? 'Connexion...' : 'Se connecter'}
                 </Button>
               </form>
             </CardContent>
