@@ -64,7 +64,7 @@ export interface MessageType {
   sender: 'user' | 'agent' | 'assistant' | 'system';
 }
 
-// Fixed: Use a proper interface declaration for the global Window object
+// Use proper interface declaration for the global Window object
 declare global {
   interface Window {
     chatPal?: {

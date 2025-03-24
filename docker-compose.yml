@@ -9,6 +9,7 @@ services:
       args:
         - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
         - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+        - VITE_POCKETBASE_URL=${VITE_POCKETBASE_URL}
     ports:
       - "3000:3000"  # Frontend
       - "4000:4000"  # Backend API
@@ -16,6 +17,7 @@ services:
       - NODE_ENV=production
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+      - VITE_POCKETBASE_URL=http://pocketbase:8090
       - DB_HOST=mysql
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
@@ -27,8 +29,11 @@ services:
     restart: unless-stopped
     depends_on:
       - mysql
+      - pocketbase
     volumes:
       - ./backend/logs:/app/logs
+    networks:
+      - topcenter-network
 
   mysql:
     image: mysql:8.0
@@ -44,6 +49,24 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./backend/db-init:/docker-entrypoint-initdb.d
+    networks:
+      - topcenter-network
+
+  pocketbase:
+    image: ghcr.io/muchobien/pocketbase:latest
+    container_name: pocketbase
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    volumes:
+      - pocketbase-data:/pb_data
+    networks:
+      - topcenter-network
+
+networks:
+  topcenter-network:
+    driver: bridge
 
 volumes:
   mysql-data:
+  pocketbase-data:

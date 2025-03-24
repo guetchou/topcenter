@@ -5,12 +5,12 @@ import PocketBase from 'pocketbase';
 export const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
 
 // Export the PocketBase types for use in the app
-import type { RecordModel, RecordService } from 'pocketbase';
-export type { RecordModel, RecordService };
+import type { RecordModel } from 'pocketbase';
+export type { RecordModel };
 
 // Helper to extract the type from a collection
 export type TypedPocketBase<T extends Record<string, any> = Record<string, any>> = PocketBase & {
-  collection(idOrName: string): RecordService<T>;
+  collection(idOrName: string): any;
 };
 
 // Authentication helpers

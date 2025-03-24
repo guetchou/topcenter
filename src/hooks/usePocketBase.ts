@@ -125,11 +125,10 @@ export function usePocketBase<T extends RecordModel = RecordModel>(
   useEffect(() => {
     if (!autoSubscribe) return;
 
-    let unsubscribePromise: Promise<void> | null = null;
+    let unsubscribeFunc: (() => void) | null = null;
 
     try {
-      // The subscribe method returns a promise that resolves to an unsubscribe function
-      unsubscribePromise = pb.collection(collectionName).subscribe('*', (data) => {
+      const subscription = pb.collection(collectionName).subscribe('*', (data) => {
         if (data.action === 'create') {
           setRecords(prev => [...prev, data.record as T]);
         } else if (data.action === 'update') {
@@ -138,21 +137,21 @@ export function usePocketBase<T extends RecordModel = RecordModel>(
           setRecords(prev => prev.filter(r => r.id !== data.record.id));
         }
       });
+
+      // Store the unsubscribe function
+      subscription.then((func) => {
+        unsubscribeFunc = func;
+      }).catch(err => {
+        console.error('Error subscribing to collection changes:', err);
+      });
     } catch (error) {
       console.error('Error subscribing to collection changes:', error);
     }
 
     // Cleanup subscription on unmount
     return () => {
-      if (unsubscribePromise) {
-        // Make sure to handle the promise properly
-        unsubscribePromise.then(unsubscribe => {
-          if (typeof unsubscribe === 'function') {
-            unsubscribe();
-          }
-        }).catch(err => {
-          console.error('Error unsubscribing:', err);
-        });
+      if (unsubscribeFunc && typeof unsubscribeFunc === 'function') {
+        unsubscribeFunc();
       }
     };
   }, [collectionName, autoSubscribe]);

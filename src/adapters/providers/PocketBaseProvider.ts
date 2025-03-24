@@ -7,7 +7,7 @@ import { pb } from '@/integrations/pocketbase/client';
 export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
   private messageCallback?: (message: Message) => void;
   private connected: boolean = false;
-  private messageSubscription: any = null;
+  private unsubscribeFunc: (() => void) | null = null;
 
   constructor() {
     // Initialize PocketBase connection
@@ -30,14 +30,9 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
   }
 
   async disconnect(): Promise<void> {
-    if (this.messageSubscription) {
-      // Handle the unsubscribe function which returns a Promise
-      try {
-        await this.messageSubscription;
-      } catch (error) {
-        console.error('Error unsubscribing from messages:', error);
-      }
-      this.messageSubscription = null;
+    if (this.unsubscribeFunc && typeof this.unsubscribeFunc === 'function') {
+      this.unsubscribeFunc();
+      this.unsubscribeFunc = null;
     }
     this.connected = false;
   }
@@ -105,8 +100,8 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
 
   private async subscribeToMessages() {
     try {
-      // The subscribe method returns a promise that resolves to an unsubscribe function
-      this.messageSubscription = pb.collection('chat_messages').subscribe('*', (data) => {
+      // Subscribe to the collection
+      const subscription = await pb.collection('chat_messages').subscribe('*', (data) => {
         if (data.action === 'create' && data.record.sender !== 'user' && this.messageCallback) {
           // Convert PocketBase record to Message format
           const message: Message = {
@@ -120,6 +115,9 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
           this.messageCallback(message);
         }
       });
+      
+      // Store the unsubscribe function
+      this.unsubscribeFunc = subscription;
     } catch (error) {
       console.error('Error subscribing to messages:', error);
     }

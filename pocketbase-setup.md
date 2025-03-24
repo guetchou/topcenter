@@ -1,70 +1,68 @@
 
 # PocketBase Setup Guide
 
-## Installation
+This guide explains how to set up PocketBase for TopCenter.
 
-1. Download PocketBase from [pocketbase.io](https://pocketbase.io/docs/)
-2. Extract the executable and run it:
-   ```
-   ./pocketbase serve
-   ```
-3. Access the admin UI at http://127.0.0.1:8090/_/
+## 1. Running PocketBase with Docker
 
-## Required Collections
+We've configured PocketBase to run as part of the Docker Compose setup. When you start the application with `docker-compose up -d`, PocketBase will automatically be started and accessible at http://localhost:8090.
 
-Create the following collections in the PocketBase Admin UI:
+## 2. First-time Setup
 
-### 1. chat_messages
+When you first access PocketBase at http://localhost:8090/_/, you'll need to create an admin account:
 
-| Field    | Type     | Required | Notes                                |
-|----------|----------|----------|--------------------------------------|
-| content  | Text     | Yes      | The message content                  |
-| sender   | Text     | Yes      | One of: 'user', 'agent', 'assistant', 'system' |
-| timestamp| Date     | Yes      | Auto-filled with current time        |
+1. Navigate to http://localhost:8090/_/
+2. Follow the setup wizard to create your admin account
+3. Once logged in, you'll see the PocketBase Admin UI
 
-### 2. users (already exists)
+## 3. Creating Required Collections
 
-This collection is created automatically by PocketBase.
+For TopCenter to work with PocketBase, you need to create the following collections:
 
-## Environment Variables
+### Chat Messages Collection
 
-Add the following to your `.env` file:
+1. In the PocketBase Admin UI, go to Collections and click "Create collection"
+2. Set collection name to `chat_messages`
+3. Add the following schema fields:
+   - `content` (type: text)
+   - `sender` (type: select, options: user,assistant,system,agent)
+   - `timestamp` (type: date)
+4. Set appropriate permissions (typically full access for authenticated users)
 
+### Users Collection
+
+PocketBase already comes with a built-in `users` collection, but you may want to update its schema to match your needs.
+
+## 4. API Access
+
+- Your frontend will access PocketBase at the URL specified in `VITE_POCKETBASE_URL` environment variable
+- When running in Docker, the app service connects to PocketBase using `http://pocketbase:8090`
+- When running locally, it connects to `http://localhost:8090`
+
+## 5. Testing Your Setup
+
+You can test your PocketBase setup using our PocketBaseChatDemo component:
+
+1. Navigate to your app
+2. Create a new user in the demo component
+3. Send messages to test the real-time functionality
+
+## 6. Backup and Migration
+
+PocketBase stores its data in the `pocketbase-data` Docker volume. To backup your data:
+
+```bash
+docker run --rm -v pocketbase-data:/pb_data -v $(pwd):/backup alpine sh -c "cd /pb_data && tar czf /backup/pocketbase-backup.tar.gz ."
 ```
-VITE_POCKETBASE_URL=http://127.0.0.1:8090
+
+To restore from a backup:
+
+```bash
+docker run --rm -v pocketbase-data:/pb_data -v $(pwd):/backup alpine sh -c "cd /pb_data && tar xf /backup/pocketbase-backup.tar.gz"
 ```
 
-## Example Usage
+## 7. Security Considerations
 
-```tsx
-import { usePocketBase } from "@/hooks/usePocketBase";
-
-// In your component:
-const { 
-  records, 
-  loading, 
-  create,
-  isAuthenticated,
-  login,
-  logout 
-} = usePocketBase('your_collection');
-
-// Authentication
-await login('email@example.com', 'password');
-
-// CRUD operations
-await create({ field: 'value' });
-```
-
-## Security Rules
-
-Set appropriate security rules in the PocketBase Admin UI for each collection.
-
-For chat_messages, you might want:
-- Authenticated users can create messages
-- Users can only view messages they've created
-- Admins can view all messages
-
-## Deployment
-
-For production, host your PocketBase instance on a server with the database backed up regularly.
+- In production, ensure PocketBase is not directly exposed to the internet
+- Use the authentication features of PocketBase for secure access
+- Configure proper access rules for each collection
