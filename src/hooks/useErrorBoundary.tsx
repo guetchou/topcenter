@@ -10,7 +10,11 @@ interface ErrorBoundaryActions {
   resetError: () => void;
 }
 
-export const useErrorBoundary = (): ErrorBoundaryState & ErrorBoundaryActions => {
+interface ErrorBoundaryHookReturn extends ErrorBoundaryState, ErrorBoundaryActions {
+  ErrorBoundaryComponent: React.FC<{ children: React.ReactNode }>;
+}
+
+export const useErrorBoundary = (): ErrorBoundaryHookReturn => {
   const [state, setState] = useState<ErrorBoundaryState>({
     hasError: false,
     error: null,
@@ -58,7 +62,7 @@ export const useErrorBoundary = (): ErrorBoundaryState & ErrorBoundaryActions =>
   return { 
     ...state, 
     resetError,
-    ErrorBoundary: ErrorBoundaryComponent 
+    ErrorBoundaryComponent 
   };
 };
 

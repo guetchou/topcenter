@@ -7,7 +7,7 @@ interface ScrollToTopButtonProps {
   showAtHeight?: number;
   className?: string;
   size?: 'default' | 'sm' | 'lg' | 'icon';
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'primary';
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
   smooth?: boolean;
   icon?: React.ReactNode;
   label?: string;
