@@ -15,6 +15,7 @@ import { toMessageType, fromMessageType } from './utils/messageConverters';
 import { WebSocketProvider } from './providers/WebSocketProvider';
 import { InternalProvider } from './providers/InternalProvider';
 import { ChatterPalProvider } from './providers/ChatterPalProvider';
+import { PocketBaseProvider } from './providers/PocketBaseProvider';
 
 /**
  * Classe d'adaptateur pour les services de chat
@@ -40,6 +41,9 @@ export class ChatAdapter implements ChatAdapterInterface {
         break;
       case 'chatterpal':
         this.provider = new ChatterPalProvider();
+        break;
+      case 'pocketbase':
+        this.provider = new PocketBaseProvider();
         break;
       default:
         console.warn(`Provider "${config.provider}" non pris en charge`);

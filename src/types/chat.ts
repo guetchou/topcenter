@@ -64,7 +64,7 @@ export interface MessageType {
   sender: 'user' | 'agent' | 'assistant' | 'system';
 }
 
-// Déclaration d'interface globale pour ChatPal - Fixed duplicate declaration
+// Fixed: Use a single declaration for the global interface
 declare global {
   interface Window {
     chatPal?: {

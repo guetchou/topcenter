@@ -3,7 +3,7 @@
 import { Message } from '@/types/chat';
 
 // Types d'adaptateurs de chat supportés
-export type ChatProviderType = 'internal' | 'chatterpal' | 'external' | 'websocket';
+export type ChatProviderType = 'internal' | 'chatterpal' | 'external' | 'websocket' | 'pocketbase';
 
 // Configuration pour l'adaptateur
 export interface ChatAdapterConfig {
