@@ -1,3 +1,4 @@
+
 import PocketBase from 'pocketbase';
 import { toast } from 'sonner';
 
@@ -84,14 +85,6 @@ export const testPocketBaseConnection = async (url: string = import.meta.env.VIT
       message: 'La connexion à PocketBase a échoué'
     };
   }
-};
-
-// Exporter la nouvelle fonction avec les exports existants
-export { 
-  isUserValid,
-  getCurrentUser,
-  logout,
-  testPocketBaseConnection 
 };
 
 export default pb;
