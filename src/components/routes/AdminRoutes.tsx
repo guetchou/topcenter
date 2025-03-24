@@ -12,6 +12,7 @@ import NewsManagementPage from "@/pages/admin/news/NewsManagementPage";
 import NewsEditorPage from "@/pages/admin/news/NewsEditorPage";
 import NewsCollaboratorsPage from "@/pages/admin/news/NewsCollaboratorsPage";
 import PocketBaseTestPage from "@/pages/admin/PocketBaseTest";
+import PocketBaseDashboard from "@/pages/admin/PocketBaseDashboard";
 import { useAuth } from "@/hooks/useAuth";
 
 export const AdminRoutes = () => {
@@ -34,6 +35,7 @@ export const AdminRoutes = () => {
         <Route path="/deploy" element={<DeployDashboard />} />
         <Route path="/chatbots" element={<ChatBotsSettingsPage />} />
         <Route path="/pocketbase-test" element={<PocketBaseTestPage />} />
+        <Route path="/pocketbase" element={<PocketBaseDashboard />} />
         {/* Routes de gestion des actualités */}
         <Route path="/news" element={<NewsManagementPage />} />
         <Route path="/news/create" element={<NewsEditorPage />} />

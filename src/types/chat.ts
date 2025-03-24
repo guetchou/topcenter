@@ -1,76 +1,60 @@
 
-// src/types/chat.ts
+// Types pour le chat
+export type MessageType = {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+  status?: 'sending' | 'sent' | 'error';
+  sender: 'user' | 'assistant' | 'system' | 'agent';
+};
+
 export interface Message {
   id: string;
   content: string;
   sender: 'user' | 'assistant' | 'system' | 'agent';
   timestamp: number;
   status?: 'sending' | 'sent' | 'error';
-  attachments?: Attachment[];
-  metadata?: Record<string, any>;
 }
 
-export interface Attachment {
-  id: string;
-  type: 'image' | 'file' | 'audio' | 'video';
-  url: string;
-  name: string;
-  size?: number;
-  mimeType?: string;
-}
+export type ChatProviderType = 'internal' | 'chatterpal' | 'websocket' | 'pocketbase';
 
-export interface ChatChannel {
-  id: string;
-  name: string;
-  icon: string;
-  unreadCount: number;
-  lastMessage?: Message;
-}
-
-export interface ChatSession {
-  id: string;
-  channel: ChatChannel;
-  messages: Message[];
-  metadata?: Record<string, any>;
-  createdAt: number;
-  updatedAt: number;
+export interface ChatSettings {
+  apiKey?: string;
+  endpoint?: string;
+  model?: string;
+  systemPrompt?: string;
+  temperature?: number;
+  maxTokens?: number;
 }
 
 export interface ChatState {
-  activeChatId: string | null;
-  sessions: Record<string, ChatSession>;
-  isOpen: boolean;
-  isMinimized: boolean;
+  messages: Message[];
+  loading: boolean;
+  error: string | null;
+  settings: ChatSettings;
 }
 
-export type ChatAction = 
-  | { type: 'SEND_MESSAGE'; chatId: string; message: Message }
-  | { type: 'RECEIVE_MESSAGE'; chatId: string; message: Message }
-  | { type: 'OPEN_CHAT' }
-  | { type: 'CLOSE_CHAT' }
-  | { type: 'MINIMIZE_CHAT' }
-  | { type: 'MAXIMIZE_CHAT' }
-  | { type: 'SET_ACTIVE_CHAT'; chatId: string }
-  | { type: 'CREATE_SESSION'; session: ChatSession }
-  | { type: 'DELETE_SESSION'; chatId: string };
-
-// Interface MessageType qui est compatible avec Message
-export interface MessageType {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: Date;
-  status?: 'sending' | 'sent' | 'error';
-  sender: 'user' | 'agent' | 'assistant' | 'system';
+export interface ChatActions {
+  sendMessage: (content: string) => Promise<void>;
+  clearMessages: () => void;
+  updateSettings: (settings: Partial<ChatSettings>) => void;
 }
 
-// Use proper interface declaration for the global Window object
+export interface ChatStoreState extends ChatState {
+  actions: ChatActions;
+}
+
+export interface ChatContextState extends ChatState {
+  sendMessage: (content: string) => Promise<void>;
+  clearMessages: () => void;
+  updateSettings: (settings: Partial<ChatSettings>) => void;
+}
+
+// Déclarer l'interface pour ChatPal dans le namespace global
 declare global {
   interface Window {
-    chatPal?: {
-      sendMessage: (message: string) => void;
-      destroy: () => void;
-    };
-    ChatPal?: any;
+    ChatPal: any;
+    chatPal: any;
   }
 }
