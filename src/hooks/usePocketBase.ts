@@ -125,19 +125,35 @@ export function usePocketBase<T extends RecordModel = RecordModel>(
   useEffect(() => {
     if (!autoSubscribe) return;
 
-    const unsubscribe = pb.collection(collectionName).subscribe('*', (data) => {
-      if (data.action === 'create') {
-        setRecords(prev => [...prev, data.record as T]);
-      } else if (data.action === 'update') {
-        setRecords(prev => prev.map(r => r.id === data.record.id ? (data.record as T) : r));
-      } else if (data.action === 'delete') {
-        setRecords(prev => prev.filter(r => r.id !== data.record.id));
-      }
-    });
+    let unsubscribePromise: Promise<void> | null = null;
+
+    try {
+      // The subscribe method returns a promise that resolves to an unsubscribe function
+      unsubscribePromise = pb.collection(collectionName).subscribe('*', (data) => {
+        if (data.action === 'create') {
+          setRecords(prev => [...prev, data.record as T]);
+        } else if (data.action === 'update') {
+          setRecords(prev => prev.map(r => r.id === data.record.id ? (data.record as T) : r));
+        } else if (data.action === 'delete') {
+          setRecords(prev => prev.filter(r => r.id !== data.record.id));
+        }
+      });
+    } catch (error) {
+      console.error('Error subscribing to collection changes:', error);
+    }
 
     // Cleanup subscription on unmount
     return () => {
-      unsubscribe();
+      if (unsubscribePromise) {
+        // Make sure to handle the promise properly
+        unsubscribePromise.then(unsubscribe => {
+          if (typeof unsubscribe === 'function') {
+            unsubscribe();
+          }
+        }).catch(err => {
+          console.error('Error unsubscribing:', err);
+        });
+      }
     };
   }, [collectionName, autoSubscribe]);
 

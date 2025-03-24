@@ -8,13 +8,13 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { usePocketBase } from "@/hooks/usePocketBase";
 import { Spinner } from "@/components/ui/spinner";
 import { pb } from "@/integrations/pocketbase/client";
+import type { RecordModel } from 'pocketbase';
 
-type ChatMessage = {
-  id: string;
+interface ChatMessage extends RecordModel {
   content: string;
   sender: 'user' | 'agent' | 'assistant' | 'system';
   created: string;
-};
+}
 
 export function PocketBaseChatDemo() {
   const [newMessage, setNewMessage] = useState('');

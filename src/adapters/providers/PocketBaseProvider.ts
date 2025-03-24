@@ -20,7 +20,7 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
       this.connected = true;
       
       // Subscribe to realtime updates for new messages
-      this.subscribeToMessages();
+      await this.subscribeToMessages();
       
       return true;
     } catch (error) {
@@ -31,7 +31,12 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
 
   async disconnect(): Promise<void> {
     if (this.messageSubscription) {
-      this.messageSubscription.unsubscribe();
+      // Handle the unsubscribe function which returns a Promise
+      try {
+        await this.messageSubscription;
+      } catch (error) {
+        console.error('Error unsubscribing from messages:', error);
+      }
       this.messageSubscription = null;
     }
     this.connected = false;
@@ -98,20 +103,25 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
     this.messageCallback = callback;
   }
 
-  private subscribeToMessages() {
-    this.messageSubscription = pb.collection('chat_messages').subscribe('*', (data) => {
-      if (data.action === 'create' && data.record.sender !== 'user' && this.messageCallback) {
-        // Convert PocketBase record to Message format
-        const message: Message = {
-          id: data.record.id,
-          content: data.record.content,
-          sender: data.record.sender,
-          timestamp: new Date(data.record.timestamp).getTime(),
-          status: 'sent'
-        };
-        
-        this.messageCallback(message);
-      }
-    });
+  private async subscribeToMessages() {
+    try {
+      // The subscribe method returns a promise that resolves to an unsubscribe function
+      this.messageSubscription = pb.collection('chat_messages').subscribe('*', (data) => {
+        if (data.action === 'create' && data.record.sender !== 'user' && this.messageCallback) {
+          // Convert PocketBase record to Message format
+          const message: Message = {
+            id: data.record.id,
+            content: data.record.content,
+            sender: data.record.sender as 'user' | 'assistant' | 'system' | 'agent',
+            timestamp: new Date(data.record.timestamp).getTime(),
+            status: 'sent'
+          };
+          
+          this.messageCallback(message);
+        }
+      });
+    } catch (error) {
+      console.error('Error subscribing to messages:', error);
+    }
   }
 }
