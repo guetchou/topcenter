@@ -1,5 +1,5 @@
-
 import PocketBase from 'pocketbase';
+import { toast } from 'sonner';
 
 // Create a single PocketBase instance to use throughout the app
 export const pb = new PocketBase(import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090');
@@ -52,5 +52,46 @@ pb.authStore.onChange((token, model) => {
     localStorage.removeItem('pocketbase_auth');
   }
 });
+
+// Nouvelle méthode de test de l'API PocketBase
+export const testPocketBaseConnection = async (url: string = import.meta.env.VITE_POCKETBASE_URL) => {
+  try {
+    const pb = new PocketBase(url);
+    
+    // Vérifier la santé du serveur
+    const health = await pb.health.check();
+    
+    // Si la vérification réussit
+    toast.success('Connexion à PocketBase réussie', {
+      description: `Serveur PocketBase disponible à ${url}`
+    });
+    
+    return {
+      success: true,
+      status: health.code,
+      message: 'Connexion à PocketBase établie avec succès'
+    };
+  } catch (error) {
+    console.error('Erreur de connexion à PocketBase:', error);
+    
+    toast.error('Échec de la connexion à PocketBase', {
+      description: `Impossible de se connecter à ${url}`
+    });
+    
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue',
+      message: 'La connexion à PocketBase a échoué'
+    };
+  }
+};
+
+// Exporter la nouvelle fonction avec les exports existants
+export { 
+  isUserValid,
+  getCurrentUser,
+  logout,
+  testPocketBaseConnection 
+};
 
 export default pb;
