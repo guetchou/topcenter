@@ -1,6 +1,7 @@
 
 interface ChatPalInstance {
   destroy: () => void;
+  sendMessage: (content: string) => void;
 }
 
 interface ChatPalOptions {

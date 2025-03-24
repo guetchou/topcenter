@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { checkServerAvailability, pb } from '@/integrations/pocketbase/client';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Database, WifiOff } from 'lucide-react';
+import { RefreshCw, Database, WifiOff, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const PocketBaseStatus: React.FC = () => {
   const [isAvailable, setIsAvailable] = useState<boolean>(true);
   const [isChecking, setIsChecking] = useState<boolean>(false);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Vérifier la disponibilité au montage du composant
   useEffect(() => {
@@ -32,12 +33,26 @@ export const PocketBaseStatus: React.FC = () => {
     if (isChecking) return;
     
     setIsChecking(true);
+    setErrorMessage('');
     
-    const available = await checkServerAvailability();
-    setIsAvailable(available);
-    setLastCheck(new Date());
-    
-    setIsChecking(false);
+    try {
+      const available = await checkServerAvailability();
+      setIsAvailable(available);
+      
+      if (!available) {
+        setErrorMessage('Serveur PocketBase non disponible');
+        toast.error('Serveur PocketBase indisponible', {
+          description: 'Vérifiez votre connexion ou contactez l\'administrateur'
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de la vérification de disponibilité:', error);
+      setIsAvailable(false);
+      setErrorMessage(error instanceof Error ? error.message : 'Erreur inconnue');
+    } finally {
+      setLastCheck(new Date());
+      setIsChecking(false);
+    }
   };
 
   const handleOnline = () => {
@@ -47,6 +62,7 @@ export const PocketBaseStatus: React.FC = () => {
 
   const handleOffline = () => {
     setIsAvailable(false);
+    setErrorMessage('Appareil hors ligne');
     toast.error('Appareil hors ligne', {
       description: 'Les fonctionnalités PocketBase sont limitées'
     });
@@ -75,7 +91,7 @@ export const PocketBaseStatus: React.FC = () => {
             PocketBase indisponible
           </h3>
           <p className="text-xs text-red-700 mt-1">
-            Impossible de se connecter à {pb.baseUrl}
+            {errorMessage || `Impossible de se connecter à ${pb.baseUrl}`}
           </p>
         </div>
         <Button

@@ -51,9 +51,4 @@ export interface ChatContextState extends ChatState {
   updateSettings: (settings: Partial<ChatSettings>) => void;
 }
 
-// Déclarer l'interface pour ChatPal dans le namespace global
-declare global {
-  interface Window {
-    ChatPal?: any; // Utiliser le point d'interrogation pour rendre la propriété optionnelle
-  }
-}
+// We remove the duplicate declaration here since it's now properly defined in chatterpal.d.ts

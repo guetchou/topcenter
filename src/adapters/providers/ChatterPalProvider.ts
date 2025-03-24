@@ -27,11 +27,22 @@ export class ChatterPalProvider implements Partial<ChatAdapterInterface> {
       status: 'sending'
     };
 
-    if (window.chatPal && typeof window.chatPal.sendMessage === 'function') {
-      window.chatPal.sendMessage(content);
-      message.status = 'sent';
-    } else {
-      console.warn('ChatterPal API not available');
+    try {
+      if (window.chatPal) {
+        // Check if the sendMessage function exists on the instance
+        if (typeof window.chatPal.sendMessage === 'function') {
+          window.chatPal.sendMessage(content);
+          message.status = 'sent';
+        } else {
+          console.warn('ChatterPal sendMessage method not available');
+          message.status = 'error';
+        }
+      } else {
+        console.warn('ChatterPal API not available');
+        message.status = 'error';
+      }
+    } catch (error) {
+      console.error('Error sending message to ChatterPal:', error);
       message.status = 'error';
     }
 
@@ -39,18 +50,22 @@ export class ChatterPalProvider implements Partial<ChatAdapterInterface> {
   }
 
   async getMessages(): Promise<Message[]> {
-    return []; // ChatterPal ne permet pas de récupérer l'historique
+    return []; // ChatterPal doesn't provide a way to retrieve message history
   }
 
   async disconnect(): Promise<void> {
     if (window.chatPal && typeof window.chatPal.destroy === 'function') {
-      window.chatPal.destroy();
+      try {
+        window.chatPal.destroy();
+        this.connected = false;
+      } catch (error) {
+        console.error('Error disconnecting from ChatterPal:', error);
+      }
     }
-    this.connected = false;
   }
 
   onMessageReceived(callback: (message: Message) => void): void {
     this.messageCallback = callback;
-    // Pour ChatterPal, on pourrait ajouter un listener si nécessaire
+    // For ChatterPal, we could add a listener if needed
   }
 }
