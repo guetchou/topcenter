@@ -1,29 +1,24 @@
 
 import React from 'react';
+import usePocketBaseStatus from '@/hooks/usePocketBaseStatus';
 import { Badge } from '@/components/ui/badge';
-import { usePocketBaseStatus } from '@/integrations/pocketbase/client';
-import { Loader2, Database, WifiOff } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
-export const PocketBaseStatus: React.FC = () => {
-  const { isAvailable, isChecking } = usePocketBaseStatus();
+const PocketBaseStatus = () => {
+  const { isConnected, isChecking } = usePocketBaseStatus();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center space-x-2 mb-4 p-2 bg-muted/50 rounded">
+      <span className="text-xs text-muted-foreground">Base de données:</span>
       {isChecking ? (
-        <Badge variant="outline" className="text-xs flex items-center gap-1">
-          <Loader2 className="w-3 h-3 animate-spin" />
-          <span>Vérification PocketBase...</span>
+        <Badge variant="outline" className="text-xs">
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Vérification...
         </Badge>
-      ) : isAvailable ? (
-        <Badge variant="success" className="text-xs flex items-center gap-1">
-          <Database className="w-3 h-3" />
-          <span>PocketBase connecté</span>
-        </Badge>
+      ) : isConnected ? (
+        <Badge variant="success" className="bg-green-500 text-white text-xs">Connectée</Badge>
       ) : (
-        <Badge variant="destructive" className="text-xs flex items-center gap-1">
-          <WifiOff className="w-3 h-3" />
-          <span>PocketBase déconnecté</span>
-        </Badge>
+        <Badge variant="destructive" className="text-xs">Déconnectée</Badge>
       )}
     </div>
   );

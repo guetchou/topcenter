@@ -5,6 +5,10 @@ import './index.css'
 import './lib/accessibilityStyles.css'
 import { AppProviders } from './providers/AppProviders.tsx'
 import { toast } from 'sonner'
+import { checkDomainAndRedirect } from './utils/domainRedirect.ts'
+
+// Check domain and redirect if needed
+checkDomainAndRedirect();
 
 // Service worker registration with better error handling
 if ('serviceWorker' in navigator) {
