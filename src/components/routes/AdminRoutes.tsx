@@ -2,6 +2,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
+// Importations corrigées avec lazily loaded components
 const AdminDashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
 const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
 const ArticlesPage = React.lazy(() => import('@/pages/admin/articles/ArticlesPage'));

@@ -40,8 +40,8 @@ const PocketBaseCollections: React.FC = () => {
   // Fonction pour récupérer le nombre d'enregistrements d'une collection
   const fetchRecordCount = async (collectionId: string) => {
     try {
-      const recordsResult = await getRecords(collectionId, 1, 1);
-      return recordsResult.success ? recordsResult.totalItems : 0;
+      const recordsResult = await getRecords(collectionId);
+      return Array.isArray(recordsResult) ? recordsResult.length : 0;
     } catch (error) {
       console.error(`Erreur lors du comptage des enregistrements pour ${collectionId}:`, error);
       return 0;
