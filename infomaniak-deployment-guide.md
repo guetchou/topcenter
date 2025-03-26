@@ -1,4 +1,3 @@
-
 # Guide de Déploiement sur Infomaniak - TopCenter
 
 Ce guide explique comment déployer l'application TopCenter sur un hébergement Infomaniak.
@@ -236,3 +235,41 @@ Si le déploiement automatique via le tableau de bord échoue:
 3. Essayez un déploiement manuel via FTP comme solution de contournement
 
 Pour toute assistance supplémentaire, contactez le support Infomaniak ou consultez leur documentation officielle.
+
+## Configuration de la base de données MariaDB
+
+TopCenter utilise une base de données MariaDB hébergée sur Infomaniak. Voici les informations de connexion et les étapes pour configurer correctement la base de données:
+
+### Informations de connexion MariaDB
+- **Serveur hôte**: rj8dl.myd.infomaniak.com
+- **Port**: 3306
+- **Version**: MariaDB 10.4
+
+### Étapes de migration vers MariaDB 10.6 (facultatif)
+Si vous souhaitez migrer de MariaDB 10.4 vers 10.6:
+
+1. Connectez-vous au Manager Infomaniak
+2. Accédez à la section "Hébergement Web & Cloud" > Votre hébergement > "Bases de données"
+3. Sélectionnez votre base de données
+4. Cliquez sur "Options avancées" puis choisissez "Migrer vers MariaDB 10.6"
+5. Suivez les instructions à l'écran pour effectuer la migration
+
+**Note importante:** Avant de migrer, assurez-vous de:
+- Faire une sauvegarde complète de votre base de données
+- Vérifier la compatibilité de votre application avec MariaDB 10.6
+- Planifier la migration pendant une période de faible trafic
+
+### Configuration des variables d'environnement
+
+Pour sécuriser vos informations de connexion à la base de données, configurez les variables d'environnement suivantes dans votre environnement de déploiement:
+
+```
+DB_HOST=rj8dl.myd.infomaniak.com
+DB_PORT=3306
+DB_USER=votre_nom_utilisateur
+DB_PASSWORD=votre_mot_de_passe
+DB_NAME=votre_nom_base_de_donnees
+DB_SSL=false
+```
+
+Pour les déploiements GitHub Actions, ajoutez ces variables comme secrets dans le dépôt GitHub.
