@@ -12,6 +12,7 @@ import About from '@/pages/About';
 import Dashboard from '@/pages/Dashboard';
 import { PredictiveAssistant } from "@/components/chat/PredictiveAssistant";
 import { PredictiveAnalyticsDisplay } from "@/components/PredictiveAnalyticsDisplay";
+import TeamPage from '@/pages/TeamPage';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/predictive-analytics" element={<PredictiveAnalyticsDisplay />} />
+              <Route path="/equipe" element={<TeamPage />} />
             </Routes>
             <PredictiveAssistant />
             <Toaster position="top-right" richColors />

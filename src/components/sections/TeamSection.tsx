@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ApiContentWrapper } from "@/components/ApiContentWrapper";
 import { useTeamMembers } from "@/hooks/useTeamMembers";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
+import { ResponsiveImage } from "@/components/ui/ResponsiveImage";
 
 export const TeamSection = () => {
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
@@ -28,10 +29,11 @@ export const TeamSection = () => {
     
     const intervalId = setInterval(() => {
       api.scrollNext();
-    }, 4000);
+    }, 5000); // Increased time to 5 seconds for better user experience
     
     // Update current index when the carousel scrolls
     const onSelect = () => {
+      if (!api) return;
       setCurrentIndex(api.selectedScrollSnap());
     };
     
@@ -39,7 +41,9 @@ export const TeamSection = () => {
     
     return () => {
       clearInterval(intervalId);
-      api.off('select', onSelect);
+      if (api) {
+        api.off('select', onSelect);
+      }
     };
   }, [api, isPaused, teamMembers]);
 
@@ -94,51 +98,54 @@ export const TeamSection = () => {
           fallback={<div className="text-center text-muted-foreground">Aucune information sur l'équipe disponible.</div>}
         >
           {(teamMembers) => (
-            <>
+            <div className="relative">
               <Carousel
                 setApi={setApi}
                 opts={{ 
                   align: "start", 
                   loop: true,
-                  watchDrag: false // This can help prevent issues with the carousel
+                  dragFree: false
                 }}
                 className="w-full max-w-5xl mx-auto"
               >
                 <CarouselContent>
                   {teamMembers.map((member, index) => (
-                    <CarouselItem key={member.id} className="md:basis-1/2 lg:basis-1/3">
+                    <CarouselItem key={member.id || index} className="md:basis-1/2 lg:basis-1/3 pl-4">
                       <motion.div 
-                        whileHover={{ scale: 1.05 }}
+                        whileHover={{ scale: 1.03 }}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ 
                           opacity: 1, 
                           y: 0,
-                          transition: { delay: index * 0.1 } 
+                          transition: { delay: index * 0.1, duration: 0.3 } 
                         }}
                       >
-                        <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 ${currentIndex === index ? 'ring-2 ring-primary/30' : ''}`}>
+                        <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 h-full ${currentIndex === index ? 'ring-2 ring-primary/30' : ''}`}>
                           <CardContent className="p-6">
                             <div className="aspect-square mb-4 overflow-hidden rounded-full">
-                              <img
+                              <ResponsiveImage
                                 src={member.image}
                                 alt={member.name}
-                                className="w-full h-full object-cover"
-                                loading="lazy"
-                                onError={(e) => {
-                                  e.currentTarget.src = '/placeholder.svg';
-                                }}
+                                aspectRatio="1/1"
+                                objectFit="cover"
+                                fallback="/placeholder.svg"
                               />
                             </div>
                             <h3 className="text-xl font-semibold mb-2">{member.name}</h3>
                             <p className="text-primary font-medium mb-2">{member.role}</p>
-                            <p className="text-sm text-muted-foreground mb-4">{member.expertise}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {member.specialties.map((specialty, i) => (
-                                <Badge key={i} variant="secondary">
-                                  {specialty}
-                                </Badge>
-                              ))}
-                            </div>
+                            {member.expertise && (
+                              <p className="text-sm text-muted-foreground mb-4">{member.expertise}</p>
+                            )}
+                            
+                            {member.specialties && member.specialties.length > 0 && (
+                              <div className="flex flex-wrap gap-2">
+                                {member.specialties.map((specialty, i) => (
+                                  <Badge key={i} variant="secondary">
+                                    {specialty}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
                             
                             {member.email && (
                               <div className="mt-4 text-sm">
@@ -156,26 +163,31 @@ export const TeamSection = () => {
                     </CarouselItem>
                   ))}
                 </CarouselContent>
-                <div className="absolute -left-4 top-1/2 transform -translate-y-1/2">
-                  <CarouselPrevious className="bg-background/80 backdrop-blur-sm" />
+                
+                <div className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-10">
+                  <CarouselPrevious className="bg-background/80 backdrop-blur-sm shadow-md" />
                 </div>
-                <div className="absolute -right-4 top-1/2 transform -translate-y-1/2">
-                  <CarouselNext className="bg-background/80 backdrop-blur-sm" />
+                <div className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-10">
+                  <CarouselNext className="bg-background/80 backdrop-blur-sm shadow-md" />
                 </div>
               </Carousel>
               
               {/* Indicators */}
-              <div className="flex justify-center gap-2 mt-6">
-                {teamMembers.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => api?.scrollTo(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${index === currentIndex ? 'bg-primary w-6' : 'bg-primary/30'}`}
-                    aria-label={`Voir le membre d'équipe ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </>
+              {teamMembers.length > 0 && (
+                <div className="flex justify-center gap-2 mt-6">
+                  {teamMembers.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => api?.scrollTo(index)}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === currentIndex ? 'bg-primary w-6' : 'bg-primary/30'
+                      }`}
+                      aria-label={`Voir le membre d'équipe ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           )}
         </ApiContentWrapper>
       </div>
