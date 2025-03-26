@@ -1,146 +1,129 @@
 
-import { useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import PocketBase from 'pocketbase';
 
-let pb: PocketBase;
+const API_URL = import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
-const isPocketBaseInitialized = () => {
-  return typeof pb !== 'undefined';
-};
+// Client PocketBase singleton
+let pb: PocketBase | null = null;
 
-// Initialisation de PocketBase
-export const initPocketBase = (url?: string) => {
-  const pocketbaseUrl = url || import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
-  
-  if (!isPocketBaseInitialized()) {
-    pb = new PocketBase(pocketbaseUrl);
-    console.log('PocketBase initialized with URL:', pocketbaseUrl);
+// Initialiser le client PocketBase
+export const initPocketBase = (): PocketBase => {
+  if (!pb) {
+    pb = new PocketBase(API_URL);
+    
+    // Vérifier si une session existe déjà dans le localStorage
+    const token = localStorage.getItem('pocketbase_auth');
+    if (token) {
+      try {
+        const authData = JSON.parse(token);
+        pb.authStore.save(authData.token, authData.model);
+      } catch (err) {
+        console.error('Erreur lors de la restauration de la session:', err);
+        localStorage.removeItem('pocketbase_auth');
+      }
+    }
   }
   
   return pb;
 };
 
-// Récupérer l'instance PocketBase
-export const getPocketBaseInstance = (): PocketBase => {
-  if (!isPocketBaseInitialized()) {
-    return initPocketBase();
-  }
-  return pb;
+// Obtenir l'instance du client
+export const getPocketBase = (): PocketBase => {
+  return pb || initPocketBase();
 };
 
-// Création d'une collection
-export const createCollection = async (collectionName: string, schema: any) => {
+// Vérifier la disponibilité du serveur
+export const checkServerAvailability = async (): Promise<boolean> => {
   try {
-    if (!isPocketBaseInitialized()) {
-      initPocketBase();
-    }
-    
-    // Vérifier si l'utilisateur est authentifié en tant qu'admin
-    if (!pb.authStore.isValid || pb.authStore.model?.type !== 'admin') {
-      return {
-        success: false,
-        error: "Vous devez être connecté en tant qu'administrateur pour créer une collection."
-      };
-    }
-    
-    const result = await pb.collections.create({
-      name: collectionName,
-      schema
-    });
-    
-    return {
-      success: true,
-      collection: result
-    };
-    
+    const client = getPocketBase();
+    const health = await client.health.check();
+    return health.code === 200;
   } catch (error) {
-    console.error('Erreur lors de la création de la collection:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Une erreur s'est produite."
-    };
+    console.error('Erreur lors de la vérification de la disponibilité du serveur:', error);
+    return false;
   }
 };
 
-// Récupération des enregistrements
-export const getRecords = async (collectionName: string, page = 1, perPage = 50, filter = '') => {
-  try {
-    if (!isPocketBaseInitialized()) {
-      initPocketBase();
-    }
-    
-    const resultList = await pb.collection(collectionName).getList(page, perPage, {
-      filter
-    });
-    
-    return {
-      success: true,
-      items: resultList.items,
-      totalItems: resultList.totalItems,
-      totalPages: resultList.totalPages,
-      page: resultList.page
-    };
-    
-  } catch (error) {
-    console.error('Erreur lors de la récupération des enregistrements:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Une erreur s'est produite.",
-      items: [],
-      totalItems: 0,
-      totalPages: 0,
-      page: 1
-    };
-  }
+// Obtenir l'utilisateur actuel
+export const getCurrentUser = () => {
+  const client = getPocketBase();
+  return client.authStore.model;
 };
 
-// Test de connexion à PocketBase
-export const testPocketBaseConnection = async (url?: string) => {
-  try {
-    const pocketbaseUrl = url || import.meta.env.VITE_POCKETBASE_URL || 'http://127.0.0.1:8090';
-    
-    const tempPb = new PocketBase(pocketbaseUrl);
-    
-    // Essayer de récupérer la liste des collections pour tester la connexion
-    await tempPb.collections.getList(1, 1);
-    
-    return {
-      success: true,
-      message: `Connexion réussie à PocketBase: ${pocketbaseUrl}`
-    };
-    
-  } catch (error) {
-    console.error('Erreur lors du test de connexion à PocketBase:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Une erreur s'est produite lors de la connexion à PocketBase."
-    };
-  }
+// Vérifier si l'utilisateur est valide
+export const isUserValid = (): boolean => {
+  const client = getPocketBase();
+  return client.authStore.isValid;
+};
+
+// Authentification utilisateur
+export const loginUser = async (email: string, password: string) => {
+  const client = getPocketBase();
+  return await client.collection('users').authWithPassword(email, password);
+};
+
+// Déconnexion utilisateur
+export const logoutUser = () => {
+  const client = getPocketBase();
+  client.authStore.clear();
+  localStorage.removeItem('pocketbase_auth');
+};
+
+// Inscription utilisateur
+export const registerUser = async (data: {
+  email: string;
+  password: string;
+  passwordConfirm: string;
+  name?: string;
+}) => {
+  const client = getPocketBase();
+  return await client.collection('users').create(data);
 };
 
 // Authentification admin
-export const authenticateAdmin = async (email: string, password: string) => {
-  try {
-    if (!isPocketBaseInitialized()) {
-      initPocketBase();
-    }
-    
-    const authData = await pb.admins.authWithPassword(email, password);
-    
-    return {
-      success: true,
-      admin: authData.admin,
-      token: authData.token
-    };
-    
-  } catch (error) {
-    console.error('Erreur lors de l\'authentification admin:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : "Une erreur s'est produite lors de l'authentification."
-    };
+export const adminLogin = async (email: string, password: string) => {
+  const client = getPocketBase();
+  const authData = await client.admins.authWithPassword(email, password);
+  
+  if (authData && authData.token) {
+    return { success: true, admin: true };
   }
+  
+  return { success: false };
 };
 
-// Export direct de l'instance PocketBase pour un accès plus facile
-export { pb };
+// Hook pour vérifier la connexion PocketBase
+export const usePocketBaseStatus = () => {
+  const [isAvailable, setIsAvailable] = useState<boolean>(false);
+  const [isChecking, setIsChecking] = useState<boolean>(true);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      setIsChecking(true);
+      const available = await checkServerAvailability();
+      setIsAvailable(available);
+      setIsChecking(false);
+    };
+
+    checkStatus();
+
+    // Vérifier toutes les 30 secondes
+    const interval = setInterval(checkStatus, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return { isAvailable, isChecking };
+};
+
+export default {
+  initPocketBase,
+  getPocketBase,
+  checkServerAvailability,
+  getCurrentUser,
+  isUserValid,
+  loginUser,
+  logoutUser,
+  registerUser,
+  adminLogin
+};

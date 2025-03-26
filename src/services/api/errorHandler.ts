@@ -1,92 +1,79 @@
 
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 import { AxiosError, AxiosInstance } from 'axios';
 
+// Type pour les réponses d'erreur de l'API
 interface ApiErrorResponse {
   message: string;
   details?: string;
   code?: string;
 }
 
-// Parse error response from different formats
-const parseErrorResponse = (error: unknown): ApiErrorResponse => {
-  if (error && typeof error === 'object') {
-    // Axios error handling
-    if (error instanceof AxiosError) {
-      const axiosError = error as AxiosError<any>;
-      
-      // Response exists with data
-      if (axiosError.response?.data) {
-        const data = axiosError.response.data;
-        
-        // Different API error formats
-        if (typeof data === 'object') {
-          if (data.message) {
-            return {
-              message: data.message,
-              details: data.details || data.error || undefined,
-              code: data.code || undefined
-            };
-          } else if (data.error) {
-            return {
-              message: typeof data.error === 'string' ? data.error : 'Une erreur est survenue',
-              details: data.error_description || undefined
-            };
-          }
-        }
-        
-        // String error message
-        if (typeof data === 'string') {
-          return { message: data };
-        }
-      }
-      
-      // Use Axios error message if available
-      if (axiosError.message) {
-        return { 
-          message: axiosError.message.includes('Network Error') 
-            ? 'Erreur de connexion au serveur' 
-            : axiosError.message
-        };
-      }
-    }
+// Configuration des messages d'erreur par code HTTP
+const ERROR_MESSAGES: Record<number, string> = {
+  400: 'Requête incorrecte',
+  401: 'Non autorisé - veuillez vous reconnecter',
+  403: 'Accès refusé',
+  404: 'Ressource non trouvée',
+  422: 'Données invalides',
+  429: 'Trop de requêtes, veuillez réessayer plus tard',
+  500: 'Erreur serveur interne',
+  502: 'Erreur de passerelle',
+  503: 'Service indisponible',
+  504: 'Délai d\'attente dépassé'
+};
+
+/**
+ * Gère les erreurs Axios et affiche un toast approprié
+ */
+export const handleApiError = (error: unknown) => {
+  if (error instanceof AxiosError) {
+    const status = error.response?.status;
+    const data = error.response?.data as ApiErrorResponse | undefined;
     
-    // Handle Error object
-    if (error instanceof Error) {
-      return { message: error.message };
-    }
+    // Message d'erreur à afficher
+    const errorMessage = data?.message 
+      || (status ? ERROR_MESSAGES[status] : null) 
+      || 'Une erreur est survenue';
+    
+    // Afficher le toast d'erreur
+    toast.error('Erreur API', {
+      description: errorMessage,
+      duration: 5000,
+    });
+    
+    // Journaliser l'erreur pour le débogage
+    console.error('API Error:', {
+      status,
+      url: error.config?.url,
+      message: errorMessage,
+      details: data?.details || error.message
+    });
+    
+    return { message: errorMessage, status };
   }
   
-  // Default fallback
-  return { message: 'Une erreur inconnue est survenue' };
-};
-
-// Main error handler
-export const handleApiError = (error: unknown, customMessage?: string): void => {
-  const errorResponse = parseErrorResponse(error);
-  
-  toast({
-    title: customMessage || 'Erreur',
-    description: errorResponse.message,
-    variant: 'destructive',
+  // En cas d'erreur non Axios
+  const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+  toast.error('Erreur', { 
+    description: errorMessage 
   });
   
-  // Log error for debugging
-  console.error('API Error:', error);
+  console.error('Non-Axios Error:', error);
+  return { message: errorMessage };
 };
 
-// Setup error handlers for an axios instance
-export const setupErrorHandlers = (api: AxiosInstance): void => {
+/**
+ * Configure les intercepteurs d'erreur pour une instance Axios
+ */
+export const setupErrorHandlers = (api: AxiosInstance) => {
   api.interceptors.response.use(
     (response) => response,
     (error) => {
-      // Only handle errors automatically if not a 401 (handled by auth interceptor)
-      if (!error.response || error.response.status !== 401) {
-        handleApiError(error);
-      }
+      handleApiError(error);
       return Promise.reject(error);
     }
   );
   
-  console.log('API error handlers initialized');
+  return api;
 };

@@ -9,6 +9,8 @@ import { DesignToggle } from "@/components/DesignToggle";
 import { useInView } from "react-intersection-observer";
 import { NewsHighlightSection } from "@/components/sections/NewsHighlightSection";
 import { MapLocation } from "@/components/sections/about/MapLocation";
+import { AIChatBubble } from "@/components/AIChatBubble";
+import { Footer } from "@/components/Footer";
 
 // Lazy loading original sections
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
@@ -157,7 +159,12 @@ const Index = () => {
         
         {/* Design toggle for development */}
         {process.env.NODE_ENV !== 'production' && <DesignToggle />}
+        
+        {/* ChatterPal Integration */}
+        <AIChatBubble />
       </main>
+      
+      <Footer />
     </>
   );
 };

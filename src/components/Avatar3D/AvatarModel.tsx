@@ -38,7 +38,7 @@ const AvatarModel: React.FC<AvatarModelProps> = ({
   useEffect(() => {
     if (scene) {
       // Clone la scène pour éviter les problèmes de partage d'instance
-      const clone = SkeletonUtils.clone(scene);
+      const clonedScene = SkeletonUtils.clone(scene);
       
       // Nettoyage du groupe existant
       if (group.current) {
@@ -47,7 +47,7 @@ const AvatarModel: React.FC<AvatarModelProps> = ({
         }
         
         // Ajouter le clone au groupe
-        group.current.add(clone);
+        group.current.add(clonedScene);
       }
     }
   }, [scene, modelPath]);
