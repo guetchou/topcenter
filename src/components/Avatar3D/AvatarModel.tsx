@@ -3,98 +3,69 @@ import React, { useRef, useEffect } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { GLTF } from 'three-stdlib';
+import * as SkeletonUtils from 'three-stdlib';
 
-type GLTFResult = GLTF & {
+interface AvatarModelProps {
+  position?: [number, number, number];
+  rotation?: [number, number, number];
+  scale?: number;
+  modelPath: string;
+  animate?: boolean;
+}
+
+// Définir un type pour le résultat de GLTF
+interface GLTFResult {
   nodes: {
     [key: string]: THREE.Mesh;
   };
   materials: {
     [key: string]: THREE.Material;
   };
-};
-
-interface AvatarModelProps {
-  url: string;
-  position?: [number, number, number];
-  scale?: number;
-  rotation?: [number, number, number];
-  animate?: boolean;
 }
 
-export function AvatarModel({
-  url,
+const AvatarModel: React.FC<AvatarModelProps> = ({
   position = [0, 0, 0],
-  scale = 1,
   rotation = [0, 0, 0],
+  scale = 1,
+  modelPath,
   animate = true
-}: AvatarModelProps) {
+}) => {
   const group = useRef<THREE.Group>(null);
-  const { scene } = useGLTF(url) as GLTFResult;
   
-  // Clone the scene to avoid modifying the cached original
-  const clonedScene = React.useMemo(() => {
-    return scene.clone();
-  }, [scene]);
-
+  // Typez correctement le résultat de useGLTF
+  const { scene } = useGLTF(modelPath) as unknown as { scene: THREE.Group };
+  
   useEffect(() => {
-    if (!clonedScene) return;
-    
-    // Apply materials or modifications to the cloned scene if needed
-    clonedScene.traverse((node) => {
-      if ((node as THREE.Mesh).isMesh) {
-        const mesh = node as THREE.Mesh;
-        // Example: You could modify materials here
-        if (mesh.material) {
-          // Apply material modifications if needed
-        }
-      }
-    });
-    
-    // Add the cloned scene to our group
-    if (group.current) {
-      // Clear previous children
-      while (group.current.children.length > 0) {
-        group.current.remove(group.current.children[0]);
-      }
+    if (scene) {
+      // Clone la scène pour éviter les problèmes de partage d'instance
+      const clone = SkeletonUtils.clone(scene);
       
-      // Add new scene
-      group.current.add(clonedScene);
-    }
-    
-    return () => {
-      // Cleanup
-      clonedScene.traverse((node) => {
-        if ((node as THREE.Mesh).isMesh) {
-          const mesh = node as THREE.Mesh;
-          mesh.geometry.dispose();
-          
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach(material => material.dispose());
-          } else if (mesh.material) {
-            mesh.material.dispose();
-          }
+      // Nettoyage du groupe existant
+      if (group.current) {
+        while (group.current.children.length > 0) {
+          group.current.remove(group.current.children[0]);
         }
-      });
-    };
-  }, [clonedScene]);
+        
+        // Ajouter le clone au groupe
+        group.current.add(clone);
+      }
+    }
+  }, [scene, modelPath]);
 
-  // Animate the model
-  useFrame((_, delta) => {
+  useFrame(({ clock }) => {
     if (animate && group.current) {
-      // Using type assertion to fix rotation property error
-      (group.current.rotation as THREE.Euler).y += delta * 0.5;
+      group.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.5) * 0.2 + rotation[1];
     }
   });
 
   return (
-    <group 
-      ref={group} 
-      position={new THREE.Vector3(...position)}
-      scale={scale}
-      rotation={new THREE.Euler(...rotation)}
+    <group
+      ref={group}
+      position={position as [number, number, number]}
+      rotation={rotation as [number, number, number]}
+      scale={[scale, scale, scale]}
     />
   );
-}
+};
 
-useGLTF.preload('/models/default-avatar.glb'); // Preload a default model
+export default AvatarModel;

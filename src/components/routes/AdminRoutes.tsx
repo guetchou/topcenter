@@ -1,47 +1,51 @@
+import React, { lazy } from 'react';
+import { Route, Routes } from 'react-router-dom';
 
-import { Navigate, Routes, Route } from "react-router-dom";
-import { AdminDashboard } from "@/pages/admin/Dashboard";
-import { SettingsPage } from "@/pages/admin/settings/SettingsPage";
-import { CMSLayout } from "@/pages/admin/CMSLayout";
-import UserManagement from "@/pages/admin/UserManagement";
-import { UserCredentialsPage } from "@/pages/admin/settings/UserCredentialsPage";
-import { CredentialsDocPage } from "@/pages/admin/CredentialsDocPage";
-import DeployDashboard from "@/pages/DeployDashboard";
-import ChatBotsSettingsPage from "@/pages/admin/settings/ChatBotsSettingsPage";
-import NewsManagementPage from "@/pages/admin/news/NewsManagementPage";
-import NewsEditorPage from "@/pages/admin/news/NewsEditorPage";
-import NewsCollaboratorsPage from "@/pages/admin/news/NewsCollaboratorsPage";
-import PocketBaseTestPage from "@/pages/admin/PocketBaseTest";
-import PocketBaseDashboard from "@/pages/admin/PocketBaseDashboard";
-import { useAuth } from "@/hooks/useAuth";
+// Lazy loading pages for admin
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
+const PocketBaseDashboard = lazy(() => import('@/pages/admin/PocketBaseDashboard'));
+const PocketBaseTest = lazy(() => import('@/pages/admin/PocketBaseTest'));
+const SettingsPage = lazy(() => import('@/pages/admin/settings/SettingsPage'));
+const UserCredentialsPage = lazy(() => import('@/pages/admin/settings/UserCredentialsPage'));
+const ChatBotsSettingsPage = lazy(() => import('@/pages/admin/settings/ChatBotsSettingsPage'));
+const NewsManagementPage = lazy(() => import('@/pages/admin/news/NewsManagementPage'));
+const NewsEditorPage = lazy(() => import('@/pages/admin/news/NewsEditorPage'));
+const NewsCollaboratorsPage = lazy(() => import('@/pages/admin/news/NewsCollaboratorsPage'));
+const ArticlesPage = lazy(() => import('@/pages/admin/articles/ArticlesPage'));
+const ArticleEditor = lazy(() => import('@/pages/admin/articles/ArticleEditor'));
+const CategoriesPage = lazy(() => import('@/pages/admin/categories/CategoriesPage'));
+const MenusPage = lazy(() => import('@/pages/admin/menus/MenusPage'));
+const MediasPage = lazy(() => import('@/pages/admin/medias/MediasPage'));
+const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout'));
+const CredentialsDocPage = lazy(() => import('@/pages/admin/CredentialsDocPage'));
+const DatabaseExplorerPage = lazy(() => import('@/pages/admin/DatabaseExplorer'));
 
-export const AdminRoutes = () => {
-  const { user, isAuthenticated } = useAuth();
-  
-  // Vérifier que l'utilisateur est authentifié et a le rôle d'administrateur
-  if (!isAuthenticated || user?.role !== 'admin') {
-    return <Navigate to="/login" replace />;
-  }
-
+const AdminRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route element={<CMSLayout />}>
-        <Route path="/" element={<AdminDashboard />} />
-        <Route path="/dashboard" element={<AdminDashboard />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/users" element={<UserManagement />} />
-        <Route path="/credentials" element={<UserCredentialsPage />} />
-        <Route path="/credentials/docs" element={<CredentialsDocPage />} />
-        <Route path="/deploy" element={<DeployDashboard />} />
-        <Route path="/chatbots" element={<ChatBotsSettingsPage />} />
-        <Route path="/pocketbase-test" element={<PocketBaseTestPage />} />
-        <Route path="/pocketbase" element={<PocketBaseDashboard />} />
-        {/* Routes de gestion des actualités */}
-        <Route path="/news" element={<NewsManagementPage />} />
-        <Route path="/news/create" element={<NewsEditorPage />} />
-        <Route path="/news/edit/:id" element={<NewsEditorPage />} />
-        <Route path="/news/collaborators/:id" element={<NewsCollaboratorsPage />} />
-      </Route>
+      <Route index element={<AdminDashboard />} />
+      <Route path="dashboard" element={<AdminDashboard />} />
+      <Route path="users" element={<UserManagement />} />
+      <Route path="pocketbase" element={<PocketBaseDashboard />} />
+      <Route path="pocketbase-test" element={<PocketBaseTest />} />
+      <Route path="settings" element={<SettingsPage />} />
+      <Route path="settings/user-credentials" element={<UserCredentialsPage />} />
+      <Route path="settings/chatbots" element={<ChatBotsSettingsPage />} />
+      <Route path="news" element={<NewsManagementPage />} />
+      <Route path="news/editor/:id?" element={<NewsEditorPage />} />
+      <Route path="news/collaborators" element={<NewsCollaboratorsPage />} />
+      <Route path="articles" element={<ArticlesPage />} />
+      <Route path="articles/editor/:id?" element={<ArticleEditor />} />
+      <Route path="categories" element={<CategoriesPage />} />
+      <Route path="menus" element={<MenusPage />} />
+      <Route path="medias" element={<MediasPage />} />
+      <Route path="cms-layout" element={<CMSLayout />} />
+      <Route path="credentials-doc" element={<CredentialsDocPage />} />
+      
+      <Route path="database-explorer" element={<DatabaseExplorerPage />} />
     </Routes>
   );
 };
+
+export default AdminRoutes;

@@ -1,100 +1,80 @@
-
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  Users,
-  Settings,
-  Key,
-  Rocket,
-  Bot,
-  Newspaper,
-  Database
-} from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Users, Settings, Database, BarChart4, LayoutDashboard, Newspaper } from 'lucide-react';
 
-export interface AdminNavLinksProps {
-  closeMobileMenu?: () => void;
-}
-
-export const AdminNavLinks: React.FC<AdminNavLinksProps> = ({
-  closeMobileMenu = () => {},
-}) => {
-  const isActiveClass = ({ isActive }: { isActive: boolean }) =>
-    cn(
-      'flex items-center gap-3 rounded-lg px-3 py-2 transition-all',
-      isActive
-        ? 'bg-primary text-primary-foreground'
-        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-    );
+const AdminNavLinks: React.FC = () => {
+  const location = useLocation();
 
   return (
-    <nav className="space-y-1">
-      <NavLink
-        to="/admin/dashboard"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <LayoutDashboard className="h-5 w-5" />
-        <span>Dashboard</span>
-      </NavLink>
-      <NavLink
-        to="/admin/users"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Users className="h-5 w-5" />
-        <span>Utilisateurs</span>
-      </NavLink>
-      <NavLink
-        to="/admin/settings"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Settings className="h-5 w-5" />
-        <span>Paramètres</span>
-      </NavLink>
-      <NavLink
-        to="/admin/credentials"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Key className="h-5 w-5" />
-        <span>Identifiants</span>
-      </NavLink>
-      <NavLink
-        to="/admin/deploy"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Rocket className="h-5 w-5" />
-        <span>Déploiement</span>
-      </NavLink>
-      <NavLink
-        to="/admin/chatbots"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Bot className="h-5 w-5" />
-        <span>Chatbots</span>
-      </NavLink>
-      <NavLink
-        to="/admin/news"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Newspaper className="h-5 w-5" />
-        <span>Actualités</span>
-      </NavLink>
-      <NavLink
-        to="/admin/pocketbase"
-        className={isActiveClass}
-        onClick={closeMobileMenu}
-      >
-        <Database className="h-5 w-5" />
-        <span>PocketBase</span>
-      </NavLink>
-    </nav>
+    <ul className="space-y-2">
+      <li>
+        <Link
+          to="/admin/dashboard"
+          className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            location.pathname === '/admin/dashboard' ? 'bg-gray-100 dark:bg-gray-700' : ''
+          }`}
+        >
+          <LayoutDashboard className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+          <span className="ml-3">Dashboard</span>
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/admin/user-management"
+          className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            location.pathname === '/admin/user-management' ? 'bg-gray-100 dark:bg-gray-700' : ''
+          }`}
+        >
+          <Users className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+          <span className="ml-3">Utilisateurs</span>
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/admin/pocketbase"
+          className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            location.pathname === '/admin/pocketbase' ? 'bg-gray-100 dark:bg-gray-700' : ''
+          }`}
+        >
+          <BarChart4 className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+          <span className="ml-3">PocketBase</span>
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/admin/news"
+          className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            location.pathname.startsWith('/admin/news') ? 'bg-gray-100 dark:bg-gray-700' : ''
+          }`}
+        >
+          <Newspaper className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+          <span className="ml-3">Actualités</span>
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/admin/settings"
+          className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            location.pathname.startsWith('/admin/settings') ? 'bg-gray-100 dark:bg-gray-700' : ''
+          }`}
+        >
+          <Settings className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+          <span className="ml-3">Paramètres</span>
+        </Link>
+      </li>
+      
+      <li>
+        <Link
+          to="/admin/database-explorer"
+          className={`flex items-center p-2 text-base font-normal rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 ${
+            location.pathname === '/admin/database-explorer' ? 'bg-gray-100 dark:bg-gray-700' : ''
+          }`}
+        >
+          <Database className="w-6 h-6 text-gray-500 transition duration-75 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white" />
+          <span className="ml-3">Explorateur BDD</span>
+        </Link>
+      </li>
+    </ul>
   );
 };
 
