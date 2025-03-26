@@ -5,6 +5,43 @@ import PocketBase from 'pocketbase';
 const PB_URL = import.meta.env.VITE_POCKETBASE_URL || 'https://api.topcenter.cg';
 export const pb = new PocketBase(PB_URL);
 
+// Initialize PocketBase with custom configuration
+export const initPocketBase = (url = PB_URL) => {
+  return new PocketBase(url);
+};
+
+// Get the singleton instance
+export const getPocketbase = () => {
+  return pb;
+};
+
+// Check server availability
+export const checkServerAvailability = async () => {
+  try {
+    const healthCheck = await pb.health.check();
+    return !!healthCheck;
+  } catch (error) {
+    console.error('PocketBase health check failed:', error);
+    return false;
+  }
+};
+
+// Login user
+export const loginUser = async (email: string, password: string) => {
+  try {
+    const authData = await pb.collection('users').authWithPassword(email, password);
+    return { success: true, data: authData };
+  } catch (error) {
+    console.error('PocketBase login failed:', error);
+    return { success: false, error };
+  }
+};
+
+// Hook for checking PocketBase status
+export const usePocketBaseStatus = () => {
+  return { isConnected: testPocketBaseConnection() };
+};
+
 // Fonction pour tester la connexion à PocketBase
 export const testPocketBaseConnection = async (): Promise<boolean> => {
   try {
@@ -95,5 +132,10 @@ export default {
   createRecord,
   updateRecord,
   deleteRecord,
-  authenticateAdmin
+  authenticateAdmin,
+  initPocketBase,
+  getPocketbase,
+  loginUser,
+  checkServerAvailability,
+  usePocketBaseStatus
 };

@@ -7,6 +7,8 @@ import Contact from '@/pages/Contact';
 import Devis from '@/pages/Devis';
 import About from '@/pages/About';
 import Dashboard from '@/pages/Dashboard';
+import DeployDashboard from '@/pages/DeployDashboard';
+import DeploymentDashboard from '@/pages/DeploymentDashboard';
 import { PredictiveAssistant } from "@/components/chat/PredictiveAssistant";
 import { PredictiveAnalyticsDisplay } from "@/components/PredictiveAnalyticsDisplay";
 import TeamPage from '@/pages/TeamPage';
@@ -21,6 +23,8 @@ function App() {
           <Route path="/devis" element={<Devis />} />
           <Route path="/about" element={<About />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/deploy" element={<DeployDashboard />} />
+          <Route path="/deployment" element={<DeploymentDashboard />} />
           <Route path="/predictive-analytics" element={<PredictiveAnalyticsDisplay />} />
           <Route path="/equipe" element={<TeamPage />} />
         </Routes>
