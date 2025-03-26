@@ -1,12 +1,12 @@
 
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { handleApiError, setupErrorHandlers } from './errorHandler';
 
 // Configuration de base de l'API
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Création de l'instance axios
-const api = axios.create({
+const apiInstance = axios.create({
   baseURL: API_URL,
   timeout: 15000, // 15 secondes
   headers: {
@@ -16,14 +16,67 @@ const api = axios.create({
 });
 
 // Configuration des intercepteurs pour les erreurs
-setupErrorHandlers(api);
+setupErrorHandlers(apiInstance);
+
+// Fonctions de base de l'API
+const apiClient = {
+  get: async (url: string, config = {}) => {
+    try {
+      const response = await apiInstance.get(url, config);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  post: async (url: string, data = {}, config = {}) => {
+    try {
+      const response = await apiInstance.post(url, data, config);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  put: async (url: string, data = {}, config = {}) => {
+    try {
+      const response = await apiInstance.put(url, data, config);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  patch: async (url: string, data = {}, config = {}) => {
+    try {
+      const response = await apiInstance.patch(url, data, config);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  delete: async (url: string, config = {}) => {
+    try {
+      const response = await apiInstance.delete(url, config);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  }
+};
 
 // Module auth
 const auth = {
   login: async (credentials) => {
     try {
-      const response = await api.post('/auth/login', credentials);
-      return response.data;
+      const response = await apiClient.post('/auth/login', credentials);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -32,8 +85,8 @@ const auth = {
   
   register: async (userData) => {
     try {
-      const response = await api.post('/auth/register', userData);
-      return response.data;
+      const response = await apiClient.post('/auth/register', userData);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -42,8 +95,8 @@ const auth = {
   
   logout: async () => {
     try {
-      const response = await api.post('/auth/logout');
-      return response.data;
+      const response = await apiClient.post('/auth/logout');
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -52,8 +105,8 @@ const auth = {
   
   checkSession: async () => {
     try {
-      const response = await api.get('/auth/session');
-      return response.data;
+      const response = await apiClient.get('/auth/session');
+      return response;
     } catch (error) {
       // Ne pas afficher d'erreur pour les vérifications de session
       return { authenticated: false };
@@ -65,8 +118,8 @@ const auth = {
 const database = {
   connect: async (connectionInfo) => {
     try {
-      const response = await api.post('/database/connect', connectionInfo);
-      return response.data;
+      const response = await apiClient.post('/database/connect', connectionInfo);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -75,8 +128,8 @@ const database = {
   
   query: async (sql, params = {}) => {
     try {
-      const response = await api.post('/database/query', { sql, params });
-      return response.data;
+      const response = await apiClient.post('/database/query', { sql, params });
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -85,8 +138,8 @@ const database = {
   
   getDatabases: async () => {
     try {
-      const response = await api.get('/db-explorer/databases');
-      return response.data;
+      const response = await apiClient.get('/db-explorer/databases');
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -95,8 +148,8 @@ const database = {
   
   getTables: async (database) => {
     try {
-      const response = await api.get(`/db-explorer/databases/${database}/tables`);
-      return response.data;
+      const response = await apiClient.get(`/db-explorer/databases/${database}/tables`);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -105,8 +158,8 @@ const database = {
   
   getColumns: async (database, table) => {
     try {
-      const response = await api.get(`/db-explorer/databases/${database}/tables/${table}/columns`);
-      return response.data;
+      const response = await apiClient.get(`/db-explorer/databases/${database}/tables/${table}/columns`);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -118,8 +171,8 @@ const database = {
 const deploy = {
   getStatus: async () => {
     try {
-      const response = await api.get('/deploy/status');
-      return response.data;
+      const response = await apiClient.get('/deploy/status');
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -128,8 +181,8 @@ const deploy = {
   
   triggerDeploy: async (options = {}) => {
     try {
-      const response = await api.post('/deploy/trigger', options);
-      return response.data;
+      const response = await apiClient.post('/deploy/trigger', options);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -138,8 +191,8 @@ const deploy = {
   
   getLogs: async (deployId) => {
     try {
-      const response = await api.get(`/deploy/${deployId}/logs`);
-      return response.data;
+      const response = await apiClient.get(`/deploy/${deployId}/logs`);
+      return response;
     } catch (error) {
       handleApiError(error);
       throw error;
@@ -149,7 +202,8 @@ const deploy = {
 
 // Export des modules
 export default {
-  api,
+  api: apiInstance,
+  ...apiClient,
   auth,
   database,
   deploy

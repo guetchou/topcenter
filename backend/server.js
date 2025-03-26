@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -24,6 +25,7 @@ const mediaRoutes = require('./routes/medias');
 const systemRoutes = require('./routes/system');
 const uploadRoutes = require('./routes/upload');
 const dbExplorerRouter = require('./routes/db-explorer');
+const dbMigrationRouter = require('./routes/db-migration');
 
 // Initialize the app
 const app = express();
@@ -73,6 +75,7 @@ app.use('/api/medias', mediaRoutes);
 app.use('/api/system', systemRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/db-explorer', dbExplorerRouter);
+app.use('/api/db-migration', dbMigrationRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
