@@ -1,78 +1,99 @@
 
 import PocketBase from 'pocketbase';
 
-let pocketbaseInstance: PocketBase | null = null;
+// Création d'une instance PocketBase
+const PB_URL = import.meta.env.VITE_POCKETBASE_URL || 'https://api.topcenter.cg';
+export const pb = new PocketBase(PB_URL);
 
-export const initPocketBase = (url?: string) => {
-  const pocketbaseUrl = url || import.meta.env.VITE_POCKETBASE_URL || 'http://localhost:8090';
-  pocketbaseInstance = new PocketBase(pocketbaseUrl);
-  return pocketbaseInstance;
-};
-
-export const getPocketbase = (): PocketBase => {
-  if (!pocketbaseInstance) {
-    return initPocketBase();
-  }
-  return pocketbaseInstance;
-};
-
-// État de disponibilité de PocketBase
-let isPocketBaseAvailable = false;
-let isCheckingPocketBase = false;
-
-export const usePocketBaseStatus = () => {
-  return {
-    isAvailable: isPocketBaseAvailable,
-    isChecking: isCheckingPocketBase
-  };
-};
-
-// Pour les tests de connexion PocketBase
+// Fonction pour tester la connexion à PocketBase
 export const testPocketBaseConnection = async (): Promise<boolean> => {
   try {
-    isCheckingPocketBase = true;
-    const pb = getPocketbase();
-    const health = await pb.health.check();
-    isPocketBaseAvailable = health.code === 200;
-    return isPocketBaseAvailable;
+    // Tester la connexion en récupérant la liste des collections
+    await pb.collections.getList(1, 1);
+    console.log('PocketBase connection successful');
+    return true;
   } catch (error) {
-    isPocketBaseAvailable = false;
+    console.error('PocketBase connection failed:', error);
     return false;
-  } finally {
-    isCheckingPocketBase = false;
   }
 };
 
-// Pour la création de collections PocketBase
+// Fonction pour créer une nouvelle collection
 export const createCollection = async (collectionName: string, schema: any) => {
-  const pb = getPocketbase();
-  // Cette fonction est un stub - à implémenter selon les besoins
-  console.log('Creating collection:', collectionName, schema);
-  return true;
+  try {
+    const newCollection = await pb.collections.create({
+      name: collectionName,
+      schema: schema
+    });
+    return newCollection;
+  } catch (error) {
+    console.error(`Error creating collection ${collectionName}:`, error);
+    throw error;
+  }
 };
 
-// Pour récupérer des enregistrements PocketBase
-export const getRecords = async (collectionName: string, options = {}) => {
-  const pb = getPocketbase();
-  // Cette fonction est un stub - à implémenter selon les besoins
-  console.log('Getting records from collection:', collectionName, options);
-  return [];
+// Fonction pour récupérer des enregistrements
+export const getRecords = async (collectionName: string, page = 1, perPage = 50) => {
+  try {
+    const records = await pb.collection(collectionName).getList(page, perPage);
+    return records.items;
+  } catch (error) {
+    console.error(`Error fetching records from ${collectionName}:`, error);
+    return [];
+  }
 };
 
-// Pour l'authentification PocketBase
-export const loginUser = async (email: string, password: string) => {
-  const pb = getPocketbase();
-  // Cette fonction est un stub - à implémenter selon les besoins
-  console.log('Logging in user:', email);
-  return true;
+// Fonction pour créer un nouvel enregistrement
+export const createRecord = async (collectionName: string, data: any) => {
+  try {
+    const record = await pb.collection(collectionName).create(data);
+    return record;
+  } catch (error) {
+    console.error(`Error creating record in ${collectionName}:`, error);
+    throw error;
+  }
 };
 
-// Pour vérifier la disponibilité du serveur
-export const checkServerAvailability = async () => {
-  return await testPocketBaseConnection();
+// Fonction pour mettre à jour un enregistrement
+export const updateRecord = async (collectionName: string, id: string, data: any) => {
+  try {
+    const record = await pb.collection(collectionName).update(id, data);
+    return record;
+  } catch (error) {
+    console.error(`Error updating record ${id} in ${collectionName}:`, error);
+    throw error;
+  }
 };
 
-// Exporter pb pour la compatibilité avec les composants existants
-export const pb = getPocketbase();
+// Fonction pour supprimer un enregistrement
+export const deleteRecord = async (collectionName: string, id: string) => {
+  try {
+    await pb.collection(collectionName).delete(id);
+    return true;
+  } catch (error) {
+    console.error(`Error deleting record ${id} from ${collectionName}:`, error);
+    throw error;
+  }
+};
 
-export default getPocketbase;
+// Fonction pour authentification admin
+export const authenticateAdmin = async (email: string, password: string) => {
+  try {
+    const authData = await pb.admins.authWithPassword(email, password);
+    return authData;
+  } catch (error) {
+    console.error('Admin authentication failed:', error);
+    throw error;
+  }
+};
+
+export default {
+  pb,
+  testPocketBaseConnection,
+  createCollection,
+  getRecords,
+  createRecord,
+  updateRecord,
+  deleteRecord,
+  authenticateAdmin
+};

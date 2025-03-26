@@ -1,67 +1,31 @@
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Image, FolderTree, Menu as MenuIcon } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
+import React from 'react';
+import { Helmet } from 'react-helmet-async';
+import DatabaseStatus from '@/components/admin/DatabaseStatus';
 
-export const AdminDashboard = () => {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['cms-stats'],
-    queryFn: async () => {
-      try {
-        // Exécuter les requêtes en parallèle
-        const articlesResponse = await supabase.from('blog_posts').count().execute();
-        const categoriesResponse = await supabase.from('content_categories').count().execute();
-        const mediasResponse = await supabase.from('media_library').count().execute();
-        const menusResponse = await supabase.from('menus').count().execute();
-
-        return {
-          articles: articlesResponse.count || 0,
-          categories: categoriesResponse.count || 0,
-          medias: mediasResponse.count || 0,
-          menus: menusResponse.count || 0
-        };
-      } catch (error) {
-        console.error("Erreur lors de la récupération des statistiques:", error);
-        return {
-          articles: 0,
-          categories: 0,
-          medias: 0,
-          menus: 0
-        };
-      }
-    }
-  });
-
-  const statCards = [
-    { title: "Articles", value: stats?.articles, icon: BookOpen },
-    { title: "Catégories", value: stats?.categories, icon: FolderTree },
-    { title: "Médias", value: stats?.medias, icon: Image },
-    { title: "Menus", value: stats?.menus, icon: MenuIcon }
-  ];
-
+const Dashboard: React.FC = () => {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Tableau de bord</h1>
+    <>
+      <Helmet>
+        <title>Dashboard - TopCenter</title>
+      </Helmet>
       
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className="w-4 h-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-7 w-16" />
-              ) : (
-                <div className="text-2xl font-bold">{stat.value || 0}</div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+      <div className="container mx-auto py-6">
+        <h1 className="text-2xl font-bold mb-6">Tableau de bord administrateur</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <DatabaseStatus />
+        </div>
+        
+        <div className="p-6 bg-slate-50 border rounded-md dark:bg-slate-900">
+          <p className="text-muted-foreground">
+            Bienvenue dans l'interface d'administration TopCenter. 
+            Vous pouvez gérer vos contenus, utilisateurs et paramètres à partir de ce tableau de bord.
+          </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
+
+export default Dashboard;
