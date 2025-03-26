@@ -1,6 +1,6 @@
 
 import { toast } from '@/components/ui/use-toast';
-import { AxiosError } from 'axios';
+import { AxiosError, AxiosInstance } from 'axios';
 
 interface ApiErrorResponse {
   message: string;
@@ -73,4 +73,20 @@ export const handleApiError = (error: unknown, customMessage?: string): void => 
   
   // Log error for debugging
   console.error('API Error:', error);
+};
+
+// Setup error handlers for an axios instance
+export const setupErrorHandlers = (api: AxiosInstance): void => {
+  api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      // Only handle errors automatically if not a 401 (handled by auth interceptor)
+      if (!error.response || error.response.status !== 401) {
+        handleApiError(error);
+      }
+      return Promise.reject(error);
+    }
+  );
+  
+  console.log('API error handlers initialized');
 };
