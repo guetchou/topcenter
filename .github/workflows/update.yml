@@ -1,4 +1,3 @@
-
 name: Automate Pulls and Updates
 
 on:
@@ -14,59 +13,65 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
+    - name: 📥 Checkout repository
       uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Clone complet pour avoir l'historique
 
-    - name: Setup Node.js
+    - name: ⚙️ Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: 18
         cache: 'npm'
 
-    - name: Pull latest changes
+    - name: 🔄 Pull latest changes
       run: |
-        git pull origin main
-        if [ $? -ne 0 ]; then
-          echo "::error::Pull failed. Resolving conflicts automatically is not possible"
+        git pull origin main || { echo "::error:: Pull failed. Resolve conflicts manually."; exit 1; }
+
+    - name: 📦 Vérification et installation des dépendances
+      run: |
+        npm install
+        if git diff --exit-code package-lock.json; then
+          echo "✅ package-lock.json est synchronisé avec package.json"
+        else
+          echo "::error:: package-lock.json est désynchronisé avec package.json"
           exit 1
         fi
 
-    - name: Install dependencies
+    - name: 🔧 Installer les dépendances
       run: npm ci # Plus rapide et déterministe que npm install
 
-    - name: Check for errors
+    - name: 🚨 Vérifier le code (Lint)
       run: npm run lint --if-present
 
-    - name: Build project
+    - name: 🏗️ Build du projet
       run: npm run build
       env:
         CI: true
 
-    - name: Run tests
+    - name: ✅ Exécuter les tests
       run: npm test --if-present
       env:
         CI: true
-        
-    - name: Commit and push changes
+
+    - name: 🚀 Commit et push des modifications si nécessaire
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        
+
         if [[ -n "$(git status --porcelain)" ]]; then
           git add .
-          git commit -m "Automated update: $(date +'%Y-%m-%d %H:%M:%S')"
+          git commit -m "🔄 Automated update: $(date +'%Y-%m-%d %H:%M:%S')"
           git push
-          echo "Changes committed and pushed"
+          echo "✅ Modifications poussées avec succès"
         else
-          echo "No changes to commit"
+          echo "✅ Aucune modification détectée"
         fi
 
-    - name: Notify on success
+    - name: 📢 Notification de succès
       if: success()
-      run: echo "::notice::Automated update completed successfully"
+      run: echo "::notice:: 🚀 Mise à jour automatisée terminée avec succès"
 
-    - name: Notify on failure
+    - name: ⚠️ Notification d'échec
       if: failure()
-      run: echo "::error::Automated update failed, manual intervention may be required"
+      run: echo "::error:: ❌ La mise à jour a échoué, une intervention manuelle peut être requise"
