@@ -1,4 +1,3 @@
-
 name: 🚀 Déploiement Infomaniak
 
 on:
@@ -36,11 +35,11 @@ jobs:
       - name: 📤 Déploiement via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USER }}
-          password: ${{ secrets.FTP_PASS }}
+          server: ${{ rj8dl.ftp.infomaniak.com }}
+          username: ${{ rj8dl_ambangue }}
+          password: ${{ Admin242@BZV# }}
           local-dir: ./dist/
-          server-dir: /www/
+          server-dir: /home/clients/182ddf0dfc453b3faeaee042d1660720/sites/ # Chemin mis à jour
           dangerous-clean-slate: true
 
       - name: ✅ Notification de déploiement
