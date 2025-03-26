@@ -1,6 +1,7 @@
 
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
 import App from './App.tsx'
 import './index.css'
 import './lib/accessibilityStyles.css'
@@ -53,9 +54,14 @@ skipLink.className = 'skip-link';
 skipLink.textContent = 'Aller au contenu principal';
 document.body.prepend(skipLink);
 
+// Create a helmetContext to be used by HelmetProvider
+const helmetContext = {};
+
 // Initialize application with optimized resources
 createRoot(document.getElementById("root")!).render(
-  <AppProviders>
-    <App />
-  </AppProviders>
+  <HelmetProvider context={helmetContext}>
+    <AppProviders>
+      <App />
+    </AppProviders>
+  </HelmetProvider>
 );
