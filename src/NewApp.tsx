@@ -5,7 +5,6 @@ import { ThemeProvider } from "next-themes";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import { NotificationsProvider } from "@/components/notifications/NotificationsProvider";
-import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "sonner";
 
 // Components
@@ -25,29 +24,27 @@ import NotFound from "@/pages/NotFound";
  */
 const NewApp = () => {
   return (
-    <HelmetProvider>
-      <ThemeProvider attribute="class" defaultTheme="light">
-        <QueryClientProvider client={queryClient}>
-          <NotificationsProvider>
-            {/* Utilise le nouveau design du MainNav */}
-            <MainNav useNewDesign={true} />
-            
-            <main className="min-h-screen">
-              <Routes>
-                <Route path="/" element={<HomeNew />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-            
-            <Footer />
-            <Toaster position="bottom-right" richColors />
-          </NotificationsProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </HelmetProvider>
+    <ThemeProvider attribute="class" defaultTheme="light">
+      <QueryClientProvider client={queryClient}>
+        <NotificationsProvider>
+          {/* Utilise le nouveau design du MainNav */}
+          <MainNav useNewDesign={true} />
+          
+          <main className="min-h-screen">
+            <Routes>
+              <Route path="/" element={<HomeNew />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/services" element={<Services />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          
+          <Footer />
+          <Toaster position="bottom-right" richColors />
+        </NotificationsProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 };
 

@@ -7,7 +7,7 @@ import './lib/accessibilityStyles.css'
 import { AppProviders } from './providers/AppProviders.tsx'
 import { toast } from 'sonner'
 
-// Service worker registration code
+// Service worker registration with better error handling
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
@@ -34,6 +34,7 @@ if ('serviceWorker' in navigator) {
       });
     } catch (error) {
       console.error('Échec de l\'enregistrement du Service Worker:', error);
+      // Don't show toast for SW errors to avoid confusing users
     }
   });
   
@@ -54,9 +55,7 @@ document.body.prepend(skipLink);
 
 // Initialize application with optimized resources
 createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <AppProviders>
-      <App />
-    </AppProviders>
-  </BrowserRouter>
+  <AppProviders>
+    <App />
+  </AppProviders>
 );

@@ -2,7 +2,6 @@
 import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./ThemeProvider";
-import { HelmetProvider } from "react-helmet-async";
 import { Suspense } from "react";
 import PageLoader from "@/components/PageLoader";
 import { SearchProvider } from "@/contexts/SearchContext";
@@ -24,10 +23,8 @@ export function AppProviders({ children }: AppProvidersProps) {
         <IntlProviderWrapper>
           <SearchProvider>
             <Suspense fallback={<PageLoader />}>
-              <HelmetProvider>
-                {children}
-                <Toaster position="top-right" richColors closeButton />
-              </HelmetProvider>
+              {children}
+              <Toaster position="top-right" richColors closeButton />
             </Suspense>
           </SearchProvider>
         </IntlProviderWrapper>
