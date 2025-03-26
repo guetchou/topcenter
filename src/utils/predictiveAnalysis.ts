@@ -1,3 +1,4 @@
+
 // Ce fichier devrait être créé pour la fonctionnalité d'analyse prédictive
 // Nous corrigeons l'erreur "Cannot find name 'a'" en créant un squelette de base
 
@@ -76,6 +77,148 @@ export const predictTimeSeries = (
     predictedValues,
     trend,
     confidence: 0.7 // valeur arbitraire pour cet exemple
+  };
+};
+
+interface Message {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+interface InteractionPrediction {
+  nextTopics: string[];
+  suggestedResponses: string[];
+  confidence: number;
+  userIntent: {
+    type: string;
+    confidence: number;
+  };
+}
+
+/**
+ * Prédit la prochaine interaction basée sur l'historique des messages
+ * Analyse les messages précédents pour suggérer des sujets et réponses
+ */
+export const predictNextInteraction = (messages: Message[]): InteractionPrediction => {
+  // Liste de sujets potentiels basée sur le contexte de la conversation
+  const allPossibleTopics = [
+    'tarifs', 'horaires', 'support technique', 'configuration', 
+    'facturation', 'contrat', 'services disponibles', 'promotion',
+    'réseau', 'fibre optique', 'assistance', 'rendez-vous'
+  ];
+  
+  // Liste de réponses suggérées selon le contexte
+  const allPossibleResponses = [
+    "Comment puis-je vous aider avec votre demande de support technique ?",
+    "Souhaitez-vous en savoir plus sur nos offres actuelles ?",
+    "Je peux vous aider à résoudre ce problème tout de suite.",
+    "Voulez-vous que je vous explique le processus de configuration ?",
+    "Avez-vous besoin d'informations supplémentaires sur nos services ?",
+    "Je peux vous mettre en relation avec un technicien spécialisé.",
+    "Souhaitez-vous planifier un rendez-vous avec notre équipe ?",
+    "Je peux vérifier l'état de votre dossier immédiatement."
+  ];
+  
+  // Analyse basique de l'intention utilisateur
+  const determineUserIntent = (messages: Message[]) => {
+    const userMessages = messages.filter(m => m.isUser);
+    
+    if (userMessages.length === 0) {
+      return { type: 'information', confidence: 0.5 };
+    }
+    
+    const lastUserMessage = userMessages[userMessages.length - 1].text.toLowerCase();
+    
+    // Analyse simple basée sur des mots-clés
+    if (lastUserMessage.includes('problème') || lastUserMessage.includes('aide') || lastUserMessage.includes('erreur')) {
+      return { type: 'support', confidence: 0.8 };
+    } else if (lastUserMessage.includes('prix') || lastUserMessage.includes('tarif') || lastUserMessage.includes('coût')) {
+      return { type: 'pricing', confidence: 0.9 };
+    } else if (lastUserMessage.includes('quand') || lastUserMessage.includes('horaire') || lastUserMessage.includes('disponible')) {
+      return { type: 'schedule', confidence: 0.75 };
+    } else if (lastUserMessage.includes('merci') || lastUserMessage.includes('bien') || lastUserMessage.includes('super')) {
+      return { type: 'gratitude', confidence: 0.85 };
+    } else {
+      return { type: 'information', confidence: 0.6 };
+    }
+  };
+  
+  // Sélectionner les sujets pertinents basés sur les messages
+  const selectRelevantTopics = (messages: Message[], allTopics: string[]) => {
+    // Simplification: pour une démonstration, on sélectionne aléatoirement
+    const userIntent = determineUserIntent(messages);
+    
+    // Filtrer selon l'intention
+    let filteredTopics = allTopics;
+    if (userIntent.type === 'support') {
+      filteredTopics = allTopics.filter(t => 
+        ['support technique', 'configuration', 'assistance', 'réseau'].includes(t)
+      );
+    } else if (userIntent.type === 'pricing') {
+      filteredTopics = allTopics.filter(t => 
+        ['tarifs', 'facturation', 'promotion', 'contrat'].includes(t)
+      );
+    }
+    
+    // Randomiser l'ordre et prendre les N premiers
+    return filteredTopics
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.min(4, filteredTopics.length));
+  };
+  
+  // Sélectionner les réponses suggérées
+  const selectSuggestedResponses = (messages: Message[], allResponses: string[]) => {
+    const userIntent = determineUserIntent(messages);
+    
+    // Filtrer selon l'intention (simplification)
+    let filteredResponses = allResponses;
+    if (userIntent.type === 'support') {
+      filteredResponses = allResponses.filter(r => 
+        r.includes('support') || r.includes('problème') || r.includes('résoudre') || r.includes('technicien')
+      );
+    } else if (userIntent.type === 'pricing') {
+      filteredResponses = allResponses.filter(r => 
+        r.includes('offres') || r.includes('services')
+      );
+    } else if (userIntent.type === 'gratitude') {
+      return ["Ravi d'avoir pu vous aider ! Y a-t-il autre chose que je puisse faire pour vous ?"];
+    }
+    
+    // S'il n'y a pas assez de réponses filtrées, ajouter quelques options génériques
+    if (filteredResponses.length < 2) {
+      filteredResponses = [
+        ...filteredResponses,
+        "Comment puis-je vous aider davantage ?",
+        "Avez-vous d'autres questions sur nos services ?"
+      ];
+    }
+    
+    // Randomiser l'ordre et prendre les N premiers
+    return filteredResponses
+      .sort(() => 0.5 - Math.random())
+      .slice(0, Math.min(3, filteredResponses.length));
+  };
+  
+  // Calculer un score de confiance basé sur le nombre de messages
+  const calculateConfidence = (messages: Message[]) => {
+    const baseConfidence = 0.5;
+    const messageFactor = Math.min(messages.length * 0.05, 0.4); // Max +40% pour messages
+    return Math.min(baseConfidence + messageFactor, 0.95);
+  };
+  
+  // Construire la prédiction
+  const nextTopics = selectRelevantTopics(messages, allPossibleTopics);
+  const suggestedResponses = selectSuggestedResponses(messages, allPossibleResponses);
+  const confidence = calculateConfidence(messages);
+  const userIntent = determineUserIntent(messages);
+  
+  return {
+    nextTopics,
+    suggestedResponses,
+    confidence,
+    userIntent
   };
 };
 
