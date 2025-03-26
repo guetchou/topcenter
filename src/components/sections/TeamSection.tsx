@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useMemo } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Carousel,
@@ -10,10 +11,12 @@ import {
 } from "@/components/ui/carousel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ApiContentWrapper } from "@/components/ApiContentWrapper";
 import { useTeamMembers } from "@/hooks/useTeamMembers";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 import { ResponsiveImage } from "@/components/ui/ResponsiveImage";
+import { ChevronRight } from "lucide-react";
 
 export const TeamSection = () => {
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
@@ -49,15 +52,20 @@ export const TeamSection = () => {
 
   // Make a memoized version of the team members to avoid unnecessary re-renders
   const processedTeamMembers = useMemo(() => {
-    return teamMembers?.map(member => ({
+    if (!teamMembers || teamMembers.length === 0) return [];
+    
+    return teamMembers.map(member => ({
       ...member,
       // Ensure specialties is always an array
-      specialties: Array.isArray(member.specialties) ? member.specialties : []
-    })) || [];
+      specialties: Array.isArray(member.specialties) ? member.specialties : [],
+      // Ensure there's always an image
+      image: member.image || '/placeholder.svg'
+    }));
   }, [teamMembers]);
 
   return (
     <section
+      id="equipe"
       className="py-16 bg-muted/30"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
@@ -100,101 +108,110 @@ export const TeamSection = () => {
           {(members) => (
             <div className="relative">
               {members && members.length > 0 ? (
-                <Carousel
-                  setApi={setApi}
-                  opts={{ 
-                    align: "start", 
-                    loop: true,
-                    dragFree: false
-                  }}
-                  className="w-full max-w-5xl mx-auto"
-                >
-                  <CarouselContent>
-                    {members.map((member, index) => (
-                      <CarouselItem key={member.id || index} className="md:basis-1/2 lg:basis-1/3 pl-4">
-                        <motion.div 
-                          whileHover={{ scale: 1.03 }}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ 
-                            opacity: 1, 
-                            y: 0,
-                            transition: { delay: index * 0.1, duration: 0.3 } 
-                          }}
-                        >
-                          <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 h-full ${currentIndex === index ? 'ring-2 ring-primary/30' : ''}`}>
-                            <CardContent className="p-6">
-                              {member.image && (
+                <>
+                  <Carousel
+                    setApi={setApi}
+                    opts={{ 
+                      align: "start", 
+                      loop: true,
+                      dragFree: false
+                    }}
+                    className="w-full max-w-5xl mx-auto"
+                  >
+                    <CarouselContent>
+                      {members.map((member, index) => (
+                        <CarouselItem key={member.id || index} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                          <motion.div 
+                            whileHover={{ scale: 1.03 }}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ 
+                              opacity: 1, 
+                              y: 0,
+                              transition: { delay: index * 0.1, duration: 0.3 } 
+                            }}
+                          >
+                            <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 h-full ${currentIndex === index ? 'ring-2 ring-primary/30' : ''}`}>
+                              <CardContent className="p-6">
                                 <div className="aspect-square mb-4 overflow-hidden rounded-full">
                                   <ResponsiveImage
-                                    src={member.image}
+                                    src={member.image || '/placeholder.svg'}
                                     alt={member.name || 'Team member'}
                                     aspectRatio="1/1"
                                     objectFit="cover"
                                     fallback="/placeholder.svg"
                                   />
                                 </div>
-                              )}
-                              <h3 className="text-xl font-semibold mb-2">{member.name || 'Team Member'}</h3>
-                              {member.role && (
-                                <p className="text-primary font-medium mb-2">{member.role}</p>
-                              )}
-                              {member.expertise && (
-                                <p className="text-sm text-muted-foreground mb-4">{member.expertise}</p>
-                              )}
-                              
-                              {member.specialties && member.specialties.length > 0 && (
-                                <div className="flex flex-wrap gap-2">
-                                  {member.specialties.map((specialty, i) => (
-                                    <Badge key={i} variant="secondary">
-                                      {specialty}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )}
-                              
-                              {member.email && (
-                                <div className="mt-4 text-sm">
-                                  <a 
-                                    href={`mailto:${member.email}`}
-                                    className="text-primary hover:underline"
-                                  >
-                                    {member.email}
-                                  </a>
-                                </div>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
+                                <h3 className="text-xl font-semibold mb-2">{member.name || 'Team Member'}</h3>
+                                {member.role && (
+                                  <p className="text-primary font-medium mb-2">{member.role}</p>
+                                )}
+                                {member.expertise && (
+                                  <p className="text-sm text-muted-foreground mb-4">{member.expertise}</p>
+                                )}
+                                
+                                {member.specialties && member.specialties.length > 0 && (
+                                  <div className="flex flex-wrap gap-2">
+                                    {member.specialties.map((specialty, i) => (
+                                      <Badge key={i} variant="secondary">
+                                        {specialty}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {member.email && (
+                                  <div className="mt-4 text-sm">
+                                    <a 
+                                      href={`mailto:${member.email}`}
+                                      className="text-primary hover:underline"
+                                    >
+                                      {member.email}
+                                    </a>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    
+                    <div className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-10">
+                      <CarouselPrevious className="bg-background/80 backdrop-blur-sm shadow-md" />
+                    </div>
+                    <div className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-10">
+                      <CarouselNext className="bg-background/80 backdrop-blur-sm shadow-md" />
+                    </div>
+                  </Carousel>
                   
-                  <div className="absolute -left-4 md:-left-8 top-1/2 -translate-y-1/2 z-10">
-                    <CarouselPrevious className="bg-background/80 backdrop-blur-sm shadow-md" />
+                  {/* Indicators - Only show if we have team members */}
+                  {api && members.length > 0 && (
+                    <div className="flex justify-center gap-2 mt-6">
+                      {members.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => api?.scrollTo(index)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentIndex ? 'bg-primary w-6' : 'bg-primary/30'
+                          }`}
+                          aria-label={`Voir le membre d'équipe ${index + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="mt-8 text-center">
+                    <Button asChild variant="outline" className="group">
+                      <Link to="/equipe">
+                        Découvrir toute l'équipe
+                        <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                      </Link>
+                    </Button>
                   </div>
-                  <div className="absolute -right-4 md:-right-8 top-1/2 -translate-y-1/2 z-10">
-                    <CarouselNext className="bg-background/80 backdrop-blur-sm shadow-md" />
-                  </div>
-                </Carousel>
+                </>
               ) : (
                 <div className="text-center py-8 text-muted-foreground">
                   Aucun membre d'équipe disponible pour le moment.
-                </div>
-              )}
-              
-              {/* Indicators - Only show if we have team members */}
-              {api && members && members.length > 0 && (
-                <div className="flex justify-center gap-2 mt-6">
-                  {members.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => api?.scrollTo(index)}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentIndex ? 'bg-primary w-6' : 'bg-primary/30'
-                      }`}
-                      aria-label={`Voir le membre d'équipe ${index + 1}`}
-                    />
-                  ))}
                 </div>
               )}
             </div>
@@ -204,4 +221,3 @@ export const TeamSection = () => {
     </section>
   );
 };
-

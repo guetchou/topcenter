@@ -1,9 +1,6 @@
 
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { ThemeProvider } from "@/providers/ThemeProvider";
-import IntlProviderWrapper from '@/components/IntlProvider';
-import { Toaster } from "sonner";
 import ErrorBoundary from '@/components/ErrorBoundary';
 import Index from '@/pages/Index';
 import Contact from '@/pages/Contact';
@@ -16,25 +13,20 @@ import TeamPage from '@/pages/TeamPage';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="top-center-theme">
-      <IntlProviderWrapper>
-        <ErrorBoundary>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/devis" element={<Devis />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/predictive-analytics" element={<PredictiveAnalyticsDisplay />} />
-              <Route path="/equipe" element={<TeamPage />} />
-            </Routes>
-            <PredictiveAssistant />
-            <Toaster position="top-right" richColors />
-          </BrowserRouter>
-        </ErrorBoundary>
-      </IntlProviderWrapper>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/devis" element={<Devis />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/predictive-analytics" element={<PredictiveAnalyticsDisplay />} />
+          <Route path="/equipe" element={<TeamPage />} />
+        </Routes>
+        <PredictiveAssistant />
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

@@ -11,7 +11,15 @@ import { HelmetProvider } from "react-helmet-async";
 
 // Création d'une instance de QueryClient en dehors du composant
 // pour éviter sa recréation à chaque rendu
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60 * 1000, // 1 minute
+      retry: 1,
+      refetchOnWindowFocus: false
+    }
+  }
+});
 
 interface AppProvidersProps {
   children: ReactNode;

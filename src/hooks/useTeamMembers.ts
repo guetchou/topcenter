@@ -74,11 +74,21 @@ export const useTeamMembers = () => {
           throw error;
         }
         
-        // If no data is available, return fallback data
-        return data.length > 0 ? data.map(member => ({
-          ...member,
-          specialties: member.specialties || []
-        })) : fallbackTeamMembers;
+        // Process data to ensure consistent format
+        const processedData = data && data.length > 0 
+          ? data.map(member => ({
+              ...member,
+              // Ensure all required fields have values
+              id: member.id || `fallback-${Math.random().toString(36).substring(2, 9)}`,
+              name: member.name || 'Membre de l\'équipe',
+              role: member.role || 'Rôle non défini',
+              image: member.image || '/placeholder.svg',
+              // Ensure specialties is always an array
+              specialties: Array.isArray(member.specialties) ? member.specialties : []
+            }))
+          : fallbackTeamMembers;
+        
+        return processedData;
       } catch (error) {
         console.error("Erreur useTeamMembers:", error);
         return fallbackTeamMembers;
