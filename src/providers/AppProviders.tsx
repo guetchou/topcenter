@@ -1,6 +1,5 @@
 
 import { ReactNode } from "react";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./ThemeProvider";
 import { HelmetProvider } from "react-helmet-async";
@@ -33,7 +32,6 @@ export function AppProviders({ children }: AppProvidersProps) {
           </SearchProvider>
         </IntlProviderWrapper>
       </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

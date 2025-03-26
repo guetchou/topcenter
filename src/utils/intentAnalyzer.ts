@@ -1,4 +1,3 @@
-
 /**
  * Analyseur d'intention basé sur les principes d'IA d'Elon Musk
  * Version simplifiée utilisant une analyse basée sur des règles
@@ -52,6 +51,75 @@ const INTENT_PATTERNS = {
     'au revoir', 'adieu', 'à bientôt', 'à plus', 'bye', 'bonne journée', 
     'bon weekend', 'bonne soirée', 'terminer', 'fin', 'conclure'
   ]
+};
+
+/**
+ * Générer des suggestions contextuelles basées sur l'entrée utilisateur et l'historique
+ * @param currentInput Le texte actuel saisi par l'utilisateur
+ * @param messageHistory L'historique des messages
+ * @returns Un tableau de suggestions contextuelles
+ */
+export const generateContextualSuggestions = (
+  currentInput: string,
+  messageHistory: { text: string; isUser: boolean }[]
+): string[] => {
+  // Analyser l'intention du message actuel
+  const currentIntent = analyzeUserIntent(currentInput);
+  
+  // Suggestions de base par intention détectée
+  const suggestionsByIntent: Record<string, string[]> = {
+    'demande_information': [
+      'Pouvez-vous me donner plus de détails sur vos services ?',
+      'Quelles sont vos horaires d\'ouverture ?',
+      'Comment fonctionne votre système de support ?'
+    ],
+    'demande_assistance': [
+      'J\'ai besoin d\'aide avec votre application',
+      'Comment puis-je résoudre ce problème technique ?',
+      'Pouvez-vous me guider à travers ce processus ?'
+    ],
+    'demande_devis': [
+      'Je souhaite obtenir un devis personnalisé',
+      'Quels sont vos tarifs pour 10 postes ?',
+      'Avez-vous des forfaits entreprise ?'
+    ],
+    'expression_mécontentement': [
+      'Comment puis-je déposer une réclamation ?',
+      'J\'aimerais parler à un responsable',
+      'Que pouvez-vous faire pour résoudre mon problème ?'
+    ],
+    'demande_rdv': [
+      'Je souhaite prendre rendez-vous cette semaine',
+      'Êtes-vous disponible lundi prochain ?',
+      'Comment puis-je réserver un créneau horaire ?'
+    ],
+    'demande_fonctionnalité': [
+      'Cette fonctionnalité est-elle disponible sur mobile ?',
+      'Prévoyez-vous d\'ajouter l\'intégration avec autre outil ?',
+      'Comment personnaliser cette option ?'
+    ],
+    'salutation': [
+      'J\'ai besoin d\'information sur vos services',
+      'Je cherche une assistance technique',
+      'Je voudrais obtenir un devis'
+    ],
+    'remerciement': [
+      'Puis-je vous demander autre chose ?',
+      'Comment puis-je vous contacter à l\'avenir ?',
+      'Pourriez-vous m\'envoyer un récapitulatif par email ?'
+    ],
+    'conclusion': [
+      'Avant de terminer, j\'ai une dernière question',
+      'Pourriez-vous me rappeler vos coordonnées ?',
+      'Comment puis-je vous évaluer ?'
+    ]
+  };
+  
+  // Obtenir les suggestions de base selon l'intention détectée
+  let suggestions = suggestionsByIntent[currentIntent.detectedIntent] || [];
+  
+  // Limiter à 3 suggestions maximum
+  return suggestions.slice(0, 3);
 };
 
 /**

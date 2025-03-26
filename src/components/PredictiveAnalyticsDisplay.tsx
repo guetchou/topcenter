@@ -1,245 +1,407 @@
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Brain, TrendingUp, PieChart, BarChart, MessageSquare, Activity } from 'lucide-react';
+import React, { useState } from 'react';
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle, 
+  CardDescription,
+  CardFooter
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { ArrowUpCircle, ArrowDownCircle, AlertCircle, BarChart3, LineChart, PieChart } from 'lucide-react';
 
-interface Analytics {
-  userSentiment: {
-    positive: number;
-    neutral: number;
-    negative: number;
-  };
-  topIntents: {
-    label: string;
-    value: number;
-    change: number;
-  }[];
-  responseEffectiveness: number;
-  averageResolutionTime: number;
-  predictionAccuracy: number;
-  engagementRate: number;
-}
-
-export function PredictiveAnalyticsDisplay() {
-  const [analytics, setAnalytics] = useState<Analytics>({
-    userSentiment: {
-      positive: 65,
-      neutral: 25,
-      negative: 10
-    },
-    topIntents: [
-      { label: 'Information', value: 42, change: 5 },
-      { label: 'Assistance', value: 28, change: -2 },
-      { label: 'Purchase', value: 18, change: 8 },
-      { label: 'Complaint', value: 12, change: -3 }
-    ],
-    responseEffectiveness: 87,
-    averageResolutionTime: 2.4,
-    predictionAccuracy: 91,
-    engagementRate: 78
-  });
-
-  // Simuler des mises à jour d'analytics en temps réel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setAnalytics(prev => {
-        const randomChange = (max: number) => (Math.random() * max * 2) - max;
-        
-        return {
-          ...prev,
-          userSentiment: {
-            positive: Math.min(100, Math.max(0, prev.userSentiment.positive + randomChange(2))),
-            neutral: Math.min(100, Math.max(0, prev.userSentiment.neutral + randomChange(1.5))),
-            negative: Math.min(100, Math.max(0, prev.userSentiment.negative + randomChange(1)))
-          },
-          topIntents: prev.topIntents.map(intent => ({
-            ...intent,
-            value: Math.min(100, Math.max(0, intent.value + randomChange(1.5))),
-            change: intent.change + randomChange(0.5)
-          })),
-          responseEffectiveness: Math.min(100, Math.max(0, prev.responseEffectiveness + randomChange(1))),
-          predictionAccuracy: Math.min(100, Math.max(70, prev.predictionAccuracy + randomChange(0.5))),
-          engagementRate: Math.min(100, Math.max(0, prev.engagementRate + randomChange(1.5)))
-        };
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
+export const PredictiveAnalyticsDisplay = () => {
+  const [selectedPeriod, setSelectedPeriod] = useState('daily');
+  
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold">Prédiction & Analytics IA</h2>
-        </div>
-        <Button variant="outline" size="sm">
-          <TrendingUp className="mr-2 h-4 w-4" />
-          Export
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard 
-          title="Précision Prédictive" 
-          value={`${analytics.predictionAccuracy.toFixed(1)}%`}
-          icon={<Brain className="h-4 w-4" />}
-          description="Taux de précision des prédictions IA"
-          trend={analytics.predictionAccuracy > 90 ? "up" : "down"}
-          trendValue={analytics.predictionAccuracy > 90 ? "+1.2%" : "-0.8%"}
-        />
-        
-        <MetricCard 
-          title="Temps de Résolution" 
-          value={`${analytics.averageResolutionTime.toFixed(1)} min`}
-          icon={<Activity className="h-4 w-4" />}
-          description="Temps moyen de résolution des demandes"
-          trend="down"
-          trendValue="-0.3 min"
-        />
-        
-        <MetricCard 
-          title="Efficacité" 
-          value={`${analytics.responseEffectiveness.toFixed(0)}%`}
-          icon={<PieChart className="h-4 w-4" />}
-          description="Taux de satisfaction des réponses"
-          trend="up"
-          trendValue="+2.5%"
-        />
-        
-        <MetricCard 
-          title="Engagement" 
-          value={`${analytics.engagementRate.toFixed(0)}%`}
-          icon={<MessageSquare className="h-4 w-4" />}
-          description="Taux d'interaction avec les suggestions"
-          trend={analytics.engagementRate > 75 ? "up" : "down"}
-          trendValue={analytics.engagementRate > 75 ? "+3.2%" : "-1.5%"}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Analyse du Sentiment</CardTitle>
-            <CardDescription>Répartition des sentiments détectés</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
-                    <span>Positif</span>
-                  </div>
-                  <span className="font-medium">{analytics.userSentiment.positive.toFixed(1)}%</span>
-                </div>
-                <Progress value={analytics.userSentiment.positive} className="h-2 bg-muted" indicatorClassName="bg-green-500" />
-              </div>
+    <div className="container mx-auto py-6">
+      <h1 className="text-3xl font-bold mb-2">Analyse Prédictive</h1>
+      <p className="text-muted-foreground mb-6">
+        Modèles d'IA inspirés par l'approche de Tesla, appliqués au centre d'appels
+      </p>
+      
+      <div className="mb-6">
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid grid-cols-4 w-full max-w-md mb-4">
+            <TabsTrigger value="overview">Vue Générale</TabsTrigger>
+            <TabsTrigger value="volume">Volume</TabsTrigger>
+            <TabsTrigger value="efficiency">Performance</TabsTrigger>
+            <TabsTrigger value="satisfaction">Satisfaction</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="overview" className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <MetricCard
+                title="Prédiction de Volume"
+                value="+12%"
+                trend="up"
+                description="Pour les 7 prochains jours"
+                icon={<BarChart3 className="h-5 w-5 text-blue-500" />}
+              />
               
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
-                    <span>Neutre</span>
-                  </div>
-                  <span className="font-medium">{analytics.userSentiment.neutral.toFixed(1)}%</span>
-                </div>
-                <Progress value={analytics.userSentiment.neutral} className="h-2 bg-muted" indicatorClassName="bg-blue-500" />
-              </div>
+              <MetricCard
+                title="Temps de Résolution"
+                value="-8%"
+                trend="down"
+                description="Amélioration prévue"
+                icon={<LineChart className="h-5 w-5 text-green-500" />}
+              />
               
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center">
-                    <div className="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
-                    <span>Négatif</span>
-                  </div>
-                  <span className="font-medium">{analytics.userSentiment.negative.toFixed(1)}%</span>
-                </div>
-                <Progress value={analytics.userSentiment.negative} className="h-2 bg-muted" indicatorClassName="bg-red-500" />
-              </div>
+              <MetricCard
+                title="Satisfaction Client"
+                value="+4%"
+                trend="up"
+                description="Tendance sur 30 jours"
+                icon={<PieChart className="h-5 w-5 text-purple-500" />}
+              />
             </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-              Voir l'analyse détaillée →
-            </Button>
-          </CardFooter>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium">Intentions Utilisateurs</CardTitle>
-            <CardDescription>Distribution des intentions détectées</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {analytics.topIntents.map((intent, i) => (
-                <div key={i} className="space-y-1">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center">
-                      <Badge variant="outline" className="mr-2 font-normal">
-                        {intent.label}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{intent.value.toFixed(1)}%</span>
-                      <Badge variant={intent.change >= 0 ? "success" : "destructive"} className="text-xs">
-                        {intent.change >= 0 ? `+${intent.change.toFixed(1)}%` : `${intent.change.toFixed(1)}%`}
-                      </Badge>
-                    </div>
-                  </div>
-                  <Progress 
-                    value={intent.value} 
-                    className="h-2 bg-muted" 
-                    indicatorClassName={`${i === 0 ? 'bg-primary' : i === 1 ? 'bg-purple-500' : i === 2 ? 'bg-amber-500' : 'bg-rose-500'}`} 
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Analyse Globale des Tendances</CardTitle>
+                <CardDescription>
+                  Basée sur 12,542 interactions et 347 métriques
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <PredictionMetric 
+                    label="Précision du Modèle" 
+                    value={87} 
+                  />
+                  
+                  <PredictionMetric 
+                    label="Confiance des Prédictions" 
+                    value={73} 
+                  />
+                  
+                  <PredictionMetric 
+                    label="Couverture des Scénarios" 
+                    value={91} 
                   />
                 </div>
-              ))}
-            </div>
-          </CardContent>
-          <CardFooter className="pt-0">
-            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-              Explorer les tendances →
-            </Button>
-          </CardFooter>
-        </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="volume" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Prédiction du Volume d'Appels</CardTitle>
+                <CardDescription>
+                  Estimation précise basée sur l'historique et les tendances saisonnières
+                </CardDescription>
+                
+                <div className="flex gap-2 mt-2">
+                  <PeriodSelector 
+                    selected={selectedPeriod} 
+                    onChange={setSelectedPeriod} 
+                  />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80 flex items-center justify-center border border-dashed rounded-md">
+                  <p className="text-muted-foreground">Graphique de prédiction du volume</p>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <div className="grid grid-cols-3 w-full gap-4">
+                  <PredictionStat 
+                    label="Volume Prévu" 
+                    value="1,285" 
+                    change="+12%" 
+                    trend="up" 
+                  />
+                  <PredictionStat 
+                    label="Heures de Pointe" 
+                    value="10h-14h" 
+                    change="" 
+                    trend="none" 
+                  />
+                  <PredictionStat 
+                    label="Confiance" 
+                    value="92%" 
+                    change="+3%" 
+                    trend="up" 
+                  />
+                </div>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="efficiency" className="space-y-4">
+            <AgentEfficiencyPrediction />
+          </TabsContent>
+          
+          <TabsContent value="satisfaction" className="space-y-4">
+            <SatisfactionPrediction />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
-}
+};
 
-interface MetricCardProps {
-  title: string;
-  value: string;
-  icon: React.ReactNode;
+const PredictionMetric = ({ label, value }: { label: string; value: number }) => {
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-medium">{value}%</span>
+      </div>
+      <Progress value={value} />
+    </div>
+  );
+};
+
+const MetricCard = ({ 
+  title, 
+  value, 
+  trend, 
+  description, 
+  icon 
+}: { 
+  title: string; 
+  value: string; 
+  trend: 'up' | 'down' | 'neutral'; 
   description: string;
-  trend: "up" | "down" | "neutral";
-  trendValue: string;
-}
-
-function MetricCard({ title, value, icon, description, trend, trendValue }: MetricCardProps) {
+  icon: React.ReactNode;
+}) => {
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className="rounded-full p-1 bg-muted">{icon}</div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1">{description}</p>
+      <CardContent className="pt-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-2xl font-bold">{value}</p>
+              {trend === 'up' && <ArrowUpCircle className="text-green-500 h-5 w-5" />}
+              {trend === 'down' && <ArrowDownCircle className="text-red-500 h-5 w-5" />}
+              {trend === 'neutral' && <AlertCircle className="text-amber-500 h-5 w-5" />}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          </div>
+          <div className="p-2 bg-primary/5 rounded-full">
+            {icon}
+          </div>
+        </div>
       </CardContent>
-      <CardFooter className="py-1 px-6">
-        <Badge 
-          variant={trend === "up" ? "success" : trend === "down" ? "destructive" : "outline"}
-          className="text-xs font-normal"
-        >
-          {trend === "up" ? "↑" : trend === "down" ? "↓" : "→"} {trendValue}
-        </Badge>
-      </CardFooter>
     </Card>
   );
-}
+};
+
+const PredictionStat = ({ 
+  label, 
+  value, 
+  change, 
+  trend 
+}: { 
+  label: string; 
+  value: string; 
+  change: string;
+  trend: 'up' | 'down' | 'none'; 
+}) => {
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-lg font-semibold">{value}</p>
+      {change && (
+        <div className="flex items-center mt-1">
+          {trend === 'up' && <ArrowUpCircle className="text-green-500 h-3 w-3 mr-1" />}
+          {trend === 'down' && <ArrowDownCircle className="text-red-500 h-3 w-3 mr-1" />}
+          <span className={`text-xs ${trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : ''}`}>
+            {change}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PeriodSelector = ({ 
+  selected, 
+  onChange 
+}: { 
+  selected: string; 
+  onChange: (value: string) => void;
+}) => {
+  return (
+    <div className="bg-muted rounded-md p-1 flex space-x-1 text-xs">
+      {['daily', 'weekly', 'monthly'].map((period) => (
+        <button
+          key={period}
+          className={`px-2.5 py-1 rounded-sm ${
+            selected === period 
+              ? 'bg-background text-foreground shadow-sm' 
+              : 'text-muted-foreground hover:text-foreground'
+          }`}
+          onClick={() => onChange(period)}
+        >
+          {period.charAt(0).toUpperCase() + period.slice(1)}
+        </button>
+      ))}
+    </div>
+  );
+};
+
+const AgentEfficiencyPrediction = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Prédiction de Performance des Agents</CardTitle>
+        <CardDescription>
+          Analyse avancée de l'efficacité et recommandations d'amélioration
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Temps de Résolution Prédit</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold">4m 32s</p>
+                <ArrowDownCircle className="text-green-500 h-5 w-5" />
+                <span className="text-xs text-green-500">-8%</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Taux de Résolution Premier Contact</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold">78%</p>
+                <ArrowUpCircle className="text-green-500 h-5 w-5" />
+                <span className="text-xs text-green-500">+5%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Répartition des Problèmes</p>
+            <div className="h-40 border rounded-md border-dashed flex items-center justify-center">
+              <p className="text-muted-foreground">Graphique de répartition</p>
+            </div>
+          </div>
+          
+          <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-md">
+            <h4 className="font-medium mb-2">Recommandations IA</h4>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start gap-2">
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full px-1.5 py-0.5 text-xs mt-0.5">1</span>
+                <span>Renforcer la formation sur les problèmes techniques fréquents (+15% efficacité)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full px-1.5 py-0.5 text-xs mt-0.5">2</span>
+                <span>Optimiser les scripts de réponse pour les questions sur la facturation</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 rounded-full px-1.5 py-0.5 text-xs mt-0.5">3</span>
+                <span>Implémenter une rotation des agents pendant les heures de pointe</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const SatisfactionPrediction = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Prédiction de la Satisfaction Client</CardTitle>
+        <CardDescription>
+          Analyse prédictive des tendances de satisfaction et facteurs d'influence
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">CSAT Prédit</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold">4.2/5</p>
+                <ArrowUpCircle className="text-green-500 h-5 w-5" />
+                <span className="text-xs text-green-500">+0.3</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium">NPS Prédit</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold">42</p>
+                <ArrowUpCircle className="text-green-500 h-5 w-5" />
+                <span className="text-xs text-green-500">+4</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Taux de Fidélisation</p>
+              <div className="flex items-center gap-2">
+                <p className="text-2xl font-bold">87%</p>
+                <ArrowUpCircle className="text-green-500 h-5 w-5" />
+                <span className="text-xs text-green-500">+2%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <p className="text-sm font-medium">Impact des initiatives récentes</p>
+              <p className="text-sm text-muted-foreground">Confiance: 82%</p>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>Nouveau script d'accueil</span>
+                  <span>+12%</span>
+                </div>
+                <Progress value={68} />
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>Formation empathie</span>
+                  <span>+9%</span>
+                </div>
+                <Progress value={54} />
+              </div>
+              
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>Assistance proactive</span>
+                  <span>+15%</span>
+                </div>
+                <Progress value={78} />
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-md">
+            <h4 className="font-medium mb-2">Facteurs d'amélioration détectés</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm">Réponse personnalisée (+23%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm">Suivi post-appel (+18%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm">Temps d'attente réduit (+15%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span className="text-sm">Formation technique (+12%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

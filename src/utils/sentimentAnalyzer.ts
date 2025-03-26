@@ -1,10 +1,9 @@
-
 /**
  * Analyse de sentiment avancée inspirée par l'approche d'IA de Tesla
  * Cette version simplifiée utilise une analyse basée sur des règles
  */
 
-interface SentimentResult {
+export interface SentimentResult {
   sentiment: 'positive' | 'neutral' | 'negative';
   score: number; // -1 (très négatif) à 1 (très positif)
   confidence: number; // 0 à 1
