@@ -1,339 +1,306 @@
 
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { AlertCircle, Database, Eye, Table as TableIcon, Key, RefreshCw, Info } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Database, Table as TableIcon, Search, FileText, Key, Copy, RefreshCw, List } from 'lucide-react';
+import api from '@/services/api';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/components/ui/use-toast';
 
 interface DatabaseInfo {
-  database_name: string;
-  charset: string;
-  collation: string;
+  name: string;
+  numTables: number;
+  numViews: number;
+  size: string;
 }
 
 interface TableInfo {
-  table_name: string;
-  table_type: string;
+  name: string;
   engine: string;
-  row_count: number;
-  created_at: string;
-  updated_at: string;
-  comment: string;
+  rowCount: number;
+  dataSize: string;
+  type: 'BASE TABLE' | 'VIEW';
 }
 
 interface ColumnInfo {
-  column_name: string;
-  data_type: string;
-  is_nullable: string;
-  column_key: string;
-  default_value: string | null;
+  name: string;
+  type: string;
+  nullable: string;
+  key: string;
+  default: string | null;
   extra: string;
-  comment: string;
-}
-
-interface IndexInfo {
-  index_name: string;
-  column_name: string;
-  non_unique: number;
-  seq_in_index: number;
-  index_type: string;
-  comment: string;
 }
 
 const DatabaseExplorer: React.FC = () => {
-  const { toast } = useToast();
   const [databases, setDatabases] = useState<DatabaseInfo[]>([]);
-  const [tables, setTables] = useState<TableInfo[]>([]);
-  const [columns, setColumns] = useState<ColumnInfo[]>([]);
-  const [indexes, setIndexes] = useState<IndexInfo[]>([]);
-  const [viewDefinition, setViewDefinition] = useState<string | null>(null);
-  
   const [selectedDatabase, setSelectedDatabase] = useState<string>('');
+  const [tables, setTables] = useState<TableInfo[]>([]);
   const [selectedTable, setSelectedTable] = useState<string>('');
-  
-  const [loadingDatabases, setLoadingDatabases] = useState(false);
-  const [loadingTables, setLoadingTables] = useState(false);
-  const [loadingDetails, setLoadingDetails] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [columns, setColumns] = useState<ColumnInfo[]>([]);
+  const [filter, setFilter] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [view, setView] = useState<'tables' | 'columns'>('tables');
 
+  // Charger les bases de données
   useEffect(() => {
+    const fetchDatabases = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.database.getDatabases();
+        setDatabases(response.databases);
+        
+        // Sélectionner automatiquement la base de données TopCenter
+        const tcDatabase = response.databases.find(
+          (db: DatabaseInfo) => db.name.includes('topcenter') || db.name.includes('rj8dl')
+        );
+        if (tcDatabase) {
+          setSelectedDatabase(tcDatabase.name);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des bases de données:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchDatabases();
   }, []);
 
+  // Charger les tables quand une base de données est sélectionnée
   useEffect(() => {
-    if (selectedDatabase) {
-      fetchTables(selectedDatabase);
-    }
+    if (!selectedDatabase) return;
+
+    const fetchTables = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.database.getTables(selectedDatabase);
+        setTables(response.tables);
+      } catch (error) {
+        console.error(`Erreur lors du chargement des tables pour ${selectedDatabase}:`, error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTables();
   }, [selectedDatabase]);
 
+  // Charger les colonnes quand une table est sélectionnée
   useEffect(() => {
-    if (selectedDatabase && selectedTable) {
-      fetchColumns(selectedDatabase, selectedTable);
-      fetchIndexes(selectedDatabase, selectedTable);
-      
-      if (tables.find(t => t.table_name === selectedTable)?.table_type === 'VIEW') {
-        fetchViewDefinition(selectedDatabase, selectedTable);
-      } else {
-        setViewDefinition(null);
-      }
-    }
-  }, [selectedDatabase, selectedTable, tables]);
+    if (!selectedDatabase || !selectedTable) return;
 
-  const fetchDatabases = async () => {
-    setLoadingDatabases(true);
-    setError(null);
-    try {
-      const response = await axios.get('/api/db-explorer/databases');
-      setDatabases(response.data.databases);
-      
-      // Si information_schema est disponible, le sélectionner par défaut
-      const infoSchema = response.data.databases.find((db: DatabaseInfo) => 
-        db.database_name === 'information_schema'
-      );
-      
-      if (infoSchema) {
-        setSelectedDatabase('information_schema');
-      } else if (response.data.databases.length > 0) {
-        setSelectedDatabase(response.data.databases[0].database_name);
+    const fetchColumns = async () => {
+      setIsLoading(true);
+      try {
+        const response = await api.database.getColumns(selectedDatabase, selectedTable);
+        setColumns(response.columns);
+        setView('columns');
+      } catch (error) {
+        console.error(`Erreur lors du chargement des colonnes pour ${selectedTable}:`, error);
+      } finally {
+        setIsLoading(false);
       }
-      
-    } catch (err) {
-      console.error("Erreur lors de la récupération des bases de données:", err);
-      setError("Impossible de récupérer les bases de données");
-      toast({
-        variant: "destructive",
-        title: "Erreur de connexion",
-        description: "Impossible de récupérer les bases de données. Vérifiez les logs pour plus de détails."
-      });
-    } finally {
-      setLoadingDatabases(false);
-    }
-  };
+    };
 
-  const fetchTables = async (database: string) => {
-    if (!database) return;
-    
-    setLoadingTables(true);
-    setTables([]);
+    fetchColumns();
+  }, [selectedDatabase, selectedTable]);
+
+  // Filtrer les tables
+  const filteredTables = tables.filter(table => 
+    table.name.toLowerCase().includes(filter.toLowerCase())
+  );
+
+  // Retour à la vue des tables
+  const handleBackToTables = () => {
     setSelectedTable('');
-    setError(null);
-    
-    try {
-      const response = await axios.get(`/api/db-explorer/databases/${database}/tables`);
-      setTables(response.data.tables);
-      
-      if (response.data.tables.length > 0) {
-        setSelectedTable(response.data.tables[0].table_name);
-      }
-    } catch (err) {
-      console.error(`Erreur lors de la récupération des tables pour ${database}:`, err);
-      setError(`Impossible de récupérer les tables pour ${database}`);
-    } finally {
-      setLoadingTables(false);
-    }
+    setView('tables');
   };
 
-  const fetchColumns = async (database: string, table: string) => {
-    if (!database || !table) return;
-    
-    setLoadingDetails(true);
-    setColumns([]);
-    
-    try {
-      const response = await axios.get(`/api/db-explorer/databases/${database}/tables/${table}/columns`);
-      setColumns(response.data.columns);
-    } catch (err) {
-      console.error(`Erreur lors de la récupération des colonnes pour ${database}.${table}:`, err);
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: `Impossible de récupérer les colonnes pour ${table}`
+  // Copier le nom de la table
+  const handleCopyTableName = (tableName: string) => {
+    navigator.clipboard.writeText(tableName)
+      .then(() => {
+        console.log(`Table ${tableName} copiée dans le presse-papier`);
+      })
+      .catch(err => {
+        console.error('Erreur lors de la copie:', err);
       });
+  };
+
+  // Rafraîchir les données
+  const handleRefresh = async () => {
+    setIsLoading(true);
+    try {
+      if (view === 'columns' && selectedTable) {
+        const response = await api.database.getColumns(selectedDatabase, selectedTable);
+        setColumns(response.columns);
+      } else {
+        const response = await api.database.getTables(selectedDatabase);
+        setTables(response.tables);
+      }
+    } catch (error) {
+      console.error('Erreur lors du rafraîchissement des données:', error);
     } finally {
-      setLoadingDetails(false);
+      setIsLoading(false);
     }
   };
-
-  const fetchIndexes = async (database: string, table: string) => {
-    if (!database || !table) return;
-    
-    setIndexes([]);
-    
-    try {
-      const response = await axios.get(`/api/db-explorer/databases/${database}/tables/${table}/indexes`);
-      setIndexes(response.data.indexes);
-    } catch (err) {
-      console.error(`Erreur lors de la récupération des index pour ${database}.${table}:`, err);
-    }
-  };
-
-  const fetchViewDefinition = async (database: string, view: string) => {
-    if (!database || !view) return;
-    
-    setViewDefinition(null);
-    
-    try {
-      const response = await axios.get(`/api/db-explorer/databases/${database}/views/${view}/definition`);
-      setViewDefinition(response.data.definition);
-    } catch (err) {
-      console.error(`Erreur lors de la récupération de la définition de la vue ${database}.${view}:`, err);
-    }
-  };
-
-  if (error) {
-    return (
-      <Alert variant="destructive" className="mb-4">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Erreur</AlertTitle>
-        <AlertDescription>
-          {error}
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={fetchDatabases} 
-            className="mt-2"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Réessayer
-          </Button>
-        </AlertDescription>
-      </Alert>
-    );
-  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold">Explorateur de base de données</h2>
-        <Button onClick={fetchDatabases} variant="outline" disabled={loadingDatabases}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${loadingDatabases ? 'animate-spin' : ''}`} />
-          Actualiser
-        </Button>
-      </div>
+    <div className="container mx-auto py-6">
+      <h1 className="text-2xl font-bold mb-6">Explorateur de base de données</h1>
 
-      {loadingDatabases ? (
-        <div className="flex justify-center items-center h-48">
-          <Spinner size="lg" />
-          <span className="ml-2">Chargement des bases de données...</span>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Liste des bases de données */}
-          <Card className="md:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Bases de données</CardTitle>
-              <CardDescription>Sélectionnez une base de données</CardDescription>
-            </CardHeader>
-            <CardContent>
+      <div className="grid md:grid-cols-[300px_1fr] gap-6">
+        {/* Panneau de navigation */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Bases de données</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading && !databases.length ? (
               <div className="space-y-2">
-                {databases.map((db) => (
-                  <Button
-                    key={db.database_name}
-                    variant={selectedDatabase === db.database_name ? "default" : "outline"}
-                    className="w-full justify-start"
-                    onClick={() => setSelectedDatabase(db.database_name)}
-                  >
-                    <Database className="mr-2 h-4 w-4" />
-                    <span className="truncate">{db.database_name}</span>
-                  </Button>
-                ))}
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Liste des tables */}
-          <Card className="md:col-span-1">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Tables</CardTitle>
-              <CardDescription>
-                {selectedDatabase ? `Tables de ${selectedDatabase}` : 'Sélectionnez une base de données'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingTables ? (
-                <div className="flex justify-center items-center h-48">
-                  <Spinner />
-                  <span className="ml-2">Chargement des tables...</span>
-                </div>
-              ) : (
-                <ScrollArea className="h-[400px]">
-                  <div className="space-y-2">
-                    {tables.map((table) => (
+            ) : (
+              <ScrollArea className="h-[400px]">
+                <ul className="space-y-1">
+                  {databases.map((db) => (
+                    <li key={db.name}>
                       <Button
-                        key={table.table_name}
-                        variant={selectedTable === table.table_name ? "default" : "outline"}
-                        className="w-full justify-start"
-                        onClick={() => setSelectedTable(table.table_name)}
+                        variant={selectedDatabase === db.name ? "default" : "ghost"}
+                        className={`w-full justify-start ${selectedDatabase === db.name ? "bg-primary text-primary-foreground" : ""}`}
+                        onClick={() => setSelectedDatabase(db.name)}
                       >
-                        {table.table_type === 'VIEW' ? (
-                          <Eye className="mr-2 h-4 w-4" />
-                        ) : (
-                          <TableIcon className="mr-2 h-4 w-4" />
+                        <Database className="mr-2 h-4 w-4" />
+                        <span className="truncate">{db.name}</span>
+                        {db.numTables > 0 && (
+                          <span className="ml-auto text-xs opacity-70">{db.numTables}</span>
                         )}
-                        <span className="truncate">{table.table_name}</span>
                       </Button>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Détails de la table */}
-          <Card className="md:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center">
-                {selectedTable ? (
-                  <>
-                    {tables.find(t => t.table_name === selectedTable)?.table_type === 'VIEW' ? (
-                      <Eye className="mr-2 h-5 w-5" />
-                    ) : (
-                      <TableIcon className="mr-2 h-5 w-5" />
-                    )}
-                    {selectedTable}
-                  </>
-                ) : (
-                  'Détails de la table'
-                )}
-              </CardTitle>
-              <CardDescription>
-                {selectedTable ? (
-                  <>
-                    {tables.find(t => t.table_name === selectedTable)?.table_type || 'TABLE'} 
-                    {tables.find(t => t.table_name === selectedTable)?.engine && 
-                      ` - ${tables.find(t => t.table_name === selectedTable)?.engine}`
-                    }
-                  </>
-                ) : (
-                  'Sélectionnez une table pour voir ses détails'
-                )}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loadingDetails ? (
-                <div className="flex justify-center items-center h-48">
-                  <Spinner />
-                  <span className="ml-2">Chargement des détails...</span>
+        {/* Contenu principal */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="text-lg">
+              {view === 'tables' ? (
+                <>
+                  <span className="flex items-center">
+                    <Database className="mr-2 h-5 w-5" />
+                    {selectedDatabase || 'Sélectionnez une base de données'}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center">
+                    <Button variant="ghost" className="mr-2 p-0 h-7 w-7" onClick={handleBackToTables}>
+                      <List className="h-5 w-5" />
+                    </Button>
+                    <TableIcon className="mr-2 h-5 w-5" />
+                    <span className="mr-2">{selectedTable}</span>
+                    <Button variant="ghost" className="h-7 w-7 p-0" onClick={() => handleCopyTableName(selectedTable)}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardTitle>
+            
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={handleRefresh} disabled={isLoading}>
+                <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              </Button>
+              {view === 'tables' && (
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Filtrer..."
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="pl-8 h-9"
+                  />
                 </div>
-              ) : selectedTable ? (
-                <Tabs defaultValue="columns">
-                  <TabsList className="mb-4">
-                    <TabsTrigger value="columns">Colonnes</TabsTrigger>
-                    <TabsTrigger value="indexes">Index</TabsTrigger>
-                    {viewDefinition && (
-                      <TabsTrigger value="definition">Définition</TabsTrigger>
-                    )}
-                  </TabsList>
-                  
-                  <TabsContent value="columns">
+              )}
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            {!selectedDatabase ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Sélectionnez une base de données pour afficher ses tables.
+              </div>
+            ) : isLoading && (!tables.length || view === 'columns' && !columns.length) ? (
+              <div className="space-y-2">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+            ) : (
+              <>
+                {view === 'tables' ? (
+                  <ScrollArea className="h-[500px]">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nom</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Moteur</TableHead>
+                          <TableHead className="text-right">Lignes</TableHead>
+                          <TableHead className="text-right">Taille</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredTables.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
+                              Aucune table trouvée
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredTables.map((table) => (
+                            <TableRow 
+                              key={table.name} 
+                              className="cursor-pointer hover:bg-muted"
+                              onClick={() => setSelectedTable(table.name)}
+                            >
+                              <TableCell className="font-medium">{table.name}</TableCell>
+                              <TableCell>
+                                {table.type === 'BASE TABLE' ? (
+                                  <span className="flex items-center">
+                                    <TableIcon className="mr-1 h-3 w-3" />
+                                    Table
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center">
+                                    <FileText className="mr-1 h-3 w-3" />
+                                    Vue
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell>{table.engine || '-'}</TableCell>
+                              <TableCell className="text-right">{table.rowCount?.toLocaleString() || '-'}</TableCell>
+                              <TableCell className="text-right">{table.dataSize || '-'}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                ) : (
+                  <ScrollArea className="h-[500px]">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -346,103 +313,46 @@ const DatabaseExplorer: React.FC = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {columns.map((column) => (
-                          <TableRow key={column.column_name}>
-                            <TableCell className="font-medium">{column.column_name}</TableCell>
-                            <TableCell>{column.data_type}</TableCell>
-                            <TableCell>
-                              {column.is_nullable === 'YES' ? 'Oui' : 'Non'}
+                        {columns.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                              Aucune colonne trouvée
                             </TableCell>
-                            <TableCell>
-                              {column.column_key && (
-                                <Badge variant={column.column_key === 'PRI' ? 'default' : 'secondary'}>
-                                  {column.column_key === 'PRI' && <Key className="mr-1 h-3 w-3" />}
-                                  {column.column_key}
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell>{column.default_value !== null ? column.default_value : ''}</TableCell>
-                            <TableCell>{column.extra}</TableCell>
                           </TableRow>
-                        ))}
+                        ) : (
+                          columns.map((column) => (
+                            <TableRow key={column.name}>
+                              <TableCell className="font-medium">{column.name}</TableCell>
+                              <TableCell>{column.type}</TableCell>
+                              <TableCell>{column.nullable === 'YES' ? 'Oui' : 'Non'}</TableCell>
+                              <TableCell>
+                                {column.key === 'PRI' ? (
+                                  <span className="flex items-center text-amber-600">
+                                    <Key className="mr-1 h-3 w-3" />
+                                    PK
+                                  </span>
+                                ) : column.key === 'MUL' ? (
+                                  <span className="flex items-center text-blue-600">FK</span>
+                                ) : column.key === 'UNI' ? (
+                                  <span className="flex items-center text-green-600">UQ</span>
+                                ) : (
+                                  '-'
+                                )}
+                              </TableCell>
+                              <TableCell>{column.default !== null ? column.default : '-'}</TableCell>
+                              <TableCell>{column.extra || '-'}</TableCell>
+                            </TableRow>
+                          ))
+                        )}
                       </TableBody>
                     </Table>
-                  </TabsContent>
-                  
-                  <TabsContent value="indexes">
-                    {indexes.length > 0 ? (
-                      <Accordion type="single" collapsible className="w-full">
-                        {Array.from(new Set(indexes.map(idx => idx.index_name))).map(indexName => (
-                          <AccordionItem key={indexName} value={indexName || 'unknown'}>
-                            <AccordionTrigger>
-                              <div className="flex items-center">
-                                <Key className="mr-2 h-4 w-4" />
-                                <span>{indexName}</span>
-                                <Badge variant="outline" className="ml-2">
-                                  {indexes.find(idx => idx.index_name === indexName)?.non_unique === 0 ? 'Unique' : 'Non-unique'}
-                                </Badge>
-                              </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <Table>
-                                <TableHeader>
-                                  <TableRow>
-                                    <TableHead>Colonne</TableHead>
-                                    <TableHead>Séquence</TableHead>
-                                    <TableHead>Type</TableHead>
-                                  </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                  {indexes
-                                    .filter(idx => idx.index_name === indexName)
-                                    .sort((a, b) => a.seq_in_index - b.seq_in_index)
-                                    .map((idx, i) => (
-                                      <TableRow key={`${idx.index_name}-${idx.column_name}-${i}`}>
-                                        <TableCell>{idx.column_name}</TableCell>
-                                        <TableCell>{idx.seq_in_index}</TableCell>
-                                        <TableCell>{idx.index_type}</TableCell>
-                                      </TableRow>
-                                    ))
-                                  }
-                                </TableBody>
-                              </Table>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    ) : (
-                      <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-                        <div className="text-center">
-                          <Info className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                          <p>Aucun index trouvé pour cette table</p>
-                        </div>
-                      </div>
-                    )}
-                  </TabsContent>
-                  
-                  {viewDefinition && (
-                    <TabsContent value="definition">
-                      <div className="border p-4 rounded-md bg-muted/20">
-                        <h4 className="font-medium mb-2">Définition de la vue:</h4>
-                        <pre className="whitespace-pre-wrap text-sm p-4 bg-secondary/20 rounded overflow-auto max-h-[400px]">
-                          {viewDefinition}
-                        </pre>
-                      </div>
-                    </TabsContent>
-                  )}
-                </Tabs>
-              ) : (
-                <div className="flex items-center justify-center h-48 border rounded-md bg-muted/20">
-                  <div className="text-center">
-                    <TableIcon className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                    <p>Sélectionnez une table pour voir ses détails</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                  </ScrollArea>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

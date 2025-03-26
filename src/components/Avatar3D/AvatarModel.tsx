@@ -38,7 +38,8 @@ const AvatarModel: React.FC<AvatarModelProps> = ({
   useEffect(() => {
     if (scene) {
       // Clone la scène pour éviter les problèmes de partage d'instance
-      const clonedScene = SkeletonUtils.clone(scene);
+      // Utiliser directement THREE pour cloner la scène
+      const clonedScene = scene.clone();
       
       // Nettoyage du groupe existant
       if (group.current) {

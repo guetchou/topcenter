@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronDown, Clock, Server } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Card, CardContent } from '@/components/ui/card';
+import { GitBranch, Globe, ChevronRight, Calendar, Clock } from 'lucide-react';
 
 interface DeploymentSummaryProps {
   environment: string;
@@ -14,67 +12,48 @@ interface DeploymentSummaryProps {
   gitBranch: string;
 }
 
-export const DeploymentSummary = ({
+export const DeploymentSummary: React.FC<DeploymentSummaryProps> = ({
   environment,
   buildTime,
   startTime,
   domain,
   deployId,
   gitBranch
-}: DeploymentSummaryProps) => {
-  const [isExpanded, setIsExpanded] = React.useState(false);
-
+}) => {
   return (
     <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Server className="h-5 w-5" />
-          Résumé du déploiement
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 mb-4">
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:justify-between">
           <div>
-            <p className="text-sm text-muted-foreground">Environnement</p>
-            <p className="font-medium">{environment}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Temps de construction</p>
-            <p className="font-medium flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              {buildTime}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Démarré à</p>
-            <p className="font-medium">{startTime}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Domaine</p>
-            <p className="font-medium">{domain}</p>
-          </div>
-        </div>
-
-        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" size="sm" className="w-full">
-              {isExpanded ? "Masquer les détails" : "Afficher plus de détails"}
-              <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">ID de déploiement</p>
-                <p className="font-medium">{deployId}</p>
+            <h2 className="text-lg font-semibold flex items-center gap-1">
+              <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+              {environment}
+              <ChevronRight className="h-4 w-4 text-muted-foreground mx-1" />
+              <span className="text-muted-foreground font-normal">{deployId}</span>
+            </h2>
+            <div className="flex items-center gap-6 mt-2">
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>{startTime}</span>
               </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Branche Git</p>
-                <p className="font-medium">{gitBranch}</p>
+              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                <span>{buildTime}</span>
               </div>
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm">
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{domain}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <GitBranch className="h-4 w-4 text-muted-foreground" />
+              <span className="font-medium">{gitBranch}</span>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

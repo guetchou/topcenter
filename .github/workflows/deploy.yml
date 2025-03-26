@@ -1,5 +1,5 @@
 
-name: 🚀 Déploiement Infomaniak
+name: 🚀 Déploiement sur Infomaniak
 
 on:
   push:
@@ -32,6 +32,13 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_POCKETBASE_URL: ${{ secrets.VITE_POCKETBASE_URL }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_SSL: ${{ secrets.DB_SSL }}
 
       - name: 📤 Déploiement via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -42,6 +49,24 @@ jobs:
           local-dir: ./dist/
           server-dir: /home/clients/182ddf0dfc453b3faeaee042d1660720/sites/
           dangerous-clean-slate: true
+
+      - name: 🔧 Déployer la configuration du serveur
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./server-config/
+          server-dir: /home/clients/182ddf0dfc453b3faeaee042d1660720/config/
+          dangerous-clean-slate: false
+
+      - name: 📨 Notification webhook
+        if: success()
+        run: |
+          curl -X POST ${{ secrets.DEPLOY_WEBHOOK_URL }} \
+            -H 'Content-Type: application/json' \
+            -d '{"status":"success","commit":"'$GITHUB_SHA'","branch":"'$GITHUB_REF_NAME'","time":"'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"}'
+        continue-on-error: true
 
       - name: ✅ Notification de déploiement
         run: echo "Déploiement terminé avec succès!"

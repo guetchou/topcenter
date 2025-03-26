@@ -1,10 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, Clock, XCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-export type DeploymentStatus = 'completed' | 'in-progress' | 'pending' | 'failed';
+export type DeploymentStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
 
 interface DeploymentStepProps {
   title: string;
@@ -14,53 +13,78 @@ interface DeploymentStepProps {
   details?: string;
 }
 
-export const DeploymentStep = ({ 
-  title, 
-  description, 
-  status, 
-  time, 
-  details 
-}: DeploymentStepProps) => {
-  const getStatusIcon = () => {
-    switch(status) {
+export const DeploymentStep: React.FC<DeploymentStepProps> = ({
+  title,
+  description,
+  status,
+  time,
+  details
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
+  const renderStatusIcon = () => {
+    switch (status) {
+      case 'pending':
+        return <Clock className="h-5 w-5 text-muted-foreground" />;
+      case 'in-progress':
+        return <Loader2 className="h-5 w-5 text-blue-500 animate-spin" />;
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'in-progress':
-        return <Clock className="h-5 w-5 text-blue-500 animate-pulse" />;
       case 'failed':
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
       default:
-        return <Clock className="h-5 w-5 text-gray-400" />;
+        return null;
     }
   };
 
-  const getStatusBadge = () => {
-    switch(status) {
-      case 'completed':
-        return <Badge className="bg-green-500">Terminé</Badge>;
-      case 'in-progress':
-        return <Badge className="bg-blue-500">En cours</Badge>;
-      case 'failed':
-        return <Badge className="bg-red-500">Échoué</Badge>;
-      default:
+  const renderStatusBadge = () => {
+    switch (status) {
+      case 'pending':
         return <Badge variant="outline">En attente</Badge>;
+      case 'in-progress':
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800">En cours</Badge>;
+      case 'completed':
+        return <Badge variant="success">Terminé</Badge>;
+      case 'failed':
+        return <Badge variant="destructive">Échoué</Badge>;
+      default:
+        return null;
     }
   };
 
   return (
-    <Card className="mb-4">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-lg font-medium flex items-center gap-2">
-          {getStatusIcon()}
-          {title}
-        </CardTitle>
-        {getStatusBadge()}
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground">{description}</p>
-        {time && <p className="text-sm text-muted-foreground mt-2">Temps: {time}</p>}
-        {details && <p className="text-sm mt-2 p-2 bg-muted rounded">{details}</p>}
-      </CardContent>
-    </Card>
+    <div className="mb-4 border rounded-lg overflow-hidden">
+      <div 
+        className={`p-4 flex items-center justify-between cursor-pointer ${details ? 'hover:bg-gray-50' : ''}`}
+        onClick={details ? toggleExpanded : undefined}
+      >
+        <div className="flex items-center gap-3">
+          {renderStatusIcon()}
+          <div>
+            <h3 className="font-medium">{title}</h3>
+            <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          {time && <span className="text-xs text-muted-foreground">{time}</span>}
+          {renderStatusBadge()}
+          {details && (
+            isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+          )}
+        </div>
+      </div>
+
+      {isExpanded && details && (
+        <div className="p-4 border-t bg-gray-50">
+          <pre className="text-xs bg-gray-100 p-3 rounded whitespace-pre-wrap overflow-x-auto">
+            {details}
+          </pre>
+        </div>
+      )}
+    </div>
   );
 };
