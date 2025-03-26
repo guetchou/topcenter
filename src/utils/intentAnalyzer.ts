@@ -1,179 +1,191 @@
 
-interface IntentCategory {
-  name: string;
-  keywords: string[];
-  suggestions: string[];
-}
+/**
+ * Analyseur d'intention basé sur les principes d'IA d'Elon Musk
+ * Version simplifiée utilisant une analyse basée sur des règles
+ */
 
-const intentCategories: IntentCategory[] = [
-  {
-    name: "services",
-    keywords: ["service", "offre", "proposez", "prestation", "téléconseillers", "centre d'appels", "appels"],
-    suggestions: [
-      "Quels types de services de centre d'appels proposez-vous ?",
-      "Pouvez-vous gérer des volumes importants d'appels ?",
-      "Proposez-vous un service en plusieurs langues ?"
-    ]
-  },
-  {
-    name: "prix",
-    keywords: ["prix", "tarif", "coût", "budget", "devis", "facturation", "combien", "euros", "fcfa"],
-    suggestions: [
-      "Comment obtenir un devis personnalisé ?",
-      "Quels sont vos tarifs mensuels ?",
-      "Y a-t-il des frais d'installation ?"
-    ]
-  },
-  {
-    name: "contact",
-    keywords: ["joindre", "contacter", "adresse", "email", "téléphone", "rendez-vous", "horaires", "ouverture"],
-    suggestions: [
-      "Quelles sont vos horaires d'ouverture ?",
-      "Comment prendre rendez-vous avec un conseiller ?",
-      "Avez-vous un numéro direct pour le support ?"
-    ]
-  },
-  {
-    name: "technique",
-    keywords: ["système", "logiciel", "équipement", "technologie", "voip", "crm", "intégrer", "installer"],
-    suggestions: [
-      "Quelles technologies utilisez-vous pour votre centre d'appels ?",
-      "Est-il possible d'intégrer votre système avec notre CRM ?",
-      "Proposez-vous une solution cloud ?"
-    ]
-  },
-  {
-    name: "qualité",
-    keywords: ["qualité", "performance", "fiabilité", "formation", "compétence", "certification", "satisfaction"],
-    suggestions: [
-      "Comment assurez-vous la qualité des appels ?",
-      "Quelle formation reçoivent vos agents ?",
-      "Avez-vous des certifications particulières ?"
-    ]
-  }
-];
-
-export interface IntentAnalysisResult {
+interface IntentAnalysisResult {
   detectedIntent: string;
   confidence: number;
-  suggestions: string[];
+  possibleIntents: Array<{
+    intent: string;
+    confidence: number;
+  }>;
 }
 
-/**
- * Analyse un message pour déterminer l'intention de l'utilisateur
- * @param message Le message à analyser
- * @returns Résultat de l'analyse avec l'intention détectée, le niveau de confiance et des suggestions
- */
-export const analyzeUserIntent = (message: string): IntentAnalysisResult => {
-  if (!message || message.trim() === '') {
-    return {
-      detectedIntent: 'unknown',
-      confidence: 0,
-      suggestions: []
-    };
-  }
+// Les intentions possibles
+const INTENT_PATTERNS = {
+  'demande_information': [
+    'comment', 'quoi', 'qui', 'quand', 'où', 'pourquoi', 'quel', 'quelle', 
+    'information', 'détails', 'savoir', 'connaître', 'expliquer', 'préciser',
+    'indiquer', 'clarifier', 'comprendre'
+  ],
+  'demande_assistance': [
+    'aide', 'aider', 'besoin', 'support', 'assister', 'assistance', 'problème', 
+    'difficulté', 'erreur', 'bug', 'réparer', 'résoudre', 'soutien', 'guider'
+  ],
+  'demande_devis': [
+    'prix', 'tarif', 'coût', 'devis', 'estimation', 'combien', 'budget', 'payer',
+    'facturer', 'forfait', 'offre', 'promotion', 'réduction', 'gratuit', 'économique'
+  ],
+  'expression_mécontentement': [
+    'problème', 'mauvais', 'pas content', 'mécontent', 'déçu', 'décevant', 'plainte',
+    'insatisfait', 'erreur', 'bug', 'défaut', 'dysfonctionnement', 'panne', 'lent'
+  ],
+  'demande_rdv': [
+    'rendez-vous', 'rencontre', 'rdv', 'disponibilité', 'agenda', 'programmer',
+    'planifier', 'calendrier', 'date', 'heure', 'jour', 'semaine', 'lundi', 'mardi',
+    'mercredi', 'jeudi', 'vendredi', 'consulter', 'disponible'
+  ],
+  'demande_fonctionnalité': [
+    'fonctionnalité', 'fonction', 'option', 'outil', 'capacité', 'intégration',
+    'ajouter', 'créer', 'développer', 'implémenter', 'améliorer', 'extension'
+  ],
+  'salutation': [
+    'bonjour', 'salut', 'hey', 'coucou', 'bonsoir', 'hello', 'hi', 'bienvenue'
+  ],
+  'remerciement': [
+    'merci', 'remercier', 'remerciement', 'gratitude', 'reconnaissant', 'super',
+    'excellent', 'parfait', 'génial', 'apprécier'
+  ],
+  'conclusion': [
+    'au revoir', 'adieu', 'à bientôt', 'à plus', 'bye', 'bonne journée', 
+    'bon weekend', 'bonne soirée', 'terminer', 'fin', 'conclure'
+  ]
+};
 
-  const messageLower = message.toLowerCase();
-  
-  // Initialiser les scores pour chaque catégorie
-  const scores: Record<string, number> = {};
-  
-  intentCategories.forEach(category => {
-    // Calculer le score basé sur le nombre de mots-clés trouvés
-    let score = 0;
-    category.keywords.forEach(keyword => {
-      // Vérifier si le mot-clé est présent dans le message
-      if (messageLower.includes(keyword.toLowerCase())) {
-        // Ajouter un score plus élevé pour les mots-clés plus longs (généralement plus spécifiques)
-        score += keyword.length * 0.5;
+/**
+ * Analyser l'intention de l'utilisateur dans un texte
+ * @param text Texte à analyser
+ * @returns Résultat de l'analyse d'intention
+ */
+export const analyzeUserIntent = (text: string): IntentAnalysisResult => {
+  const normalizedText = text.toLowerCase();
+  const intentScores: { [key: string]: number } = {};
+
+  // Calculer le score pour chaque intention
+  Object.entries(INTENT_PATTERNS).forEach(([intent, patterns]) => {
+    let intentScore = 0;
+    patterns.forEach(pattern => {
+      if (normalizedText.includes(pattern)) {
+        // Augmenter le score en fonction de la spécificité du pattern
+        intentScore += pattern.length > 7 ? 1.5 : 1;
       }
     });
-    scores[category.name] = score;
+    intentScores[intent] = intentScore;
   });
-  
-  // Trouver la catégorie avec le score le plus élevé
-  let highestCategory = 'unknown';
-  let highestScore = 0;
-  let suggestions: string[] = [];
-  
-  Object.entries(scores).forEach(([category, score]) => {
-    if (score > highestScore) {
-      highestScore = score;
-      highestCategory = category;
-      // Trouver les suggestions pour cette catégorie
-      const categoryData = intentCategories.find(c => c.name === category);
-      suggestions = categoryData ? categoryData.suggestions : [];
+
+  // Convertir les scores en probabilités
+  const totalScore = Object.values(intentScores).reduce((sum, score) => sum + score, 0);
+  const intentProbabilities: { [key: string]: number } = {};
+
+  for (const intent in intentScores) {
+    if (totalScore > 0) {
+      intentProbabilities[intent] = intentScores[intent] / totalScore;
+    } else {
+      intentProbabilities[intent] = 0;
     }
-  });
-  
-  // Calculer le niveau de confiance (normalisé entre 0 et 1)
-  // Si le score est inférieur à un certain seuil, considérer comme inconnu
-  const minThreshold = 2;
-  if (highestScore < minThreshold) {
-    return {
-      detectedIntent: 'unknown',
-      confidence: 0,
-      suggestions: []
-    };
   }
-  
-  // Normaliser le score de confiance entre 0 et 1
-  const maxPossibleScore = 20; // Valeur arbitraire pour normaliser
-  const confidence = Math.min(highestScore / maxPossibleScore, 1);
-  
+
+  // Trouver l'intention la plus probable
+  let maxIntent = 'demande_information';
+  let maxProbability = 0;
+
+  for (const intent in intentProbabilities) {
+    if (intentProbabilities[intent] > maxProbability) {
+      maxIntent = intent;
+      maxProbability = intentProbabilities[intent];
+    }
+  }
+
+  // Adapter le score de confiance
+  // Si aucun pattern n'a été trouvé, la confiance est faible
+  const confidence = totalScore > 0 ? maxProbability : 0.3;
+
+  // Créer le tableau des intentions possibles
+  const possibleIntents = Object.entries(intentProbabilities)
+    .map(([intent, probability]) => ({
+      intent,
+      confidence: probability
+    }))
+    .sort((a, b) => b.confidence - a.confidence);
+
   return {
-    detectedIntent: highestCategory,
+    detectedIntent: maxIntent,
     confidence,
-    suggestions
+    possibleIntents
   };
 };
 
 /**
- * Génère des suggestions contextuelles en fonction du message et de l'historique de conversation
- * @param currentMessage Message actuel de l'utilisateur
- * @param messageHistory Historique des messages précédents
- * @returns Liste de suggestions contextuelles
+ * Analyser l'évolution de l'intention à travers une conversation
+ * @param messages Tableau des messages de la conversation
+ * @returns Analyse de l'évolution de l'intention
  */
-export const generateContextualSuggestions = (
-  currentMessage: string, 
-  messageHistory: { text: string; isUser: boolean }[]
-): string[] => {
-  // Analyser l'intention du message actuel
-  const currentIntent = analyzeUserIntent(currentMessage);
+export const analyzeIntentProgression = (messages: { text: string; isUser: boolean }[]) => {
+  // Filtrer uniquement les messages de l'utilisateur
+  const userMessages = messages.filter(msg => msg.isUser);
   
-  // Si la confiance est suffisamment élevée, utiliser les suggestions de l'intention détectée
-  if (currentIntent.confidence > 0.3) {
-    return currentIntent.suggestions;
+  if (userMessages.length < 2) {
+    return {
+      progression: 'undefined',
+      currentStage: 'initial',
+      confidenceScore: 0
+    };
   }
   
-  // Si pas assez de confiance dans le message actuel, analyser l'historique récent
-  const recentUserMessages = messageHistory
-    .filter(msg => msg.isUser)
-    .slice(-3)
-    .map(msg => msg.text);
+  // Analyser l'intention de chaque message
+  const intents = userMessages.map(msg => analyzeUserIntent(msg.text));
   
-  if (recentUserMessages.length === 0) {
-    // Suggestions par défaut si pas d'historique
-    return [
-      "Quels services de centre d'appels proposez-vous ?",
-      "Comment obtenir un devis personnalisé ?",
-      "Quelles sont vos horaires d'ouverture ?"
-    ];
+  // Identifier les différentes phases de la conversation
+  const hasInquiry = intents.some(intent => 
+    intent.detectedIntent === 'demande_information' && intent.confidence > 0.5
+  );
+  
+  const hasIssue = intents.some(intent => 
+    (intent.detectedIntent === 'expression_mécontentement' || 
+     intent.detectedIntent === 'demande_assistance') && 
+    intent.confidence > 0.5
+  );
+  
+  const hasClosing = intents.some(intent => 
+    (intent.detectedIntent === 'remerciement' || 
+     intent.detectedIntent === 'conclusion') && 
+    intent.confidence > 0.5
+  );
+  
+  const hasAction = intents.some(intent => 
+    (intent.detectedIntent === 'demande_devis' || 
+     intent.detectedIntent === 'demande_rdv') && 
+    intent.confidence > 0.5
+  );
+  
+  // Déterminer la progression de la conversation
+  let progression: 'inquiry_to_action' | 'issue_to_resolution' | 'browsing' | 'undefined' = 'undefined';
+  let currentStage: 'initial' | 'middle' | 'closing' = 'initial';
+  let confidenceScore = 0;
+  
+  if (hasInquiry && hasAction) {
+    progression = 'inquiry_to_action';
+    confidenceScore = 0.8;
+  } else if (hasIssue && hasClosing) {
+    progression = 'issue_to_resolution';
+    confidenceScore = 0.85;
+  } else if (hasInquiry && !hasAction && !hasIssue) {
+    progression = 'browsing';
+    confidenceScore = 0.6;
   }
   
-  // Concaténer les messages récents pour l'analyse
-  const combinedHistory = recentUserMessages.join(" ");
-  const historyIntent = analyzeUserIntent(combinedHistory);
-  
-  // Utiliser les suggestions basées sur l'historique si la confiance est suffisante
-  if (historyIntent.confidence > 0.2) {
-    return historyIntent.suggestions;
+  // Déterminer l'étape actuelle
+  if (hasClosing) {
+    currentStage = 'closing';
+  } else if (hasAction || (intents.length > 3)) {
+    currentStage = 'middle';
   }
   
-  // Sinon, retourner des suggestions génériques
-  return [
-    "Parlez-moi de vos services de centre d'appels",
-    "Comment vous différenciez-vous des autres centres d'appels ?",
-    "Quels sont vos délais de mise en place ?"
-  ];
+  return {
+    progression,
+    currentStage,
+    confidenceScore
+  };
 };
