@@ -6,7 +6,7 @@ import { AlertCircle, Loader2, CheckCircle, Globe2 } from "lucide-react";
 import axios from "axios";
 
 export default function DeployDashboard() {
-  const [status, setStatus] = useState("idle"); // idle | running | success | error
+  const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
   const [logs, setLogs] = useState<string[]>([]);
   const [domains, setDomains] = useState<any[]>([]);
 

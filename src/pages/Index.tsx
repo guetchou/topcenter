@@ -1,12 +1,10 @@
 
 import { lazy, Suspense, useState, useEffect } from "react";
-import { Helmet } from "react-helmet-async";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyInfoSection } from "@/components/sections/CompanyInfoSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { shouldUseNewDesign } from "@/lib/designUtils";
 import { DesignToggle } from "@/components/DesignToggle";
-import { useInView } from "react-intersection-observer";
 import { NewsHighlightSection } from "@/components/sections/NewsHighlightSection";
 import { MapLocation } from "@/components/sections/about/MapLocation";
 import { AIChatBubble } from "@/components/AIChatBubble";
@@ -38,38 +36,31 @@ const Fallback = ({ size = "lg", label = "Chargement" }: { size?: "sm" | "lg", l
   </div>
 );
 
-// Intersection Observer component to lazy load when in viewport
+// Section component without intersection observer
 const LazySection = ({ 
   children, 
   fallbackHeight = "50vh",
-  id,
-  threshold = 0.1
+  id
 }: { 
   children: React.ReactNode,
   fallbackHeight?: string,
-  id: string,
-  threshold?: number
+  id: string
 }) => {
-  const [ref, inView] = useInView({
-    triggerOnce: true,
-    threshold
-  });
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (inView && !isLoaded) {
-      setIsLoaded(true);
-    }
-  }, [inView, isLoaded]);
+    // Simulate loading effect
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div 
-      ref={ref} 
       id={id} 
       style={{ minHeight: isLoaded ? 'auto' : fallbackHeight }}
       className="relative"
     >
-      {(inView || isLoaded) ? (
+      {isLoaded ? (
         <ErrorBoundary>
           <Suspense fallback={<Fallback label={`Chargement de la section ${id}`} />}>
             {children}
@@ -88,28 +79,17 @@ const LazySection = ({
 const Index = () => {
   // Determine which sections to use (old or new design)
   const useNewHero = shouldUseNewDesign('hero');
-  const useNewServices = shouldUseNewDesign('services');
-  const useNewTestimonials = shouldUseNewDesign('testimonials');
 
   return (
     <>
-      <Helmet>
+      <header>
         <title>TopCenter - Centre d'Appels Professionnel au Congo</title>
         <meta
           name="description"
           content="TopCenter, votre partenaire en solutions de centre d'appels et services clients personnalisés en République du Congo et Afrique centrale. Service client optimisé et technologie de pointe."
         />
-        <meta name="keywords" content="centre d'appels, service client, Congo, Brazzaville, relation client, télémarketing, BPO, outsourcing" />
-        <meta property="og:title" content="TopCenter - Centre d'Appels Professionnel" />
-        <meta property="og:description" content="Solutions innovantes de centre d'appels et service client en République du Congo" />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://topcenter.cg" />
-        <meta property="og:image" content="/public/lovable-uploads/logo-topcenter.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <link rel="canonical" href="https://topcenter.cg" />
-      </Helmet>
+      </header>
 
-      {/* Ajout du MainNav qui était manquant */}
       <MainNav />
 
       <main>
