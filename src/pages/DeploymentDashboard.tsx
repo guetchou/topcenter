@@ -3,19 +3,21 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { AlertCircle, Loader2, CheckCircle, Globe2, Save, Trash2, RefreshCw, ExternalLink, Clock } from "lucide-react";
+import { 
+  AlertCircle, Loader2, CheckCircle, Globe2, Save, 
+  Trash2, RefreshCw, ExternalLink, Clock, Github, 
+  BarChart2, Server, GitBranch, Download
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import axios from "axios";
-
-type DeploymentLog = {
-  id: string;
-  message: string;
-  timestamp: Date;
-  type: "info" | "success" | "error" | "warning";
-};
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DeploymentSteps } from "@/components/deploy/DeploymentSteps";
+import { DeploymentSummary } from "@/components/deploy/DeploymentSummary";
+import { useDeployment } from "@/hooks/useDeployment";
+import { getWorkflows, GithubWorkflow } from "@/services/deployment/githubActions";
+import usePocketBaseStatus from '@/hooks/usePocketBaseStatus';
 
 type Domain = {
   id: string;
@@ -32,16 +34,26 @@ type BackupItem = {
 };
 
 export default function DeploymentDashboard() {
-  const [deploymentStatus, setDeploymentStatus] = useState<"idle" | "running" | "success" | "error">("idle");
+  const { 
+    status: deploymentStatus, 
+    progress, 
+    steps, 
+    currentStepId, 
+    logs,
+    deploy,
+    isConnected: logsConnected
+  } = useDeployment();
+  
   const [backupStatus, setBackupStatus] = useState<"idle" | "running" | "success" | "error">("idle");
-  const [deploymentLogs, setDeploymentLogs] = useState<DeploymentLog[]>([]);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [backups, setBackups] = useState<BackupItem[]>([]);
-  const [progress, setProgress] = useState(0);
   const [loadingDomains, setLoadingDomains] = useState(false);
   const [lastDeployment, setLastDeployment] = useState<Date | null>(null);
+  const [workflows, setWorkflows] = useState<GithubWorkflow[]>([]);
+  const [loadingWorkflows, setLoadingWorkflows] = useState(false);
+  const { isConnected: pocketbaseConnected } = usePocketBaseStatus();
 
-  // Simule la récupération du dernier déploiement
+  // Simuler la récupération du dernier déploiement et des sauvegardes au chargement
   useEffect(() => {
     setLastDeployment(new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)); // 3 jours avant
     
@@ -52,55 +64,35 @@ export default function DeploymentDashboard() {
       { id: "3", name: "backup_20250315_183022", date: new Date(2025, 2, 15, 18, 30), size: "142 MB" }
     ];
     setBackups(demoBackups);
+    
+    // Charger les workflows GitHub Actions
+    fetchGithubWorkflows();
   }, []);
 
-  const addLog = (message: string, type: "info" | "success" | "error" | "warning" = "info") => {
-    const newLog: DeploymentLog = {
-      id: Date.now().toString(),
-      message,
-      timestamp: new Date(),
-      type
-    };
-    setDeploymentLogs(prev => [newLog, ...prev]);
-  };
-
-  const simulateProgress = () => {
-    setProgress(0);
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        const newProgress = prev + Math.floor(Math.random() * 10);
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return newProgress;
+  const fetchGithubWorkflows = async () => {
+    try {
+      setLoadingWorkflows(true);
+      const data = await getWorkflows('guetchou', 'topcenter');
+      setWorkflows(data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des workflows:", error);
+      toast.error("Erreur", {
+        description: "Impossible de charger les workflows GitHub."
       });
-    }, 500);
-    return () => clearInterval(interval);
+    } finally {
+      setLoadingWorkflows(false);
+    }
   };
 
   const handleBackup = async () => {
     try {
       setBackupStatus("running");
-      addLog("🗄️ Démarrage de la sauvegarde...", "info");
       
       // Simulation du processus de sauvegarde
-      let cleanupProgress = simulateProgress();
-      
-      addLog("📂 Préparation des fichiers à sauvegarder...", "info");
       await new Promise(r => setTimeout(r, 1500));
-      
-      addLog("💾 Sauvegarde de la base de données...", "info");
       await new Promise(r => setTimeout(r, 2000));
-      
-      addLog("🗃️ Compression des fichiers...", "info");
       await new Promise(r => setTimeout(r, 1500));
-      
-      addLog("📤 Stockage de la sauvegarde sur le serveur distant...", "info");
       await new Promise(r => setTimeout(r, 2000));
-      
-      cleanupProgress();
-      setProgress(100);
       
       // Ajouter la nouvelle sauvegarde à la liste
       const newBackup: BackupItem = {
@@ -111,119 +103,34 @@ export default function DeploymentDashboard() {
       };
       
       setBackups(prev => [newBackup, ...prev]);
-      addLog("✅ Sauvegarde terminée avec succès!", "success");
       setBackupStatus("success");
       
-      toast({
-        title: "Sauvegarde terminée",
-        description: "La sauvegarde a été créée avec succès.",
-        variant: "default",
+      toast.success("Sauvegarde terminée", {
+        description: "La sauvegarde a été créée avec succès."
       });
     } catch (error) {
       console.error("Erreur lors de la sauvegarde:", error);
       setBackupStatus("error");
-      addLog(`❌ Erreur lors de la sauvegarde: ${error instanceof Error ? error.message : "Erreur inconnue"}`, "error");
       
-      toast({
-        title: "Erreur de sauvegarde",
-        description: "Une erreur est survenue lors de la sauvegarde.",
-        variant: "destructive",
+      toast.error("Erreur de sauvegarde", {
+        description: "Une erreur est survenue lors de la sauvegarde."
       });
     }
   };
 
   const handleDeploy = async () => {
-    try {
-      setDeploymentStatus("running");
-      addLog("🚀 Démarrage du déploiement...", "info");
-      
-      // Déclencher la simulation de progression
-      let cleanupProgress = simulateProgress();
-      
-      // Sauvegarde avant déploiement
-      addLog("📦 Création d'une sauvegarde avant déploiement...", "info");
-      await new Promise(r => setTimeout(r, 3000));
-      
-      // Simuler le déclenchement de GitHub Actions
-      addLog("🔄 Déclenchement du workflow GitHub Actions...", "info");
-      
-      try {
-        // Dans un environnement réel, vous utiliseriez fetch pour appeler l'API GitHub
-        // Ce code est simulé, car fetch échouerait sans le token réel
-        // const response = await fetch("https://api.github.com/repos/guetchou/topcenter/dispatches", {
-        //   method: "POST",
-        //   headers: {
-        //     Authorization: `Bearer ${import.meta.env.VITE_GITHUB_TOKEN}`,
-        //     Accept: "application/vnd.github+json",
-        //     "Content-Type": "application/json"
-        //   },
-        //   body: JSON.stringify({ event_type: "manual_deploy" })
-        // });
-        
-        // Simulation d'une réponse réussie
-        const response = { ok: true };
-        
-        if (response.ok) {
-          addLog("✅ Workflow GitHub Actions déclenché avec succès", "success");
-        } else {
-          throw new Error("Réponse API GitHub non valide");
-        }
-      } catch (error) {
-        addLog(`⚠️ Avertissement: Échec du déclenchement GitHub. Poursuite du déploiement local...`, "warning");
-      }
-      
-      addLog("🔨 Compilation du projet...", "info");
-      await new Promise(r => setTimeout(r, 2500));
-      
-      addLog("🧪 Exécution des tests...", "info");
-      await new Promise(r => setTimeout(r, 1800));
-      
-      addLog("📤 Déploiement des fichiers vers le serveur Infomaniak...", "info");
-      await new Promise(r => setTimeout(r, 4000));
-      
-      addLog("🗄️ Mise à jour de la base de données...", "info");
-      await new Promise(r => setTimeout(r, 1500));
-      
-      addLog("🧹 Nettoyage du cache...", "info");
-      await new Promise(r => setTimeout(r, 1000));
-      
-      cleanupProgress();
-      setProgress(100);
-      
-      // Ajouter une nouvelle sauvegarde automatique
-      const newBackup: BackupItem = {
-        id: Date.now().toString(),
-        name: `auto_deploy_${new Date().toISOString().replace(/[:.]/g, "").slice(0, 15)}`,
-        date: new Date(),
-        size: `${Math.floor(140 + Math.random() * 20)} MB`
-      };
-      setBackups(prev => [newBackup, ...prev]);
-      
-      addLog("✅ Déploiement terminé avec succès!", "success");
-      setDeploymentStatus("success");
-      setLastDeployment(new Date());
-      
-      toast({
-        title: "Déploiement réussi",
-        description: "Votre site a été déployé avec succès.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Erreur lors du déploiement:", error);
-      setDeploymentStatus("error");
-      addLog(`❌ Erreur lors du déploiement: ${error instanceof Error ? error.message : "Erreur inconnue"}`, "error");
-      
-      toast({
-        title: "Erreur de déploiement",
-        description: "Une erreur est survenue lors du déploiement.",
-        variant: "destructive",
-      });
-    }
+    await deploy({
+      owner: 'guetchou',
+      repo: 'topcenter',
+      workflowId: 'deploy.yml',
+      backupFirst: true
+    });
+    
+    setLastDeployment(new Date());
   };
 
   const fetchDomainsFromInfomaniak = async () => {
     setLoadingDomains(true);
-    addLog("🌐 Connexion à l'API Infomaniak...", "info");
     
     try {
       // Dans un environnement réel avec le token correct:
@@ -246,21 +153,15 @@ export default function DeploymentDashboard() {
       ];
       
       setDomains(mockDomains);
-      addLog(`✅ ${mockDomains.length} domaine(s) chargés avec succès.`, "success");
       
-      toast({
-        title: "Domaines chargés",
-        description: `${mockDomains.length} domaines ont été récupérés.`,
-        variant: "default",
+      toast.success("Domaines chargés", {
+        description: `${mockDomains.length} domaines ont été récupérés.`
       });
     } catch (error) {
       console.error("Erreur API Infomaniak:", error);
-      addLog(`❌ Erreur lors de la récupération des domaines: ${error instanceof Error ? error.message : "Erreur inconnue"}`, "error");
       
-      toast({
-        title: "Erreur API",
-        description: "Impossible de récupérer les domaines Infomaniak.",
-        variant: "destructive",
+      toast.error("Erreur API", {
+        description: "Impossible de récupérer les domaines Infomaniak."
       });
     } finally {
       setLoadingDomains(false);
@@ -269,15 +170,11 @@ export default function DeploymentDashboard() {
 
   const deleteBackup = (id: string) => {
     // Simuler la suppression d'une sauvegarde
-    addLog(`🗑️ Suppression de la sauvegarde en cours...`, "info");
-    
     setTimeout(() => {
       setBackups(prev => prev.filter(backup => backup.id !== id));
-      addLog(`✅ Sauvegarde supprimée avec succès.`, "success");
       
-      toast({
-        title: "Sauvegarde supprimée",
-        description: "La sauvegarde a été supprimée avec succès.",
+      toast.success("Sauvegarde supprimée", {
+        description: "La sauvegarde a été supprimée avec succès."
       });
     }, 1000);
   };
@@ -287,20 +184,13 @@ export default function DeploymentDashboard() {
     const backup = backups.find(b => b.id === id);
     if (!backup) return;
     
-    addLog(`⏳ Restauration de la sauvegarde ${backup.name} en cours...`, "info");
     setBackupStatus("running");
     
-    let cleanupProgress = simulateProgress();
-    
     setTimeout(() => {
-      cleanupProgress();
-      setProgress(100);
       setBackupStatus("success");
-      addLog(`✅ Sauvegarde ${backup.name} restaurée avec succès.`, "success");
       
-      toast({
-        title: "Restauration terminée",
-        description: `La sauvegarde ${backup.name} a été restaurée.`,
+      toast.success("Restauration terminée", {
+        description: `La sauvegarde ${backup.name} a été restaurée.`
       });
     }, 5000);
   };
@@ -334,208 +224,341 @@ export default function DeploymentDashboard() {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Déploiement */}
+        {/* Statut des services */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Déploiement</CardTitle>
-              <CardDescription>Déployer votre site en production</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <Button onClick={handleDeploy} disabled={deploymentStatus === 'running'}>
-                  {deploymentStatus === 'running' ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Déploiement en cours...
-                    </>
-                  ) : (
-                    '🚀 Déployer maintenant'
-                  )}
-                </Button>
-                
-                {deploymentStatus === 'success' && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Déploiement réussi</Badge>}
-                {deploymentStatus === 'error' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Déploiement échoué</Badge>}
-              </div>
-              
-              {deploymentStatus === 'running' && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progression</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <Progress value={progress} className="h-2" />
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <Server className="h-5 w-5 mr-3 text-primary" />
+                <div>
+                  <h3 className="font-medium text-sm">PocketBase</h3>
+                  <p className="text-xs text-muted-foreground">Base de données</p>
                 </div>
+              </div>
+              {pocketbaseConnected ? (
+                <Badge variant="success">Connecté</Badge>
+              ) : (
+                <Badge variant="destructive">Déconnecté</Badge>
               )}
-              
-              <div className="mt-2">
-                <h3 className="font-medium text-sm mb-2">Logs du déploiement</h3>
-                <div className="bg-slate-950 text-slate-50 p-3 rounded-lg text-sm h-44 overflow-y-auto font-mono">
-                  {deploymentLogs.length === 0 ? (
-                    <p className="text-slate-400 italic">Les logs de déploiement s'afficheront ici...</p>
-                  ) : (
-                    deploymentLogs.map(log => (
-                      <div key={log.id} className="mb-1">
-                        <span className="text-slate-400 text-xs">[{log.timestamp.toLocaleTimeString()}]</span>{' '}
-                        <span className={`
-                          ${log.type === 'success' ? 'text-green-400' : ''}
-                          ${log.type === 'error' ? 'text-red-400' : ''}
-                          ${log.type === 'warning' ? 'text-yellow-400' : ''}
-                        `}>
-                          {log.message}
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
             </CardContent>
           </Card>
           
-          {/* Sauvegarde */}
           <Card>
-            <CardHeader>
-              <CardTitle>Sauvegardes</CardTitle>
-              <CardDescription>Gérer les sauvegardes de votre site</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <Button onClick={handleBackup} disabled={backupStatus === 'running'} variant="outline">
-                  {backupStatus === 'running' ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Sauvegarde en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Créer une sauvegarde
-                    </>
-                  )}
-                </Button>
-                
-                {backupStatus === 'success' && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Sauvegarde réussie</Badge>}
-                {backupStatus === 'error' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Sauvegarde échouée</Badge>}
-              </div>
-              
-              {backupStatus === 'running' && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Progression</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <Progress value={progress} className="h-2" />
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <Github className="h-5 w-5 mr-3 text-primary" />
+                <div>
+                  <h3 className="font-medium text-sm">GitHub</h3>
+                  <p className="text-xs text-muted-foreground">Actions CI/CD</p>
                 </div>
-              )}
-              
-              <div className="mt-2">
-                <h3 className="font-medium text-sm mb-2">Sauvegardes disponibles</h3>
-                {backups.length === 0 ? (
-                  <p className="text-slate-400 italic">Aucune sauvegarde disponible</p>
-                ) : (
-                  <div className="max-h-44 overflow-y-auto">
-                    {backups.map(backup => (
-                      <div key={backup.id} className="flex items-center justify-between py-2 border-b last:border-0">
-                        <div>
-                          <p className="font-medium text-sm">{backup.name}</p>
-                          <p className="text-xs text-slate-500">
-                            {backup.date.toLocaleDateString()} - {backup.size}
-                          </p>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-8 px-2"
-                            onClick={() => restoreBackup(backup.id)}
-                          >
-                            <RefreshCw className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-8 px-2 text-red-500 hover:text-red-700"
-                            onClick={() => deleteBackup(backup.id)}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
+              {workflows.length > 0 ? (
+                <Badge variant="success">Disponible</Badge>
+              ) : (
+                loadingWorkflows ? (
+                  <Badge variant="outline">Vérification...</Badge>
+                ) : (
+                  <Badge variant="destructive">Non configuré</Badge>
+                )
+              )}
             </CardContent>
           </Card>
           
-          {/* Domaines Infomaniak */}
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>Domaines Infomaniak</CardTitle>
-              <CardDescription>Gérer vos domaines connectés à Infomaniak</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <Button 
-                  onClick={fetchDomainsFromInfomaniak} 
-                  disabled={loadingDomains} 
-                  variant="outline"
-                >
-                  {loadingDomains ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Chargement...
-                    </>
-                  ) : (
-                    <>
-                      <Globe2 className="mr-2 h-4 w-4" />
-                      Récupérer mes domaines
-                    </>
-                  )}
-                </Button>
+          <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <Globe2 className="h-5 w-5 mr-3 text-primary" />
+                <div>
+                  <h3 className="font-medium text-sm">Infomaniak</h3>
+                  <p className="text-xs text-muted-foreground">Hébergement</p>
+                </div>
               </div>
-              
-              <div className="mt-2">
-                {domains.length === 0 ? (
-                  <p className="text-slate-400 italic">Aucun domaine chargé. Cliquez sur le bouton pour récupérer vos domaines.</p>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {domains.map(domain => (
-                      <div key={domain.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-medium">{domain.domain_name}</h3>
-                            {domain.expiration && (
-                              <p className="text-sm text-slate-500">
-                                Expiration: {new Date(domain.expiration).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-                          {domain.status && (
-                            <Badge variant={domain.status === 'active' ? 'default' : 'outline'}>
-                              {domain.status === 'active' ? 'Actif' : domain.status}
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="mt-3 flex space-x-2">
-                          <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => window.open(`https://${domain.domain_name}`, '_blank')}>
-                            <Globe2 className="h-3 w-3 mr-1" /> Visiter
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-xs h-7">
-                            DNS
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-xs h-7">
-                            SSL
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <Badge variant="outline">Non vérifié</Badge>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div className="flex items-center">
+                <BarChart2 className="h-5 w-5 mr-3 text-primary" />
+                <div>
+                  <h3 className="font-medium text-sm">Logs</h3>
+                  <p className="text-xs text-muted-foreground">Temps réel</p>
+                </div>
               </div>
+              {logsConnected ? (
+                <Badge variant="success">Connecté</Badge>
+              ) : (
+                <Badge variant="outline">Déconnecté</Badge>
+              )}
             </CardContent>
           </Card>
         </div>
+        
+        <Tabs defaultValue="deployment">
+          <TabsList className="mb-4">
+            <TabsTrigger value="deployment">Déploiement</TabsTrigger>
+            <TabsTrigger value="backups">Sauvegardes</TabsTrigger>
+            <TabsTrigger value="domains">Domaines</TabsTrigger>
+            <TabsTrigger value="configuration">Configuration</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="deployment">
+            <div className="grid grid-cols-1 gap-6">
+              {/* Résumé du déploiement */}
+              <DeploymentSummary
+                environment="Production"
+                buildTime={deploymentStatus === 'running' ? 'En cours...' : deploymentStatus === 'success' ? '2m 34s' : '--'}
+                startTime={new Date().toLocaleDateString()}
+                domain="topcenter.cg"
+                deployId="deploy-123456"
+                gitBranch="main"
+              />
+              
+              {/* Panneau de déploiement */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Déploiement</CardTitle>
+                  <CardDescription>Déployer votre site en production</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center gap-4 flex-wrap mb-6">
+                    <Button onClick={handleDeploy} disabled={deploymentStatus === 'running'}>
+                      {deploymentStatus === 'running' ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Déploiement en cours...
+                        </>
+                      ) : (
+                        '🚀 Déployer maintenant'
+                      )}
+                    </Button>
+                    
+                    {deploymentStatus === 'success' && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Déploiement réussi</Badge>}
+                    {deploymentStatus === 'error' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Déploiement échoué</Badge>}
+                    
+                    {workflows.length > 0 && (
+                      <div className="ml-auto flex items-center">
+                        <GitBranch className="h-4 w-4 mr-2 text-muted-foreground" />
+                        <select className="text-sm border rounded px-2 py-1">
+                          <option value="main">main</option>
+                          <option value="develop">develop</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Étapes de déploiement */}
+                  <DeploymentSteps steps={steps} currentStepId={currentStepId} />
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="backups">
+            <Card>
+              <CardHeader>
+                <CardTitle>Sauvegardes</CardTitle>
+                <CardDescription>Gérer les sauvegardes de votre site</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <Button onClick={handleBackup} disabled={backupStatus === 'running'} variant="outline">
+                    {backupStatus === 'running' ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Sauvegarde en cours...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Créer une sauvegarde
+                      </>
+                    )}
+                  </Button>
+                  
+                  {backupStatus === 'success' && <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Sauvegarde réussie</Badge>}
+                  {backupStatus === 'error' && <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">Sauvegarde échouée</Badge>}
+                </div>
+                
+                <div className="mt-6">
+                  <h3 className="font-medium text-sm mb-4">Sauvegardes disponibles</h3>
+                  {backups.length === 0 ? (
+                    <p className="text-slate-400 italic">Aucune sauvegarde disponible</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {backups.map(backup => (
+                        <div key={backup.id} className="flex items-center justify-between py-3 border-b last:border-0">
+                          <div>
+                            <p className="font-medium text-sm">{backup.name}</p>
+                            <p className="text-xs text-slate-500">
+                              {backup.date.toLocaleDateString()} - {backup.size}
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-8 px-2"
+                              onClick={() => restoreBackup(backup.id)}
+                            >
+                              <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                              Restaurer
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-8 px-2"
+                              onClick={() => window.open('#', '_blank')}
+                            >
+                              <Download className="h-3.5 w-3.5 mr-1" />
+                              Télécharger
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="h-8 px-2 text-red-500 hover:text-red-700"
+                              onClick={() => deleteBackup(backup.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="domains">
+            <Card>
+              <CardHeader>
+                <CardTitle>Domaines Infomaniak</CardTitle>
+                <CardDescription>Gérer vos domaines connectés à Infomaniak</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                  <Button 
+                    onClick={fetchDomainsFromInfomaniak} 
+                    disabled={loadingDomains} 
+                    variant="outline"
+                  >
+                    {loadingDomains ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Chargement...
+                      </>
+                    ) : (
+                      <>
+                        <Globe2 className="mr-2 h-4 w-4" />
+                        Récupérer mes domaines
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                <div className="mt-2">
+                  {domains.length === 0 ? (
+                    <p className="text-slate-400 italic">Aucun domaine chargé. Cliquez sur le bouton pour récupérer vos domaines.</p>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {domains.map(domain => (
+                        <div key={domain.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-medium">{domain.domain_name}</h3>
+                              {domain.expiration && (
+                                <p className="text-sm text-slate-500">
+                                  Expiration: {new Date(domain.expiration).toLocaleDateString()}
+                                </p>
+                              )}
+                            </div>
+                            {domain.status && (
+                              <Badge variant={domain.status === 'active' ? 'default' : 'outline'}>
+                                {domain.status === 'active' ? 'Actif' : domain.status}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="mt-3 flex space-x-2">
+                            <Button size="sm" variant="outline" className="text-xs h-7" onClick={() => window.open(`https://${domain.domain_name}`, '_blank')}>
+                              <Globe2 className="h-3 w-3 mr-1" /> Visiter
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs h-7">
+                              DNS
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs h-7">
+                              SSL
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="configuration">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configuration du Déploiement</CardTitle>
+                <CardDescription>Paramètres pour le déploiement automatique</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">GitHub Actions</h3>
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Repository:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">guetchou/topcenter</code>
+                      </div>
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Workflow:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">deploy.yml</code>
+                      </div>
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Event type:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">manual_deploy</code>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Infomaniak FTP</h3>
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Hôte:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">ftp.cluster0xy.hosting.infomaniak.ch</code>
+                      </div>
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Répertoire:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">/home/clients/182ddf0dfc453b3faeaee042d1660720/sites/</code>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">Options de sauvegarde</h3>
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Répertoire de sauvegarde:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">/home/clients/182ddf0dfc453b3faeaee042d1660720/backups/</code>
+                      </div>
+                      <div className="flex items-center justify-between border-b pb-2">
+                        <span className="text-sm">Rétention:</span>
+                        <code className="bg-muted px-1 py-0.5 rounded text-sm">5 dernières sauvegardes</code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );

@@ -11,6 +11,7 @@ interface DeploymentStepProps {
   status: DeploymentStatus;
   time?: string;
   details?: string;
+  isCurrentStep?: boolean;
 }
 
 export const DeploymentStep: React.FC<DeploymentStepProps> = ({
@@ -18,7 +19,8 @@ export const DeploymentStep: React.FC<DeploymentStepProps> = ({
   description,
   status,
   time,
-  details
+  details,
+  isCurrentStep = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -57,7 +59,7 @@ export const DeploymentStep: React.FC<DeploymentStepProps> = ({
   };
 
   return (
-    <div className="mb-4 border rounded-lg overflow-hidden">
+    <div className={`mb-4 border rounded-lg overflow-hidden ${isCurrentStep ? 'ring-2 ring-primary/30' : ''}`}>
       <div 
         className={`p-4 flex items-center justify-between cursor-pointer ${details ? 'hover:bg-gray-50' : ''}`}
         onClick={details ? toggleExpanded : undefined}
@@ -68,6 +70,11 @@ export const DeploymentStep: React.FC<DeploymentStepProps> = ({
             <h3 className="font-medium">{title}</h3>
             <p className="text-sm text-muted-foreground">{description}</p>
           </div>
+          {isCurrentStep && (
+            <Badge variant="outline" className="ml-2 bg-primary/10 text-primary border-primary/20">
+              Actuelle
+            </Badge>
+          )}
         </div>
         <div className="flex items-center gap-3">
           {time && <span className="text-xs text-muted-foreground">{time}</span>}

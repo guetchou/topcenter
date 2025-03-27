@@ -1,4 +1,3 @@
-
 import axios, { AxiosInstance } from 'axios';
 import { handleApiError, setupErrorHandlers } from './errorHandler';
 
@@ -167,7 +166,7 @@ const database = {
   }
 };
 
-// Module deploy
+// Module deploy - Amélioré avec de nouvelles fonctionnalités
 const deploy = {
   getStatus: async () => {
     try {
@@ -189,9 +188,96 @@ const deploy = {
     }
   },
   
-  getLogs: async (deployId) => {
+  getLogs: async (deployId: string) => {
     try {
       const response = await apiClient.get(`/deploy/${deployId}/logs`);
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  // Nouvelles fonctions pour l'intégration GitHub Actions
+  getGithubWorkflows: async (owner: string, repo: string) => {
+    try {
+      const response = await apiClient.get(`/deploy/github/workflows?owner=${owner}&repo=${repo}`);
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  triggerGithubWorkflow: async (owner: string, repo: string, workflowId: string, options = {}) => {
+    try {
+      const response = await apiClient.post(`/deploy/github/workflows/${workflowId}/dispatch`, {
+        owner,
+        repo,
+        ...options
+      });
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  // Fonctions pour les sauvegardes
+  getBackups: async () => {
+    try {
+      const response = await apiClient.get('/deploy/backups');
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  createBackup: async (options = {}) => {
+    try {
+      const response = await apiClient.post('/deploy/backups', options);
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  restoreBackup: async (backupId: string) => {
+    try {
+      const response = await apiClient.post(`/deploy/backups/${backupId}/restore`);
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  deleteBackup: async (backupId: string) => {
+    try {
+      const response = await apiClient.delete(`/deploy/backups/${backupId}`);
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  // Fonctions pour les domaines Infomaniak
+  getInfomaniakDomains: async () => {
+    try {
+      const response = await apiClient.get('/deploy/domains');
+      return response;
+    } catch (error) {
+      handleApiError(error);
+      throw error;
+    }
+  },
+  
+  updateDomainConfig: async (domainId: string, config = {}) => {
+    try {
+      const response = await apiClient.put(`/deploy/domains/${domainId}`, config);
       return response;
     } catch (error) {
       handleApiError(error);
