@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2, CheckCircle, Globe2 } from "lucide-react";
 import axios from "axios";
-import { toast } from "@/hooks/use-toast";
 
 export default function DeployDashboard() {
   const [status, setStatus] = useState("idle"); // idle | running | success | error
@@ -22,45 +21,23 @@ export default function DeployDashboard() {
       setStatus("running");
       setLogs(["🚀 Déploiement lancé..."]);
       await simulateBackup();
-      
-      try {
-        const response = await fetch("https://api.github.com/repos/guetchou/topcenter/dispatches", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_GITHUB_TOKEN}`,
-            Accept: "application/vnd.github+json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ event_type: "manual_deploy" })
-        });
-        
-        if (response.ok) {
-          setLogs(prev => [...prev, "📤 Déploiement GitHub déclenché."]);
-          toast({
-            title: "Déploiement réussi",
-            description: "Le déploiement a été déclenché avec succès.",
-          });
-          setStatus("success");
-        } else {
-          throw new Error("Erreur lors du déclenchement du déploiement");
-        }
-      } catch (error) {
-        // Simuler un succès pour la démonstration
-        setLogs(prev => [...prev, "📤 Déploiement GitHub déclenché (simulation)."]);
-        toast({
-          title: "Déploiement réussi",
-          description: "Le déploiement a été simulé avec succès.",
-        });
+      const response = await fetch("https://api.github.com/repos/<guetchou>/<topcenter>/dispatches", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_GITHUB_TOKEN}`,
+          Accept: "application/vnd.github+json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ event_type: "manual_deploy" })
+      });
+      if (response.ok) {
+        setLogs(prev => [...prev, "📤 Déploiement GitHub déclenché."]);
         setStatus("success");
+      } else {
+        throw new Error("Erreur lors du déclenchement du déploiement");
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-      setLogs(prev => [...prev, `❌ ${errorMessage}`]);
-      toast({
-        title: "Erreur de déploiement",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      setLogs(prev => [...prev, `❌ ${error instanceof Error ? error.message : "Une erreur est survenue"}`]);
       setStatus("error");
     }
   };
@@ -68,41 +45,15 @@ export default function DeployDashboard() {
   const fetchDomainsFromInfomaniak = async () => {
     setLogs(prev => [...prev, "🌐 Connexion à l'API Infomaniak..."]);
     try {
-      // Tentative réelle avec l'API Infomaniak
-      try {
-        const response = await axios.get("https://api.infomaniak.com/1/domains", {
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_INFOMANIAK_TOKEN}`
-          }
-        });
-        setDomains(response.data.data);
-        setLogs(prev => [...prev, `✅ ${response.data.data.length} domaine(s) chargés.`]);
-        toast({
-          title: "Domaines chargés",
-          description: `${response.data.data.length} domaines ont été récupérés.`,
-        });
-      } catch (error) {
-        // Simuler des données pour la démonstration
-        await new Promise(r => setTimeout(r, 1000));
-        const mockDomains = [
-          { id: 1, domain_name: "topcenter.cg" },
-          { id: 2, domain_name: "topcenter.com" }
-        ];
-        setDomains(mockDomains);
-        setLogs(prev => [...prev, `✅ ${mockDomains.length} domaine(s) chargés (simulation).`]);
-        toast({
-          title: "Domaines chargés",
-          description: `${mockDomains.length} domaines ont été simulés.`,
-        });
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Erreur inconnue";
-      setLogs(prev => [...prev, `❌ Erreur API Infomaniak : ${errorMessage}`]);
-      toast({
-        title: "Erreur API",
-        description: `Impossible de récupérer les domaines: ${errorMessage}`,
-        variant: "destructive",
+      const response = await axios.get("https://api.infomaniak.com/1/domains", {
+        headers: {
+          Authorization: `Bearer ${import.meta.env.VITE_INFOMANIAK_TOKEN}`
+        }
       });
+      setDomains(response.data.data);
+      setLogs(prev => [...prev, `✅ ${response.data.data.length} domaine(s) chargés.`]);
+    } catch (error) {
+      setLogs(prev => [...prev, `❌ Erreur API Infomaniak : ${error instanceof Error ? error.message : "Une erreur est survenue"}`]);
     }
   };
 
@@ -141,6 +92,7 @@ export default function DeployDashboard() {
               </ul>
             </div>
           )}
+
         </CardContent>
       </Card>
     </div>

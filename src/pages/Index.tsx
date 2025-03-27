@@ -11,6 +11,7 @@ import { NewsHighlightSection } from "@/components/sections/NewsHighlightSection
 import { MapLocation } from "@/components/sections/about/MapLocation";
 import { AIChatBubble } from "@/components/AIChatBubble";
 import { Footer } from "@/components/Footer";
+import { MainNav } from "@/components/MainNav";
 
 // Lazy loading original sections
 const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
@@ -107,6 +108,9 @@ const Index = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href="https://topcenter.cg" />
       </Helmet>
+
+      {/* Ajout du MainNav qui était manquant */}
+      <MainNav />
 
       <main>
         <ErrorBoundary>
