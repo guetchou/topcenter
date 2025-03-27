@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, Loader2, CheckCircle, Globe2 } from "lucide-react";
 import axios from "axios";
+import { toast } from "sonner";
 
 export default function DeployDashboard() {
   const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
@@ -21,39 +22,60 @@ export default function DeployDashboard() {
       setStatus("running");
       setLogs(["🚀 Déploiement lancé..."]);
       await simulateBackup();
-      const response = await fetch("https://api.github.com/repos/<guetchou>/<topcenter>/dispatches", {
+      
+      // Vérifier la présence du token avant l'appel
+      const githubToken = import.meta.env.VITE_GITHUB_TOKEN;
+      if (!githubToken) {
+        throw new Error("VITE_GITHUB_TOKEN n'est pas défini dans les variables d'environnement");
+      }
+
+      const response = await fetch("https://api.github.com/repos/guetchou/topcenter/dispatches", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_GITHUB_TOKEN}`,
+          Authorization: `Bearer ${githubToken}`,
           Accept: "application/vnd.github+json",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({ event_type: "manual_deploy" })
       });
+      
       if (response.ok) {
         setLogs(prev => [...prev, "📤 Déploiement GitHub déclenché."]);
         setStatus("success");
+        toast.success("Déploiement déclenché avec succès");
       } else {
-        throw new Error("Erreur lors du déclenchement du déploiement");
+        throw new Error(`Erreur lors du déclenchement du déploiement: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
+      console.error("Erreur de déploiement:", error);
       setLogs(prev => [...prev, `❌ ${error instanceof Error ? error.message : "Une erreur est survenue"}`]);
       setStatus("error");
+      toast.error("Échec du déploiement");
     }
   };
 
   const fetchDomainsFromInfomaniak = async () => {
     setLogs(prev => [...prev, "🌐 Connexion à l'API Infomaniak..."]);
     try {
+      // Vérifier la présence du token
+      const infomaniakToken = import.meta.env.VITE_INFOMANIAK_TOKEN;
+      if (!infomaniakToken) {
+        throw new Error("VITE_INFOMANIAK_TOKEN n'est pas défini dans les variables d'environnement");
+      }
+
       const response = await axios.get("https://api.infomaniak.com/1/domains", {
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_INFOMANIAK_TOKEN}`
+          Authorization: `Bearer ${infomaniakToken}`
         }
       });
+      
       setDomains(response.data.data);
       setLogs(prev => [...prev, `✅ ${response.data.data.length} domaine(s) chargés.`]);
+      toast.success(`${response.data.data.length} domaines chargés`);
     } catch (error) {
+      console.error("Erreur API Infomaniak:", error);
       setLogs(prev => [...prev, `❌ Erreur API Infomaniak : ${error instanceof Error ? error.message : "Une erreur est survenue"}`]);
+      toast.error("Échec de chargement des domaines");
     }
   };
 
@@ -65,7 +87,14 @@ export default function DeployDashboard() {
         <CardContent className="space-y-4 p-4">
           <div className="flex items-center gap-4 flex-wrap">
             <Button onClick={handleDeploy} disabled={status === 'running'}>
-              {status === 'running' ? <Loader2 className="animate-spin mr-2" /> : '🚀 Lancer le déploiement'}
+              {status === 'running' ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" />
+                  Déploiement en cours...
+                </>
+              ) : (
+                '🚀 Lancer le déploiement'
+              )}
             </Button>
 
             <Button variant="secondary" onClick={fetchDomainsFromInfomaniak}>
@@ -92,7 +121,6 @@ export default function DeployDashboard() {
               </ul>
             </div>
           )}
-
         </CardContent>
       </Card>
     </div>

@@ -1,6 +1,5 @@
 
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,58 +46,39 @@ export const AnimatedAvatar = ({
       onMouseLeave={() => setIsHovered(false)}
     >
       <CardContent className="p-6 flex flex-col items-center">
-        <motion.div
-          className="relative mb-4"
-          whileHover={{ scale: 1.1 }}
-          animate={isAnimating ? { 
-            rotate: [0, -10, 10, -5, 0],
-            scale: [1, 1.1, 1.1, 1] 
-          } : {}}
-          transition={{ duration: 0.5 }}
+        <div
+          className={`relative mb-4 transition-transform duration-300 ${isAnimating ? 'scale-110' : ''}`}
         >
           <Avatar className="w-20 h-20 border-2 border-primary/20">
             <AvatarImage src={imageSrc} />
             <AvatarFallback>{name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-background ${statusColors[status]}`} />
-        </motion.div>
+        </div>
         
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        <div className="text-center">
           <h3 className="font-medium">{name}</h3>
           <Badge variant="outline" className="mt-1">{role}</Badge>
-        </motion.div>
+        </div>
 
         {isHovered && (
-          <motion.div
-            className="mt-4 text-center"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            transition={{ duration: 0.3 }}
-          >
+          <div className="mt-4 text-center">
             <div className="text-xs text-muted-foreground">
               Cliquez pour contacter directement
             </div>
             <div className="flex justify-center space-x-2 mt-2">
               {["call", "email", "message"].map((action, i) => (
-                <motion.div
+                <div
                   key={action}
                   className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:bg-primary/20"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.1 * i }}
                 >
                   <span className="text-xs">{action.charAt(0).toUpperCase()}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
         )}
       </CardContent>
     </Card>
   );
-};
+}

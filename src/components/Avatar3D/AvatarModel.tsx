@@ -1,9 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
-import { useGLTF } from '@react-three/drei';
-import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
-import * as SkeletonUtils from 'three-stdlib';
+import React, { useRef } from 'react';
 
 interface AvatarModelProps {
   position?: [number, number, number];
@@ -13,16 +9,6 @@ interface AvatarModelProps {
   animate?: boolean;
 }
 
-// Définir un type pour le résultat de GLTF
-interface GLTFResult {
-  nodes: {
-    [key: string]: THREE.Mesh;
-  };
-  materials: {
-    [key: string]: THREE.Material;
-  };
-}
-
 const AvatarModel: React.FC<AvatarModelProps> = ({
   position = [0, 0, 0],
   rotation = [0, 0, 0],
@@ -30,42 +16,23 @@ const AvatarModel: React.FC<AvatarModelProps> = ({
   modelPath,
   animate = true
 }) => {
-  const group = useRef<THREE.Group>(null);
+  const group = useRef<any>(null);
   
-  // Typez correctement le résultat de useGLTF
-  const { scene } = useGLTF(modelPath) as unknown as { scene: THREE.Group };
-  
-  useEffect(() => {
-    if (scene) {
-      // Clone la scène pour éviter les problèmes de partage d'instance
-      // Utiliser directement THREE pour cloner la scène
-      const clonedScene = scene.clone();
-      
-      // Nettoyage du groupe existant
-      if (group.current) {
-        while (group.current.children.length > 0) {
-          group.current.remove(group.current.children[0]);
-        }
-        
-        // Ajouter le clone au groupe
-        group.current.add(clonedScene);
-      }
-    }
-  }, [scene, modelPath]);
-
-  useFrame(({ clock }) => {
-    if (animate && group.current) {
-      group.current.rotation.y = Math.sin(clock.getElapsedTime() * 0.5) * 0.2 + rotation[1];
-    }
-  });
-
+  // Version temporaire simplifiée pendant la résolution des problèmes de dépendances
   return (
-    <group
-      ref={group}
-      position={position as [number, number, number]}
-      rotation={rotation as [number, number, number]}
-      scale={[scale, scale, scale]}
-    />
+    <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg">
+      <div className="text-center p-4">
+        <div className="text-lg font-medium mb-2">Avatar 3D</div>
+        <p className="text-sm text-muted-foreground">
+          Modèle: {modelPath.split('/').pop()}
+        </p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Position: [{position.join(', ')}]<br />
+          Rotation: [{rotation.join(', ')}]<br />
+          Scale: {scale}
+        </p>
+      </div>
+    </div>
   );
 };
 

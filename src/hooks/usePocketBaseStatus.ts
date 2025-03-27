@@ -10,6 +10,8 @@ export const usePocketBaseStatus = () => {
     const checkConnection = async () => {
       try {
         setIsChecking(true);
+        // Simulation d'un délai réseau
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const result = await testPocketBaseConnection();
         setIsConnected(result);
       } catch (error) {
