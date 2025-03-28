@@ -10,11 +10,23 @@ import { ServerStatusMonitor } from "@/components/deploy/ServerStatusMonitor";
 import { useDeployment } from "@/hooks/useDeployment";
 import { useDeploymentLogs } from "@/hooks/useDeploymentLogs";
 import { DeploymentSummary } from "@/components/deploy/DeploymentSummary";
+import { DeploymentProgress } from "@/components/deploy/DeploymentProgress";
+import { toast } from "sonner";
 
 const DeploymentDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("deployment");
   const { logs, addLog, clearLogs } = useDeploymentLogs();
   const { status, isLoading, deploymentSteps, currentStepId, startDeployment } = useDeployment({ addLog });
+
+  const handleDeploy = async () => {
+    try {
+      await startDeployment();
+      toast.success("Déploiement déclenché avec succès");
+    } catch (error) {
+      console.error("Erreur de déploiement:", error);
+      toast.error("Échec du déploiement");
+    }
+  };
 
   return (
     <div className="container mx-auto py-6 max-w-7xl">
@@ -34,13 +46,15 @@ const DeploymentDashboard: React.FC = () => {
           <DeploymentControls 
             status={status} 
             isLoading={isLoading} 
-            onDeploy={startDeployment} 
+            onDeploy={handleDeploy}
           />
         </div>
         <div className="md:col-span-1">
           <ServerStatusMonitor />
         </div>
       </div>
+      
+      {status !== "idle" && <DeploymentProgress steps={deploymentSteps} />}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-6">

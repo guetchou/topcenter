@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { GitBranch, Globe, ChevronRight, Calendar, Clock } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/card";
+import { GitBranch, Clock, Globe, Box } from "lucide-react";
 
 interface DeploymentSummaryProps {
   environment: string;
@@ -22,35 +22,56 @@ export const DeploymentSummary: React.FC<DeploymentSummaryProps> = ({
 }) => {
   return (
     <Card className="mb-6">
-      <CardContent className="p-6">
-        <div className="flex flex-col gap-4 md:flex-row md:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold flex items-center gap-1">
-              <span className="inline-block w-3 h-3 bg-green-500 rounded-full mr-2"></span>
-              {environment}
-              <ChevronRight className="h-4 w-4 text-muted-foreground mx-1" />
-              <span className="text-muted-foreground font-normal">{deployId}</span>
-            </h2>
-            <div className="flex items-center gap-6 mt-2">
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>{startTime}</span>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Clock className="h-4 w-4" />
-                <span>{buildTime}</span>
-              </div>
+      <CardContent className="p-4">
+        <h2 className="text-lg font-semibold mb-3">Informations de déploiement</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-center space-x-2">
+            <Box className="h-5 w-5 text-blue-500" />
+            <div>
+              <p className="text-sm text-gray-500">Environnement</p>
+              <p className="font-medium">{environment}</p>
             </div>
           </div>
           
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Globe className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{domain}</span>
+          <div className="flex items-center space-x-2">
+            <Clock className="h-5 w-5 text-blue-500" />
+            <div>
+              <p className="text-sm text-gray-500">Durée estimée</p>
+              <p className="font-medium">{buildTime}</p>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <GitBranch className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{gitBranch}</span>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <GitBranch className="h-5 w-5 text-blue-500" />
+            <div>
+              <p className="text-sm text-gray-500">Branche</p>
+              <p className="font-medium">{gitBranch}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Globe className="h-5 w-5 text-blue-500" />
+            <div>
+              <p className="text-sm text-gray-500">Domaine cible</p>
+              <p className="font-medium">{domain}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <div className="h-5 w-5 text-blue-500 flex items-center justify-center">
+              <span className="text-xs">#</span>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">ID de déploiement</p>
+              <p className="font-medium">{deployId}</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Clock className="h-5 w-5 text-blue-500" />
+            <div>
+              <p className="text-sm text-gray-500">Démarrage</p>
+              <p className="font-medium">{startTime}</p>
             </div>
           </div>
         </div>

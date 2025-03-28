@@ -13,7 +13,7 @@ export interface Step {
   status: DeployStepStatus;
   startTime?: Date;
   endTime?: Date;
-  logs: DeploymentLog[];
+  logs: { message: string; type: string; }[];
 }
 
 interface DeploymentStepsProps {
@@ -42,7 +42,7 @@ export const DeploymentSteps: React.FC<DeploymentStepsProps> = ({ steps, current
     if (step.logs.length === 0) return '';
     
     return step.logs
-      .map(log => `[${log.timestamp.toLocaleTimeString()}] ${log.message}`)
+      .map(log => `${log.message}`)
       .join('\n');
   };
 
