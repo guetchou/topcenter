@@ -2,7 +2,6 @@
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
-import { FormattedMessage } from "react-intl";
 import { useEffect, useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -42,11 +41,7 @@ export const ThemeToggle = () => {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {theme === "dark" ? (
-            <FormattedMessage id="nav.lightMode" defaultMessage="Light Mode" />
-          ) : (
-            <FormattedMessage id="nav.darkMode" defaultMessage="Dark Mode" />
-          )}
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

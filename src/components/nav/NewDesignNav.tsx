@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { AnimationWrapper } from "../AnimationWrapper";
 import { useSearch } from "@/contexts/SearchContext";
-import { Search, X, ChevronDown } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { GlobalSearch } from "../GlobalSearch";
 import { NavLinks } from "./NavLinks";
@@ -11,7 +11,6 @@ import { MobileNavMenu } from "./MobileNavMenu";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useAuth } from "@/hooks/useAuth";
-import { FormattedMessage } from "react-intl";
 
 export function NewDesignNav() {
   const { openSearch } = useSearch();
@@ -87,7 +86,7 @@ export function NewDesignNav() {
               className="hidden md:flex items-center gap-1"
             >
               <Link to="/login">
-                <FormattedMessage id="nav.login" defaultMessage="Connexion" />
+                Connexion
               </Link>
             </Button>
           )}

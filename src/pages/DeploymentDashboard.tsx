@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DeploymentControls } from "@/components/deploy/DeploymentControls";
 import { DeploymentStepsPanel } from "@/components/deploy/DeploymentStepsPanel";
+import { DeploymentLogPanel } from "@/components/deploy/DeploymentLogPanel";
 import { BackupPanel } from "@/components/deploy/BackupPanel";
 import { DomainsPanel } from "@/components/deploy/DomainsPanel";
 import { ServerStatusMonitor } from "@/components/deploy/ServerStatusMonitor";
@@ -40,11 +41,17 @@ export default function DeploymentDashboard() {
             isLoading={isLoading}
             onDeploy={startDeployment} 
           />
-          <DeploymentStepsPanel 
-            steps={deploymentSteps}
-            currentStepId={currentStepId}
-            isWebSocketConnected={isConnected}
-          />
+          <div className="grid md:grid-cols-2 gap-4">
+            <DeploymentStepsPanel 
+              steps={deploymentSteps}
+              currentStepId={currentStepId}
+              isWebSocketConnected={isConnected}
+            />
+            <DeploymentLogPanel 
+              logs={logs}
+              isWebSocketConnected={isConnected}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="backups" className="space-y-4">

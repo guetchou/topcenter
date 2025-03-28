@@ -1,6 +1,6 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { IntlProvider as ReactIntlProvider } from 'react-intl';
+import { IntlProvider as ReactIntlProvider, IntlConfig } from 'react-intl';
 import frMessages from '@/i18n/fr.json';
 import enMessages from '@/i18n/en.json';
 
@@ -43,9 +43,9 @@ export const IntlProviderWrapper: React.FC<{ children: React.ReactNode }> = ({ c
   return (
     <IntlContext.Provider value={contextValue}>
       <ReactIntlProvider 
-        locale={locale} 
         messages={messages[locale] || messages['fr']}
         defaultLocale="fr"
+        locale={locale}
       >
         {children}
       </ReactIntlProvider>
