@@ -1,93 +1,174 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Globe2, RefreshCw } from "lucide-react";
-import { toast } from "sonner";
+import { ExternalLink, RefreshCw, ShieldCheck, AlertTriangle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+interface Domain {
+  id: string;
+  name: string;
+  status: 'active' | 'pending' | 'error';
+  ssl: 'valid' | 'expiring' | 'expired' | 'none';
+  expirationDate?: Date;
+  isPrimary: boolean;
+}
 
 export const DomainsPanel: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [domains, setDomains] = useState<any[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const fetchDomainsFromInfomaniak = async () => {
-    setIsLoading(true);
-    
-    try {
-      // Vérifier la présence du token
-      const infomaniakToken = import.meta.env.VITE_INFOMANIAK_TOKEN;
-      if (!infomaniakToken) {
-        throw new Error("VITE_INFOMANIAK_TOKEN n'est pas défini");
+  useEffect(() => {
+    const fetchDomains = async () => {
+      setIsLoading(true);
+      try {
+        // Simuler un appel API
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setDomains([
+          { 
+            id: '1', 
+            name: 'topcenter.com', 
+            status: 'active', 
+            ssl: 'valid',
+            expirationDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 90), // 90 jours dans le futur
+            isPrimary: true
+          },
+          { 
+            id: '2', 
+            name: 'topcenter.net', 
+            status: 'active', 
+            ssl: 'valid',
+            expirationDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 jours dans le futur 
+            isPrimary: false
+          },
+          { 
+            id: '3', 
+            name: 'topcenter.org', 
+            status: 'active', 
+            ssl: 'expiring',
+            expirationDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10), // 10 jours dans le futur
+            isPrimary: false
+          },
+          { 
+            id: '4', 
+            name: 'topcenter.dev', 
+            status: 'pending', 
+            ssl: 'none',
+            isPrimary: false
+          }
+        ]);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des domaines:", error);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      // Simulation de chargement
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Données simulées
-      const simulatedDomains = [
-        { id: 1, domain_name: "topcenter.cg", status: "active" },
-        { id: 2, domain_name: "api.topcenter.cg", status: "active" },
-        { id: 3, domain_name: "admin.topcenter.cg", status: "active" }
-      ];
-      
-      setDomains(simulatedDomains);
-      toast.success(`${simulatedDomains.length} domaines chargés`);
-    } catch (error) {
-      console.error("Erreur API Infomaniak:", error);
-      toast.error("Échec de chargement des domaines");
-    } finally {
-      setIsLoading(false);
+    fetchDomains();
+  }, []);
+
+  const refreshDomains = () => {
+    setIsLoading(true);
+    setTimeout(() => setIsLoading(false), 1000);
+  };
+
+  const getSSLBadge = (ssl: Domain['ssl']) => {
+    switch (ssl) {
+      case 'valid':
+        return <Badge className="bg-green-500"><ShieldCheck className="w-3 h-3 mr-1" /> Valide</Badge>;
+      case 'expiring':
+        return <Badge className="bg-yellow-500"><AlertTriangle className="w-3 h-3 mr-1" /> Expirant</Badge>;
+      case 'expired':
+        return <Badge className="bg-red-500"><AlertTriangle className="w-3 h-3 mr-1" /> Expiré</Badge>;
+      case 'none':
+        return <Badge className="bg-gray-500">Non configuré</Badge>;
+      default:
+        return null;
+    }
+  };
+
+  const getStatusBadge = (status: Domain['status']) => {
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-500">Actif</Badge>;
+      case 'pending':
+        return <Badge className="bg-yellow-500">En attente</Badge>;
+      case 'error':
+        return <Badge className="bg-red-500">Erreur</Badge>;
+      default:
+        return null;
     }
   };
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle>Domaines</CardTitle>
-        <Button 
-          onClick={fetchDomainsFromInfomaniak} 
-          disabled={isLoading} 
-          variant="outline"
-          size="sm"
-        >
-          {isLoading ? (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              Chargement...
-            </>
-          ) : (
-            <>
-              <Globe2 className="mr-2 h-4 w-4" />
-              Charger mes domaines
-            </>
-          )}
-        </Button>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <CardTitle>Domaines</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={refreshDomains}
+            disabled={isLoading}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Rafraîchir
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        {domains.length > 0 ? (
-          <div className="divide-y">
-            {domains.map((domain) => (
-              <div key={domain.id} className="py-3 flex justify-between items-center">
-                <div className="flex items-center">
-                  <Globe2 className="mr-2 h-4 w-4 text-primary" />
-                  <div>
-                    <div className="font-medium">{domain.domain_name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {domain.status === 'active' ? (
-                        <span className="text-green-600">Actif</span>
-                      ) : (
-                        <span className="text-amber-600">Inactif</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">Gérer</Button>
-              </div>
-            ))}
+        {isLoading ? (
+          <div className="flex justify-center items-center p-8">
+            <RefreshCw className="w-6 h-6 animate-spin text-gray-400" />
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            Cliquez sur "Charger mes domaines" pour voir vos domaines
-          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Domaine</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead>SSL</TableHead>
+                <TableHead>Expiration</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {domains.map((domain) => (
+                <TableRow key={domain.id}>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {domain.name}
+                      {domain.isPrimary && (
+                        <Badge variant="outline" className="ml-2">Principal</Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{getStatusBadge(domain.status)}</TableCell>
+                  <TableCell>{getSSLBadge(domain.ssl)}</TableCell>
+                  <TableCell>
+                    {domain.expirationDate ? (
+                      <span className={`
+                        ${domain.ssl === 'expiring' ? 'text-yellow-600' : ''}
+                        ${domain.ssl === 'expired' ? 'text-red-600' : ''}
+                      `}>
+                        {domain.expirationDate.toLocaleDateString()}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Visiter
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

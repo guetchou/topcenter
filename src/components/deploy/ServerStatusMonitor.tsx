@@ -1,108 +1,143 @@
 
 import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { serverIsAvailable, testServerAvailability } from '@/services/api/serverStatus';
-import { Server, WifiOff, Wifi, AlarmClock, Activity } from "lucide-react";
-import axios from 'axios';
+import { CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
+
+interface ServerStatus {
+  status: 'online' | 'offline' | 'degraded';
+  lastChecked: Date;
+  responseTime?: number;
+  services: {
+    name: string;
+    status: 'online' | 'offline' | 'degraded';
+  }[];
+}
 
 export const ServerStatusMonitor: React.FC = () => {
-  const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
-  const [lastChecked, setLastChecked] = useState<Date>(new Date());
-  const [isChecking, setIsChecking] = useState(false);
-  const [uptime, setUptime] = useState<string>('');
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({
+    status: 'online',
+    lastChecked: new Date(),
+    responseTime: 120,
+    services: [
+      { name: 'API', status: 'online' },
+      { name: 'Base de données', status: 'online' },
+      { name: 'Stockage', status: 'online' },
+      { name: 'Workflow GitHub', status: 'online' }
+    ]
+  });
+  
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const checkServerStatus = async () => {
+    setIsRefreshing(true);
+    
+    // Simulation d'appel API pour vérifier le statut du serveur
     try {
-      setIsChecking(true);
-      // Simuler une vérification
-      await new Promise(r => setTimeout(r, 800));
-      const available = serverIsAvailable();
-      setIsAvailable(available);
-      setLastChecked(new Date());
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Générer un temps d'activité aléatoire pour la démo
-      const days = Math.floor(Math.random() * 30) + 1;
-      const hours = Math.floor(Math.random() * 24);
-      const minutes = Math.floor(Math.random() * 60);
-      setUptime(`${days}j ${hours}h ${minutes}m`);
+      // Simulation de données pour la démonstration
+      setServerStatus({
+        status: Math.random() > 0.9 ? 'degraded' : 'online',
+        lastChecked: new Date(),
+        responseTime: Math.floor(Math.random() * 150) + 80,
+        services: [
+          { name: 'API', status: Math.random() > 0.95 ? 'degraded' : 'online' },
+          { name: 'Base de données', status: Math.random() > 0.97 ? 'degraded' : 'online' },
+          { name: 'Stockage', status: 'online' },
+          { name: 'Workflow GitHub', status: Math.random() > 0.9 ? 'degraded' : 'online' }
+        ]
+      });
     } catch (error) {
       console.error("Erreur lors de la vérification du statut:", error);
-      setIsAvailable(false);
     } finally {
-      setIsChecking(false);
+      setIsRefreshing(false);
     }
   };
 
   useEffect(() => {
+    // Vérification initiale
     checkServerStatus();
     
-    // Vérifier le statut toutes les 30 secondes
+    // Vérification périodique tous les 30 secondes
     const interval = setInterval(checkServerStatus, 30000);
+    
     return () => clearInterval(interval);
   }, []);
 
-  const formatTime = (date: Date): string => {
-    return date.toLocaleTimeString(undefined, {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
-    });
+  const getStatusColor = (status: 'online' | 'offline' | 'degraded') => {
+    switch (status) {
+      case 'online': return 'bg-green-500';
+      case 'offline': return 'bg-red-500';
+      case 'degraded': return 'bg-yellow-500';
+      default: return 'bg-gray-300';
+    }
+  };
+
+  const getStatusText = (status: 'online' | 'offline' | 'degraded') => {
+    switch (status) {
+      case 'online': return 'En ligne';
+      case 'offline': return 'Hors ligne';
+      case 'degraded': return 'Dégradé';
+      default: return 'Inconnu';
+    }
   };
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div 
-            className={`
-              flex items-center gap-2 px-3 py-1.5 rounded-md cursor-pointer
-              ${isAvailable ? 'bg-green-50 text-green-700' : isAvailable === false ? 'bg-red-50 text-red-700' : 'bg-gray-50 text-gray-700'}
-              border transition-colors duration-200
-              ${isAvailable ? 'border-green-200' : isAvailable === false ? 'border-red-200' : 'border-gray-200'}
-            `}
-            onClick={checkServerStatus}
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg">Statut du Serveur</CardTitle>
+          <button 
+            onClick={checkServerStatus} 
+            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
+            disabled={isRefreshing}
           >
-            <Server className="h-4 w-4" />
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span className="sr-only">Rafraîchir</span>
+          </button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">Serveur</span>
-              {isChecking ? (
-                <Activity className="h-3 w-3 animate-pulse" />
-              ) : isAvailable ? (
-                <Wifi className="h-3 w-3" />
+              {serverStatus.status === 'online' ? (
+                <CheckCircle className="text-green-500 w-5 h-5" />
               ) : (
-                <WifiOff className="h-3 w-3" />
+                <AlertCircle className={`${serverStatus.status === 'degraded' ? 'text-yellow-500' : 'text-red-500'} w-5 h-5`} />
               )}
+              <span className="font-medium">Statut global:</span>
             </div>
+            <Badge className={getStatusColor(serverStatus.status)}>
+              {getStatusText(serverStatus.status)}
+            </Badge>
           </div>
-        </TooltipTrigger>
-        <TooltipContent side="bottom" className="p-3 max-w-xs">
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Statut:</span>
-              <Badge 
-                variant={isAvailable ? "success" : "destructive"} 
-                className="ml-2"
-              >
-                {isAvailable ? 'En ligne' : 'Hors ligne'}
-              </Badge>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm">Dernier contrôle:</span>
-              <span className="text-sm font-medium flex items-center">
-                <AlarmClock className="h-3 w-3 mr-1" />
-                {formatTime(lastChecked)}
+          
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            Dernière vérification: {serverStatus.lastChecked.toLocaleTimeString()}
+            {serverStatus.responseTime && (
+              <span className="ml-2">
+                (Temps de réponse: {serverStatus.responseTime}ms)
               </span>
-            </div>
-            {isAvailable && uptime && (
-              <div className="flex justify-between">
-                <span className="text-sm">Temps d'activité:</span>
-                <span className="text-sm font-medium">{uptime}</span>
-              </div>
             )}
           </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Services:</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {serverStatus.services.map((service) => (
+                <div key={service.name} className="flex items-center justify-between p-2 rounded bg-gray-100 dark:bg-gray-800">
+                  <span className="text-sm">{service.name}</span>
+                  <Badge className={getStatusColor(service.status)}>
+                    {getStatusText(service.status)}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
