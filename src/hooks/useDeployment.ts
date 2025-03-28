@@ -1,248 +1,154 @@
 
-import { useState, useEffect, useCallback } from 'react';
-import { triggerWorkflow, getWorkflowRuns } from '@/services/deployment/githubActions';
-import { useDeploymentLogs, DeploymentLog } from './useDeploymentLogs';
-import { v4 as uuidv4 } from 'uuid';
-import { toast } from 'sonner';
+import { useState, useEffect } from 'react';
+import { Step } from '@/components/deploy/DeploymentSteps';
+import { useDeploymentLogs, DeploymentLog } from '@/hooks/useDeploymentLogs';
+import { triggerWorkflow } from '@/services/deployment/githubActions';
 
-export type DeploymentStatus = 'idle' | 'running' | 'success' | 'error';
-export type DeploymentStepStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
-
-export interface DeploymentStep {
-  id: string;
-  title: string;
-  description: string;
-  status: DeploymentStepStatus;
-  startTime?: Date;
-  endTime?: Date;
-  logs: DeploymentLog[];
+interface UseDeploymentOptions {
+  addLog: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => DeploymentLog;
 }
 
-export interface DeploymentOptions {
-  owner: string;
-  repo: string;
-  workflowId: string;
-  ref?: string;
-  inputs?: Record<string, string>;
-  backupFirst?: boolean;
-}
+const initialSteps: Step[] = [
+  {
+    id: 'backup',
+    title: 'Sauvegarde',
+    description: 'Sauvegarde de la base de données et des fichiers',
+    status: 'pending',
+    logs: []
+  },
+  {
+    id: 'build',
+    title: 'Build',
+    description: 'Compilation et optimisation du code',
+    status: 'pending',
+    logs: []
+  },
+  {
+    id: 'deploy',
+    title: 'Déploiement',
+    description: 'Publication des fichiers sur le serveur',
+    status: 'pending',
+    logs: []
+  },
+  {
+    id: 'verify',
+    title: 'Vérification',
+    description: 'Tests finaux et validation du déploiement',
+    status: 'pending',
+    logs: []
+  }
+];
 
-export const useDeployment = () => {
-  const deploymentId = uuidv4();
-  const { logs, addLog, isConnected } = useDeploymentLogs(deploymentId);
+export const useDeployment = ({ addLog }: UseDeploymentOptions) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
+  const [deploymentSteps, setDeploymentSteps] = useState<Step[]>([]);
+  const [currentStepId, setCurrentStepId] = useState<string | undefined>(undefined);
   
-  const [status, setStatus] = useState<DeploymentStatus>('idle');
-  const [progress, setProgress] = useState(0);
-  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
-  
-  const [steps, setSteps] = useState<DeploymentStep[]>([
-    {
-      id: 'backup',
-      title: 'Sauvegarde',
-      description: 'Création d\'une sauvegarde du site et de la base de données',
-      status: 'pending',
-      logs: []
-    },
-    {
-      id: 'build',
-      title: 'Build',
-      description: 'Compilation du projet',
-      status: 'pending',
-      logs: []
-    },
-    {
-      id: 'test',
-      title: 'Tests',
-      description: 'Exécution des tests automatisés',
-      status: 'pending',
-      logs: []
-    },
-    {
-      id: 'deploy',
-      title: 'Déploiement',
-      description: 'Transfert des fichiers vers le serveur',
-      status: 'pending',
-      logs: []
-    },
-    {
-      id: 'verify',
-      title: 'Vérification',
-      description: 'Validation du déploiement',
-      status: 'pending',
-      logs: []
-    }
-  ]);
-  
-  // Mise à jour des logs dans les étapes
-  useEffect(() => {
-    if (logs.length > 0 && currentStepId) {
-      setSteps(prevSteps => {
-        return prevSteps.map(step => {
-          if (step.id === currentStepId) {
-            return {
-              ...step,
-              logs: [...logs.filter(log => 
-                log.message.toLowerCase().includes(step.id.toLowerCase()) || 
-                (currentStepId === step.id && !prevSteps.some(s => 
-                  s.id !== step.id && 
-                  log.message.toLowerCase().includes(s.id.toLowerCase())
-                ))
-              )]
-            };
+  const updateStepStatus = (stepId: string, newStatus: Step['status'], log?: string) => {
+    setDeploymentSteps(prev => {
+      return prev.map(step => {
+        if (step.id === stepId) {
+          const updatedStep = { 
+            ...step, 
+            status: newStatus,
+            ...(newStatus === 'in-progress' && !step.startTime && { startTime: new Date() }),
+            ...((['completed', 'failed'].includes(newStatus)) && { endTime: new Date() })
+          };
+          
+          if (log) {
+            const newLog = addLog(log, newStatus === 'failed' ? 'error' : 'info');
+            updatedStep.logs = [...updatedStep.logs, newLog];
           }
-          return step;
-        });
+          
+          return updatedStep;
+        }
+        return step;
       });
-    }
-  }, [logs, currentStepId]);
-  
-  // Fonction pour démarrer une étape
-  const startStep = useCallback((stepId: string) => {
-    setSteps(prevSteps => 
-      prevSteps.map(step => 
-        step.id === stepId 
-          ? { ...step, status: 'in-progress', startTime: new Date() } 
-          : step
-      )
-    );
-    setCurrentStepId(stepId);
-    addLog(`🚀 Démarrage de l'étape: ${stepId}`, 'info');
-  }, [addLog]);
-  
-  // Fonction pour terminer une étape
-  const completeStep = useCallback((stepId: string, success: boolean = true) => {
-    setSteps(prevSteps => 
-      prevSteps.map(step => 
-        step.id === stepId 
-          ? { 
-              ...step, 
-              status: success ? 'completed' : 'failed', 
-              endTime: new Date() 
-            } 
-          : step
-      )
-    );
-    
-    addLog(
-      success 
-        ? `✅ Étape terminée avec succès: ${stepId}` 
-        : `❌ Échec de l'étape: ${stepId}`, 
-      success ? 'success' : 'error'
-    );
-    
-    // Calcul du progrès global
-    setSteps(prevSteps => {
-      const totalSteps = prevSteps.length;
-      const completedSteps = prevSteps.filter(s => 
-        s.status === 'completed' || s.status === 'failed'
-      ).length;
-      
-      setProgress(Math.round((completedSteps / totalSteps) * 100));
-      return prevSteps;
     });
-  }, [addLog]);
-  
-  // Fonction principale pour effectuer un déploiement
-  const deploy = useCallback(async (options: DeploymentOptions) => {
+  };
+
+  const startDeployment = async () => {
     try {
-      // Réinitialiser l'état
-      setStatus('running');
-      setProgress(0);
-      setSteps(prevSteps => 
-        prevSteps.map(step => ({
-          ...step,
-          status: 'pending',
-          startTime: undefined,
-          endTime: undefined,
-          logs: []
-        }))
-      );
-      
-      addLog('🚀 Démarrage du déploiement...', 'info');
+      setIsLoading(true);
+      setStatus("running");
+      setDeploymentSteps(initialSteps);
+      addLog("🚀 Démarrage du processus de déploiement");
       
       // Étape 1: Sauvegarde
-      if (options.backupFirst !== false) {
-        startStep('backup');
-        addLog('📦 Création d\'une sauvegarde avant déploiement...', 'info');
-        
-        // Simuler une sauvegarde (à remplacer par une vraie API)
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        addLog('✅ Sauvegarde terminée avec succès', 'success');
-        completeStep('backup');
-      } else {
-        addLog('⏩ Sauvegarde ignorée selon les options', 'info');
-        completeStep('backup');
+      setCurrentStepId('backup');
+      updateStepStatus('backup', 'in-progress', 'Démarrage de la sauvegarde...');
+      
+      // Simuler une sauvegarde
+      await new Promise(r => setTimeout(r, 2000));
+      updateStepStatus('backup', 'completed', 'Sauvegarde terminée avec succès');
+      
+      // Étape 2: Build
+      setCurrentStepId('build');
+      updateStepStatus('build', 'in-progress', 'Démarrage du build...');
+      
+      // Déclencher le workflow GitHub Actions
+      const githubToken = import.meta.env.VITE_GITHUB_TOKEN;
+      if (!githubToken) {
+        throw new Error("VITE_GITHUB_TOKEN n'est pas défini");
       }
       
-      // Étape 2: Déclenchement du workflow GitHub
-      startStep('build');
-      addLog('🔨 Déclenchement du workflow GitHub Actions...', 'info');
-      
       const success = await triggerWorkflow(
-        options.owner,
-        options.repo,
-        options.workflowId,
-        options.ref || 'main',
-        options.inputs
+        'guetchou', 
+        'topcenter', 
+        'manual_deploy.yml', 
+        'main'
       );
       
       if (success) {
-        addLog('✅ Workflow GitHub Actions déclenché avec succès', 'success');
-        completeStep('build');
-        
-        // Suivi des étapes suivantes (dans un cas réel, cela serait fait via webhooks ou polling)
-        startStep('test');
-        addLog('🧪 Exécution des tests en cours...', 'info');
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        addLog('✅ Tests réussis', 'success');
-        completeStep('test');
-        
-        startStep('deploy');
-        addLog('📤 Déploiement des fichiers en cours...', 'info');
-        await new Promise(resolve => setTimeout(resolve, 4000));
-        addLog('✅ Fichiers déployés avec succès', 'success');
-        completeStep('deploy');
-        
-        startStep('verify');
-        addLog('🔍 Vérification du déploiement...', 'info');
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        addLog('✅ Déploiement vérifié et fonctionnel', 'success');
-        completeStep('verify');
-        
-        addLog('✅ Déploiement terminé avec succès!', 'success');
-        setStatus('success');
-        
-        toast.success('Déploiement réussi', {
-          description: 'Votre site a été déployé avec succès.'
-        });
+        updateStepStatus('build', 'completed', 'Build terminé avec succès');
       } else {
-        throw new Error('Échec du déclenchement du workflow GitHub');
+        throw new Error('Échec du build');
       }
+      
+      // Étape 3: Déploiement
+      setCurrentStepId('deploy');
+      updateStepStatus('deploy', 'in-progress', 'Déploiement des fichiers sur le serveur...');
+      
+      // Simuler un déploiement
+      await new Promise(r => setTimeout(r, 3000));
+      updateStepStatus('deploy', 'completed', 'Déploiement terminé avec succès');
+      
+      // Étape 4: Vérification
+      setCurrentStepId('verify');
+      updateStepStatus('verify', 'in-progress', 'Vérification du déploiement...');
+      
+      // Simuler une vérification
+      await new Promise(r => setTimeout(r, 1500));
+      updateStepStatus('verify', 'completed', 'Déploiement vérifié et validé');
+      
+      setStatus("success");
+      addLog("✅ Déploiement terminé avec succès");
+      
     } catch (error) {
-      console.error('Erreur lors du déploiement:', error);
+      console.error("Erreur de déploiement:", error);
       
-      const currentStep = steps.find(step => step.status === 'in-progress');
-      if (currentStep) {
-        completeStep(currentStep.id, false);
+      // Marquer l'étape en cours comme échouée
+      if (currentStepId) {
+        updateStepStatus(
+          currentStepId, 
+          'failed', 
+          `Erreur: ${error instanceof Error ? error.message : "Une erreur est survenue"}`
+        );
       }
       
-      addLog(`❌ Erreur lors du déploiement: ${error instanceof Error ? error.message : "Erreur inconnue"}`, 'error');
-      setStatus('error');
-      
-      toast.error('Échec du déploiement', {
-        description: error instanceof Error ? error.message : 'Une erreur est survenue lors du déploiement.'
-      });
+      setStatus("error");
+      addLog(`❌ Échec du déploiement: ${error instanceof Error ? error.message : "Une erreur est survenue"}`, 'error');
+    } finally {
+      setIsLoading(false);
     }
-  }, [addLog, startStep, completeStep, steps]);
+  };
 
   return {
     status,
-    progress,
-    steps,
+    isLoading,
+    deploymentSteps,
     currentStepId,
-    logs,
-    deploy,
-    isConnected
+    startDeployment
   };
 };
