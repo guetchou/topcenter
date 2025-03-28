@@ -37,6 +37,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
           VITE_POCKETBASE_URL: ${{ secrets.VITE_POCKETBASE_URL }}
           VITE_DB_HOST: ${{ secrets.DB_HOST }}
           VITE_DB_PORT: ${{ secrets.DB_PORT }}
