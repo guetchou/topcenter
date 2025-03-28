@@ -1,141 +1,110 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertCircle, RefreshCw } from "lucide-react";
-
-interface ServerStatus {
-  status: 'online' | 'offline' | 'degraded';
-  lastChecked: Date;
-  responseTime?: number;
-  services: {
-    name: string;
-    status: 'online' | 'offline' | 'degraded';
-  }[];
-}
+import { CheckCircle, XCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { getWorkflowRuns } from '@/services/deployment/githubActions';
 
 export const ServerStatusMonitor: React.FC = () => {
-  const [serverStatus, setServerStatus] = useState<ServerStatus>({
-    status: 'online',
-    lastChecked: new Date(),
-    responseTime: 120,
-    services: [
-      { name: 'API', status: 'online' },
-      { name: 'Base de données', status: 'online' },
-      { name: 'Stockage', status: 'online' },
-      { name: 'Workflow GitHub', status: 'online' }
-    ]
-  });
+  const [serverStatus, setServerStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+  const [gitHubStatus, setGitHubStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+  const [lastDeployment, setLastDeployment] = useState<string | null>(null);
   
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const checkServerStatus = async () => {
-    setIsRefreshing(true);
-    
-    // Simulation d'appel API pour vérifier le statut du serveur
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulation de données pour la démonstration
-      setServerStatus({
-        status: Math.random() > 0.9 ? 'degraded' : 'online',
-        lastChecked: new Date(),
-        responseTime: Math.floor(Math.random() * 150) + 80,
-        services: [
-          { name: 'API', status: Math.random() > 0.95 ? 'degraded' : 'online' },
-          { name: 'Base de données', status: Math.random() > 0.97 ? 'degraded' : 'online' },
-          { name: 'Stockage', status: 'online' },
-          { name: 'Workflow GitHub', status: Math.random() > 0.9 ? 'degraded' : 'online' }
-        ]
-      });
-    } catch (error) {
-      console.error("Erreur lors de la vérification du statut:", error);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
   useEffect(() => {
-    // Vérification initiale
-    checkServerStatus();
+    const checkServerStatus = async () => {
+      try {
+        // Simuler une vérification du statut du serveur
+        const response = await fetch('/api/status', { 
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        }).catch(() => ({ ok: false }));
+        
+        setServerStatus(response.ok ? 'online' : 'offline');
+      } catch (error) {
+        console.error("Erreur lors de la vérification du statut du serveur:", error);
+        setServerStatus('offline');
+      }
+    };
     
-    // Vérification périodique tous les 30 secondes
-    const interval = setInterval(checkServerStatus, 30000);
+    const checkGitHubStatus = async () => {
+      try {
+        const workflowRuns = await getWorkflowRuns('guetchou', 'topcenter', 'deploy.yml', 1);
+        setGitHubStatus(workflowRuns.length > 0 ? 'online' : 'checking');
+        
+        if (workflowRuns.length > 0) {
+          const lastRun = workflowRuns[0];
+          setLastDeployment(new Date(lastRun.created_at).toLocaleString());
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification du statut GitHub:", error);
+        setGitHubStatus('offline');
+      }
+    };
+    
+    // Exécuter les vérifications au chargement du composant
+    checkServerStatus();
+    checkGitHubStatus();
+    
+    // Mettre en place une vérification périodique
+    const interval = setInterval(() => {
+      checkServerStatus();
+      checkGitHubStatus();
+    }, 60000); // Vérifier chaque minute
     
     return () => clearInterval(interval);
   }, []);
-
-  const getStatusColor = (status: 'online' | 'offline' | 'degraded') => {
+  
+  const getStatusIcon = (status: 'online' | 'offline' | 'checking') => {
     switch (status) {
-      case 'online': return 'bg-green-500';
-      case 'offline': return 'bg-red-500';
-      case 'degraded': return 'bg-yellow-500';
-      default: return 'bg-gray-300';
-    }
-  };
-
-  const getStatusText = (status: 'online' | 'offline' | 'degraded') => {
-    switch (status) {
-      case 'online': return 'En ligne';
-      case 'offline': return 'Hors ligne';
-      case 'degraded': return 'Dégradé';
-      default: return 'Inconnu';
+      case 'online':
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'offline':
+        return <XCircle className="h-5 w-5 text-red-500" />;
+      case 'checking':
+      default:
+        return <Loader2 className="h-5 w-5 text-yellow-500 animate-spin" />;
     }
   };
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">Statut du Serveur</CardTitle>
-          <button 
-            onClick={checkServerStatus} 
-            className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-            disabled={isRefreshing}
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span className="sr-only">Rafraîchir</span>
-          </button>
-        </div>
+        <CardTitle className="text-lg">Statut du système</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {serverStatus.status === 'online' ? (
-                <CheckCircle className="text-green-500 w-5 h-5" />
-              ) : (
-                <AlertCircle className={`${serverStatus.status === 'degraded' ? 'text-yellow-500' : 'text-red-500'} w-5 h-5`} />
-              )}
-              <span className="font-medium">Statut global:</span>
+            <div className="flex items-center space-x-2">
+              {getStatusIcon(serverStatus)}
+              <span>Serveur de production</span>
             </div>
-            <Badge className={getStatusColor(serverStatus.status)}>
-              {getStatusText(serverStatus.status)}
-            </Badge>
+            <span className={`text-sm font-medium ${
+              serverStatus === 'online' ? 'text-green-500' : 
+              serverStatus === 'offline' ? 'text-red-500' : 'text-yellow-500'
+            }`}>
+              {serverStatus === 'online' ? 'En ligne' : 
+               serverStatus === 'offline' ? 'Hors ligne' : 'Vérification...'}
+            </span>
           </div>
           
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            Dernière vérification: {serverStatus.lastChecked.toLocaleTimeString()}
-            {serverStatus.responseTime && (
-              <span className="ml-2">
-                (Temps de réponse: {serverStatus.responseTime}ms)
-              </span>
-            )}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              {getStatusIcon(gitHubStatus)}
+              <span>GitHub Actions</span>
+            </div>
+            <span className={`text-sm font-medium ${
+              gitHubStatus === 'online' ? 'text-green-500' : 
+              gitHubStatus === 'offline' ? 'text-red-500' : 'text-yellow-500'
+            }`}>
+              {gitHubStatus === 'online' ? 'Disponible' : 
+               gitHubStatus === 'offline' ? 'Non disponible' : 'Vérification...'}
+            </span>
           </div>
           
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">Services:</h4>
-            <div className="grid grid-cols-2 gap-2">
-              {serverStatus.services.map((service) => (
-                <div key={service.name} className="flex items-center justify-between p-2 rounded bg-gray-100 dark:bg-gray-800">
-                  <span className="text-sm">{service.name}</span>
-                  <Badge className={getStatusColor(service.status)}>
-                    {getStatusText(service.status)}
-                  </Badge>
-                </div>
-              ))}
+          {lastDeployment && (
+            <div className="pt-2 text-sm text-gray-500">
+              <p>Dernier déploiement: {lastDeployment}</p>
             </div>
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>

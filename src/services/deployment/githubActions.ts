@@ -17,6 +17,7 @@ export const triggerWorkflow = async (
       throw new Error("VITE_GITHUB_TOKEN n'est pas défini");
     }
     
+    // Construire l'URL de l'API GitHub pour déclencher le workflow
     const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflow}/dispatches`;
     
     const response = await fetch(url, {
@@ -79,5 +80,41 @@ export const getWorkflowRuns = async (
   } catch (error) {
     console.error("Erreur lors de la récupération des exécutions de workflow:", error);
     return [];
+  }
+};
+
+// Fonction pour vérifier le statut des exécutions de workflow en cours
+export const checkWorkflowStatus = async (
+  owner: string,
+  repo: string,
+  runId: number
+): Promise<string> => {
+  try {
+    const token = import.meta.env.VITE_GITHUB_TOKEN;
+    
+    if (!token) {
+      console.error("GitHub token non défini");
+      return 'unknown';
+    }
+    
+    const url = `https://api.github.com/repos/${owner}/${repo}/actions/runs/${runId}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `token ${token}`
+      }
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.status || 'unknown';
+    } else {
+      console.error(`Erreur lors de la récupération du statut de l'exécution: ${response.status}`);
+      return 'error';
+    }
+  } catch (error) {
+    console.error("Erreur lors de la vérification du statut du workflow:", error);
+    return 'error';
   }
 };

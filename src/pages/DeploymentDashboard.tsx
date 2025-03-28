@@ -9,15 +9,25 @@ import { DeploymentLogPanel } from "@/components/deploy/DeploymentLogPanel";
 import { ServerStatusMonitor } from "@/components/deploy/ServerStatusMonitor";
 import { useDeployment } from "@/hooks/useDeployment";
 import { useDeploymentLogs } from "@/hooks/useDeploymentLogs";
+import { DeploymentSummary } from "@/components/deploy/DeploymentSummary";
 
 const DeploymentDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("deployment");
   const { logs, addLog, clearLogs } = useDeploymentLogs();
-  const { status, isLoading, deploymentSteps, startDeployment } = useDeployment({ addLog });
+  const { status, isLoading, deploymentSteps, currentStepId, startDeployment } = useDeployment({ addLog });
 
   return (
     <div className="container mx-auto py-6 max-w-7xl">
       <h1 className="text-3xl font-bold mb-6">Dashboard de Déploiement</h1>
+      
+      <DeploymentSummary 
+        environment="Production"
+        buildTime="~2-4 min"
+        startTime="Automatique après build"
+        domain="votre-domaine.com"
+        deployId="deploy-auto-01"
+        gitBranch="main"
+      />
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="md:col-span-2">

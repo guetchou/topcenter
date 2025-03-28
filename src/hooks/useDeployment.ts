@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { Step } from '@/components/deploy/DeploymentSteps';
-import { useDeploymentLogs, DeploymentLog } from '@/hooks/useDeploymentLogs';
-import { triggerWorkflow } from '@/services/deployment/githubActions';
+import { Step } from '@/components/deploy/DeploymentStepsPanel';
+import { DeploymentLog } from '@/hooks/useDeploymentLogs';
+import { triggerWorkflow, getWorkflowRuns, checkWorkflowStatus } from '@/services/deployment/githubActions';
 
 interface UseDeploymentOptions {
   addLog: (message: string, type?: 'info' | 'success' | 'error' | 'warning') => DeploymentLog;
@@ -44,6 +44,46 @@ export const useDeployment = ({ addLog }: UseDeploymentOptions) => {
   const [status, setStatus] = useState<"idle" | "running" | "success" | "error">("idle");
   const [deploymentSteps, setDeploymentSteps] = useState<Step[]>([]);
   const [currentStepId, setCurrentStepId] = useState<string | undefined>(undefined);
+  const [workflowRunId, setWorkflowRunId] = useState<number | null>(null);
+  
+  // Vérifier régulièrement le statut du workflow si un workflow est en cours
+  useEffect(() => {
+    let interval: number | undefined;
+    
+    if (status === 'running' && workflowRunId) {
+      interval = window.setInterval(async () => {
+        try {
+          const workflowStatus = await checkWorkflowStatus('guetchou', 'topcenter', workflowRunId);
+          
+          if (workflowStatus === 'completed') {
+            updateStepStatus('deploy', 'completed', 'Déploiement terminé avec succès');
+            setCurrentStepId('verify');
+            updateStepStatus('verify', 'in-progress', 'Vérification du déploiement...');
+            
+            // Simuler une vérification finale
+            setTimeout(() => {
+              updateStepStatus('verify', 'completed', 'Déploiement vérifié et validé');
+              setStatus('success');
+              addLog("✅ Déploiement terminé avec succès", 'success');
+            }, 1500);
+            
+            clearInterval(interval);
+          } else if (workflowStatus === 'failed' || workflowStatus === 'error') {
+            updateStepStatus('deploy', 'failed', `Le déploiement a échoué: ${workflowStatus}`);
+            setStatus('error');
+            addLog("❌ Échec du déploiement", 'error');
+            clearInterval(interval);
+          }
+        } catch (error) {
+          console.error("Erreur lors de la vérification du statut:", error);
+        }
+      }, 5000); // Vérifier toutes les 5 secondes
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [status, workflowRunId, addLog]);
   
   const updateStepStatus = (stepId: string, newStatus: Step['status'], log?: string) => {
     setDeploymentSteps(prev => {
@@ -57,7 +97,7 @@ export const useDeployment = ({ addLog }: UseDeploymentOptions) => {
           };
           
           if (log) {
-            const newLog = addLog(log, newStatus === 'failed' ? 'error' : 'info');
+            const newLog = { message: log, type: newStatus === 'failed' ? 'error' : 'info' };
             updatedStep.logs = [...updatedStep.logs, newLog];
           }
           
@@ -73,7 +113,7 @@ export const useDeployment = ({ addLog }: UseDeploymentOptions) => {
       setIsLoading(true);
       setStatus("running");
       setDeploymentSteps(initialSteps);
-      addLog("🚀 Démarrage du processus de déploiement");
+      addLog("🚀 Démarrage du processus de déploiement", 'info');
       
       // Étape 1: Sauvegarde
       setCurrentStepId('backup');
@@ -96,34 +136,26 @@ export const useDeployment = ({ addLog }: UseDeploymentOptions) => {
       const success = await triggerWorkflow(
         'guetchou', 
         'topcenter', 
-        'manual_deploy.yml', 
+        'deploy.yml', 
         'main'
       );
       
       if (success) {
-        updateStepStatus('build', 'completed', 'Build terminé avec succès');
+        updateStepStatus('build', 'completed', 'Build déclenché avec succès');
+        
+        // Récupérer l'ID du workflow en cours pour le suivi
+        const workflowRuns = await getWorkflowRuns('guetchou', 'topcenter', 'deploy.yml', 1);
+        if (workflowRuns.length > 0) {
+          setWorkflowRunId(workflowRuns[0].id);
+        }
+        
+        // Étape 3: Déploiement
+        setCurrentStepId('deploy');
+        updateStepStatus('deploy', 'in-progress', 'Déploiement des fichiers sur le serveur...');
+        addLog("📤 La compilation et le déploiement sont en cours sur GitHub Actions", 'info');
       } else {
-        throw new Error('Échec du build');
+        throw new Error('Échec du déclenchement du workflow');
       }
-      
-      // Étape 3: Déploiement
-      setCurrentStepId('deploy');
-      updateStepStatus('deploy', 'in-progress', 'Déploiement des fichiers sur le serveur...');
-      
-      // Simuler un déploiement
-      await new Promise(r => setTimeout(r, 3000));
-      updateStepStatus('deploy', 'completed', 'Déploiement terminé avec succès');
-      
-      // Étape 4: Vérification
-      setCurrentStepId('verify');
-      updateStepStatus('verify', 'in-progress', 'Vérification du déploiement...');
-      
-      // Simuler une vérification
-      await new Promise(r => setTimeout(r, 1500));
-      updateStepStatus('verify', 'completed', 'Déploiement vérifié et validé');
-      
-      setStatus("success");
-      addLog("✅ Déploiement terminé avec succès");
       
     } catch (error) {
       console.error("Erreur de déploiement:", error);
@@ -139,7 +171,6 @@ export const useDeployment = ({ addLog }: UseDeploymentOptions) => {
       
       setStatus("error");
       addLog(`❌ Échec du déploiement: ${error instanceof Error ? error.message : "Une erreur est survenue"}`, 'error');
-    } finally {
       setIsLoading(false);
     }
   };
