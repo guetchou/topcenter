@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
@@ -19,7 +20,7 @@ const CredentialsDocPage = React.lazy(() => import('@/pages/admin/CredentialsDoc
 const DatabaseConnection = React.lazy(() => import('@/pages/admin/DatabaseConnection'));
 const DatabaseMigration = React.lazy(() => import('@/pages/admin/DatabaseMigration'));
 const DatabaseExplorerPage = React.lazy(() => import('@/pages/admin/DatabaseExplorerPage'));
-const DeploymentDashboard = React.lazy(() => import('@/pages/DeploymentDashboard')); // Correction ici
+const DeploymentDashboard = React.lazy(() => import('@/pages/DeploymentDashboard'));
 const PocketBaseTest = React.lazy(() => import('@/pages/admin/PocketBaseTest'));
 const PocketBaseDashboard = React.lazy(() => import('@/pages/admin/PocketBaseDashboard'));
 
@@ -48,7 +49,7 @@ const AdminRoutes = () => {
       <Route path="database-explorer" element={<DatabaseExplorerPage />} />
       <Route path="pocketbase-test" element={<PocketBaseTest />} />
       <Route path="pocketbase-dashboard" element={<PocketBaseDashboard />} />
-      <Route path="deploy" element={<DeploymentDashboard />} /> {/* Correction ici */}
+      <Route path="deploy" element={<DeploymentDashboard />} />
       <Route path="*" element={<Navigate to="dashboard" replace />} />
     </Routes>
   );
