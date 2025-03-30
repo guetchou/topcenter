@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -95,7 +96,7 @@ TableCell.displayName = "TableCell"
 
 const TableCaption = React.forwardRef<
   HTMLTableCaptionElement,
-  React.HTMLAttributes<HTMLTableCaptionElement>
+  React.HTMLTableCaptionAttributes<HTMLTableCaptionElement>
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}

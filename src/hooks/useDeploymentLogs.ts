@@ -2,27 +2,28 @@
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
+export type DeploymentLogType = 'info' | 'success' | 'error' | 'warning';
+
 export interface DeploymentLog {
   id: string;
   message: string;
+  type: DeploymentLogType;
   timestamp: Date;
-  type: 'info' | 'success' | 'error' | 'warning';
 }
 
 export const useDeploymentLogs = () => {
   const [logs, setLogs] = useState<DeploymentLog[]>([]);
 
-  const addLog = useCallback((message: string, type: 'info' | 'success' | 'error' | 'warning' = 'info') => {
-    const newLog: DeploymentLog = {
+  const addLog = useCallback((message: string, type: DeploymentLogType = 'info') => {
+    const log: DeploymentLog = {
       id: uuidv4(),
       message,
-      timestamp: new Date(),
-      type
+      type,
+      timestamp: new Date()
     };
-
-    setLogs(prevLogs => [...prevLogs, newLog]);
     
-    return newLog;
+    setLogs(prev => [...prev, log]);
+    return log;
   }, []);
 
   const clearLogs = useCallback(() => {

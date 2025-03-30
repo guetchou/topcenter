@@ -1,6 +1,13 @@
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { 
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, CheckCircle, Clock, AlertTriangle, Info } from "lucide-react";
 
 export type DeploymentStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
 
@@ -21,71 +28,72 @@ export const DeploymentStep: React.FC<DeploymentStepProps> = ({
   details,
   isCurrentStep = false
 }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [isOpen, setIsOpen] = useState(isCurrentStep);
 
-  const getStatusColor = (status: DeploymentStatus) => {
+  const getStatusIcon = () => {
     switch (status) {
-      case 'completed': return 'bg-green-500';
-      case 'failed': return 'bg-red-500';
-      case 'in-progress': return 'bg-blue-500 animate-pulse';
-      default: return 'bg-gray-300 dark:bg-gray-700';
+      case 'completed':
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case 'in-progress':
+        return <Clock className="h-5 w-5 text-blue-500 animate-pulse" />;
+      case 'failed':
+        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+      case 'pending':
+      default:
+        return <Info className="h-5 w-5 text-gray-400" />;
     }
   };
 
-  const getStatusBorder = (status: DeploymentStatus) => {
+  const getStatusBadge = () => {
     switch (status) {
-      case 'completed': return 'border-green-500';
-      case 'failed': return 'border-red-500';
-      case 'in-progress': return 'border-blue-500';
-      default: return 'border-gray-300 dark:border-gray-700';
-    }
-  };
-
-  const getStatusText = (status: DeploymentStatus) => {
-    switch (status) {
-      case 'completed': return 'Terminé';
-      case 'failed': return 'Échoué';
-      case 'in-progress': return 'En cours';
-      default: return 'En attente';
+      case 'completed':
+        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">Complété</Badge>;
+      case 'in-progress':
+        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 animate-pulse">En cours</Badge>;
+      case 'failed':
+        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">Échoué</Badge>;
+      case 'pending':
+      default:
+        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">En attente</Badge>;
     }
   };
 
   return (
-    <div className={`rounded-lg border ${isCurrentStep ? 'border-blue-500 shadow-blue-100 shadow-md' : 'border-gray-200 dark:border-gray-800'} overflow-hidden`}>
-      <div 
-        className="p-4 flex items-center justify-between cursor-pointer bg-white dark:bg-gray-950"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <div className="flex items-center space-x-4">
-          <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className={`border rounded-lg overflow-hidden transition-colors ${
+        isCurrentStep ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' : 'border-border'
+      }`}
+    >
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center gap-3">
+          {getStatusIcon()}
           <div>
             <h3 className="font-medium">{title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+            <p className="text-sm text-muted-foreground">{description}</p>
           </div>
         </div>
-        <div className="flex items-center space-x-4">
-          {time && <span className="text-sm text-gray-500">{time}</span>}
-          <span className={`text-sm ${
-            status === 'completed' ? 'text-green-500' : 
-            status === 'failed' ? 'text-red-500' : 
-            status === 'in-progress' ? 'text-blue-500' : 
-            'text-gray-500'
-          }`}>
-            {getStatusText(status)}
-          </span>
-          {details && (
-            expanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />
-          )}
+        <div className="flex items-center gap-2">
+          {time && <span className="text-xs text-muted-foreground">{time}</span>}
+          {getStatusBadge()}
+          <CollapsibleTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <span className="sr-only">Toggle</span>
+            </Button>
+          </CollapsibleTrigger>
         </div>
       </div>
-      
-      {expanded && details && (
-        <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-          <pre className="whitespace-pre-wrap text-xs font-mono text-gray-700 dark:text-gray-300">
-            {details}
-          </pre>
-        </div>
-      )}
-    </div>
+      <CollapsibleContent>
+        {details && (
+          <div className="p-4 pt-0 border-t mt-1 bg-black/5 dark:bg-white/5">
+            <pre className="text-xs font-mono whitespace-pre-wrap">
+              {details}
+            </pre>
+          </div>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
   );
 };
