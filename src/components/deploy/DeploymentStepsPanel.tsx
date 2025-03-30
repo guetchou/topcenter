@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DeploymentStep } from './DeploymentStep';
 import { DeploymentProgress } from './DeploymentProgress';
-import { DeploymentStep as DeploymentStepType } from '@/hooks/useDeployment';
+import { DeploymentStep as DeploymentStepType, DeploymentStepStatus } from '@/hooks/useDeployment';
 
 interface DeploymentStepsPanelProps {
   steps: DeploymentStepType[];

@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Check, AlertCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-type DeploymentStepStatus = 'pending' | 'in-progress' | 'completed' | 'error';
+import { DeploymentStepStatus } from '@/hooks/useDeployment';
 
 interface DeploymentStepProps {
   title: string;
@@ -30,14 +29,14 @@ export const DeploymentStep: React.FC<DeploymentStepProps> = ({
       <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
     ),
     completed: <Check className="h-5 w-5 text-green-500" />,
-    error: <AlertCircle className="h-5 w-5 text-destructive" />
+    failed: <AlertCircle className="h-5 w-5 text-destructive" />
   };
 
   const statusColor = {
     pending: 'border-muted-foreground',
     'in-progress': 'border-primary',
     completed: 'border-green-500',
-    error: 'border-destructive'
+    failed: 'border-destructive'
   };
 
   const hasDetails = details && details.length > 0;
