@@ -33,7 +33,8 @@ WORKDIR /app
 
 # Copier les fichiers du backend
 COPY ./backend/package.json ./backend/package-lock.json* ./
-RUN npm ci --production
+# Utiliser npm install au lieu de npm ci pour plus de tolérance aux erreurs
+RUN npm install --production --no-package-lock
 COPY ./backend ./
 
 # Image finale

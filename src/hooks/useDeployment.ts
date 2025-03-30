@@ -1,229 +1,204 @@
 
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { useDeploymentLogs } from './useDeploymentLogs';
-import { toast } from 'sonner';
+import { Log } from './useDeploymentLogs';
 
-export type DeploymentStepStatus = 'pending' | 'in-progress' | 'completed' | 'error';
-
-export interface DeploymentLog {
-  message: string;
-  timestamp?: Date;
-}
+export type DeploymentStepStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
 
 export interface DeploymentStep {
   id: string;
   title: string;
   description: string;
   status: DeploymentStepStatus;
-  logs: DeploymentLog[];
   startTime: Date | null;
   endTime: Date | null;
+  logs: Log[];
 }
 
 interface DeploymentOptions {
-  environment?: 'production' | 'staging' | 'development';
-  withBackup?: boolean;
-  notifyOnComplete?: boolean;
+  environment: string;
+  withBackup: boolean;
+  notifyOnComplete: boolean;
 }
 
 export const useDeployment = () => {
   const [steps, setSteps] = useState<DeploymentStep[]>([]);
   const [isDeploying, setIsDeploying] = useState(false);
-  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
-  const { addLog } = useDeploymentLogs();
+  const [currentStepIndex, setCurrentStepIndex] = useState<number>(-1);
 
-  const initDeployment = useCallback((deploymentSteps: Omit<DeploymentStep, 'id' | 'logs' | 'startTime' | 'endTime'>[]) => {
-    const initializedSteps = deploymentSteps.map(step => ({
+  const addLogToStep = useCallback((stepId: string, message: string, type: 'info' | 'warning' | 'error' | 'success' = 'info') => {
+    setSteps(prevSteps => {
+      return prevSteps.map(step => {
+        if (step.id === stepId) {
+          return {
+            ...step,
+            logs: [
+              ...step.logs,
+              {
+                id: uuidv4(),
+                message,
+                type,
+                timestamp: new Date()
+              }
+            ]
+          };
+        }
+        return step;
+      });
+    });
+  }, []);
+
+  const initDeployment = useCallback((initialSteps: Omit<DeploymentStep, 'id' | 'startTime' | 'endTime' | 'logs'>[]) => {
+    const stepsWithIds = initialSteps.map(step => ({
       ...step,
       id: uuidv4(),
-      logs: [],
       startTime: null,
       endTime: null,
-      status: 'pending' as DeploymentStepStatus
+      logs: []
     }));
     
-    setSteps(initializedSteps);
-    return initializedSteps;
+    setSteps(stepsWithIds);
+    setCurrentStepIndex(-1);
+    setIsDeploying(false);
+    
+    return stepsWithIds;
   }, []);
 
-  const startDeployment = useCallback(async (options: DeploymentOptions = {}) => {
-    if (isDeploying || steps.length === 0) return;
+  const startDeployment = useCallback(async (options: DeploymentOptions) => {
+    if (steps.length === 0 || isDeploying) {
+      return false;
+    }
     
     setIsDeploying(true);
-    addLog("Démarrage du déploiement...", "info");
+    setCurrentStepIndex(0);
     
-    try {
-      // Start first step
-      const firstStep = steps[0];
-      setCurrentStepId(firstStep.id);
+    // Update the first step to in-progress
+    setSteps(prevSteps => {
+      if (prevSteps.length === 0) return prevSteps;
       
-      // Update step status
-      updateStepStatus(firstStep.id, 'in-progress');
-      
-      // Log deployment start with options
-      const optionDetails = Object.entries(options)
-        .filter(([_, value]) => value !== undefined)
-        .map(([key, value]) => `${key}: ${value}`)
-        .join(', ');
-        
-      addLog(`Configuration du déploiement: ${optionDetails || 'par défaut'}`, "info");
-      
-      // Simulate the API call for starting a deployment
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      return true;
-    } catch (error) {
-      addLog("Erreur lors du démarrage du déploiement", "error");
-      setIsDeploying(false);
-      return false;
-    }
-  }, [isDeploying, steps, addLog]);
-
-  const updateStepStatus = useCallback((stepId: string, status: DeploymentStepStatus, log?: string) => {
-    setSteps(prevSteps => 
-      prevSteps.map(step => {
-        if (step.id === stepId) {
-          const now = new Date();
-          const updatedStep = {
-            ...step,
-            status,
-            logs: log ? [...step.logs, { message: log, timestamp: now }] : step.logs
-          };
-          
-          if (status === 'in-progress' && !step.startTime) {
-            updatedStep.startTime = now;
-          } else if (['completed', 'error'].includes(status) && !step.endTime) {
-            updatedStep.endTime = now;
+      const updatedSteps = [...prevSteps];
+      updatedSteps[0] = {
+        ...updatedSteps[0],
+        status: 'in-progress',
+        startTime: new Date(),
+        logs: [
+          ...updatedSteps[0].logs,
+          {
+            id: uuidv4(),
+            message: `Démarrage du déploiement sur ${options.environment}`,
+            type: 'info',
+            timestamp: new Date()
           }
-          
-          return updatedStep;
-        }
-        return step;
-      })
-    );
-    
-    if (log) {
-      addLog(log, status === 'error' ? 'error' : status === 'completed' ? 'success' : 'info');
-    }
-  }, [addLog]);
-
-  const addStepLog = useCallback((stepId: string, message: string) => {
-    setSteps(prevSteps => 
-      prevSteps.map(step => {
-        if (step.id === stepId) {
-          return {
-            ...step,
-            logs: [...step.logs, { message, timestamp: new Date() }]
-          };
-        }
-        return step;
-      })
-    );
-  }, []);
-
-  const progressToNextStep = useCallback(() => {
-    if (!currentStepId) return false;
-    
-    const currentIndex = steps.findIndex(step => step.id === currentStepId);
-    if (currentIndex === -1 || currentIndex >= steps.length - 1) {
-      // Complete deployment if we're at the last step
-      if (currentIndex === steps.length - 1) {
-        updateStepStatus(currentStepId, 'completed', "Étape terminée avec succès");
-        setIsDeploying(false);
-        setCurrentStepId(null);
-        toast.success("Déploiement terminé avec succès");
-        addLog("Déploiement terminé avec succès", "success");
-      }
-      return false;
-    }
-    
-    // Complete current step
-    updateStepStatus(currentStepId, 'completed', "Étape terminée avec succès");
-    
-    // Move to next step
-    const nextStep = steps[currentIndex + 1];
-    setCurrentStepId(nextStep.id);
-    updateStepStatus(nextStep.id, 'in-progress', "Démarrage de l'étape");
+        ]
+      };
+      
+      return updatedSteps;
+    });
     
     return true;
-  }, [currentStepId, steps, updateStepStatus, addLog]);
+  }, [steps, isDeploying]);
+
+  const progressToNextStep = useCallback(() => {
+    if (!isDeploying || currentStepIndex === -1) {
+      return false;
+    }
+    
+    setSteps(prevSteps => {
+      if (currentStepIndex >= prevSteps.length) return prevSteps;
+      
+      const updatedSteps = [...prevSteps];
+      
+      // Complete the current step
+      updatedSteps[currentStepIndex] = {
+        ...updatedSteps[currentStepIndex],
+        status: 'completed',
+        endTime: new Date()
+      };
+      
+      // Start the next step if available
+      if (currentStepIndex + 1 < updatedSteps.length) {
+        updatedSteps[currentStepIndex + 1] = {
+          ...updatedSteps[currentStepIndex + 1],
+          status: 'in-progress',
+          startTime: new Date()
+        };
+        
+        setCurrentStepIndex(currentStepIndex + 1);
+        return updatedSteps;
+      }
+      
+      return updatedSteps;
+    });
+    
+    // Return true if there are more steps, false if we've completed all steps
+    return currentStepIndex + 1 < steps.length;
+  }, [isDeploying, currentStepIndex, steps.length]);
 
   const completeDeployment = useCallback((success: boolean = true) => {
-    if (currentStepId) {
-      updateStepStatus(
-        currentStepId, 
-        success ? 'completed' : 'error',
-        success ? "Étape terminée avec succès" : "Échec de l'étape"
-      );
+    if (!isDeploying) {
+      return false;
     }
     
     setIsDeploying(false);
-    setCurrentStepId(null);
     
-    if (success) {
-      toast.success("Déploiement terminé avec succès");
-      addLog("Déploiement terminé avec succès", "success");
-    } else {
-      toast.error("Échec du déploiement");
-      addLog("Échec du déploiement", "error");
+    // Update the current step if it's still in progress
+    if (currentStepIndex !== -1 && currentStepIndex < steps.length) {
+      setSteps(prevSteps => {
+        const updatedSteps = [...prevSteps];
+        updatedSteps[currentStepIndex] = {
+          ...updatedSteps[currentStepIndex],
+          status: success ? 'completed' : 'failed',
+          endTime: new Date()
+        };
+        return updatedSteps;
+      });
     }
-  }, [currentStepId, updateStepStatus, addLog]);
+    
+    setCurrentStepIndex(-1);
+    return true;
+  }, [isDeploying, currentStepIndex, steps.length]);
 
   const cancelDeployment = useCallback(() => {
-    setIsDeploying(false);
-    setCurrentStepId(null);
-    
-    addLog("Déploiement annulé par l'utilisateur", "warning");
-    toast.info("Déploiement annulé");
-    
-    setSteps(prevSteps => 
-      prevSteps.map(step => {
-        if (step.status === 'in-progress') {
-          return {
-            ...step,
-            status: 'error',
-            endTime: new Date(),
-            logs: [...step.logs, { message: "Étape annulée par l'utilisateur", timestamp: new Date() }]
-          };
-        }
-        return step;
-      })
-    );
-  }, [addLog]);
-
-  const getOverallProgress = useCallback(() => {
-    if (steps.length === 0) return 0;
-    
-    const completedSteps = steps.filter(step => step.status === 'completed').length;
-    const inProgressStep = steps.find(step => step.status === 'in-progress');
-    
-    // Calculate basic progress from completed steps
-    let progress = (completedSteps / steps.length) * 100;
-    
-    // Add partial progress for the in-progress step if any
-    if (inProgressStep && inProgressStep.startTime) {
-      const stepIndex = steps.findIndex(step => step.id === inProgressStep.id);
-      const stepWeight = 1 / steps.length;
-      
-      // Estimate in-progress step to be 50% done on average
-      progress += (stepWeight * 0.5) * 100;
+    if (!isDeploying) {
+      return false;
     }
     
-    return Math.min(Math.round(progress), 99); // Cap at 99% until fully complete
-  }, [steps]);
+    // Update the current step to failed
+    if (currentStepIndex !== -1 && currentStepIndex < steps.length) {
+      setSteps(prevSteps => {
+        const updatedSteps = [...prevSteps];
+        updatedSteps[currentStepIndex] = {
+          ...updatedSteps[currentStepIndex],
+          status: 'failed',
+          endTime: new Date(),
+          logs: [
+            ...updatedSteps[currentStepIndex].logs,
+            {
+              id: uuidv4(),
+              message: 'Déploiement annulé par l\'utilisateur',
+              type: 'warning',
+              timestamp: new Date()
+            }
+          ]
+        };
+        return updatedSteps;
+      });
+    }
+    
+    setIsDeploying(false);
+    setCurrentStepIndex(-1);
+    return true;
+  }, [isDeploying, currentStepIndex, steps.length]);
 
   return {
     steps,
     isDeploying,
-    currentStepId,
+    currentStepIndex,
     initDeployment,
     startDeployment,
-    updateStepStatus,
-    addStepLog,
     progressToNextStep,
     completeDeployment,
     cancelDeployment,
-    getOverallProgress
+    addLogToStep
   };
 };

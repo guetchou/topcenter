@@ -2,15 +2,14 @@
 import React from 'react';
 import { DeploymentStep } from './DeploymentStep';
 import { DeploymentProgress } from './DeploymentProgress';
-import { DeploymentLog } from '@/hooks/useDeploymentLogs';
-
-export type DeployStepStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
+import { DeploymentStepStatus } from '@/hooks/useDeployment';
+import { Log } from '@/hooks/useDeploymentLogs';
 
 export interface Step {
   id: string;
   title: string;
   description: string;
-  status: DeployStepStatus;
+  status: DeploymentStepStatus;
   startTime?: Date;
   endTime?: Date;
   logs: { message: string; type: string; }[];
@@ -48,7 +47,7 @@ export const DeploymentSteps: React.FC<DeploymentStepsProps> = ({ steps, current
 
   return (
     <div className="space-y-4">
-      <DeploymentProgress steps={steps} />
+      <DeploymentProgress steps={steps.map(step => ({ status: step.status }))} />
       
       <div className="space-y-2">
         {steps.map((step) => (

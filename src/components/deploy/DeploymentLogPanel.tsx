@@ -2,10 +2,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DeploymentLog } from "@/hooks/useDeploymentLogs";
+import { Log } from "@/hooks/useDeploymentLogs";
 
 interface DeploymentLogPanelProps {
-  logs: DeploymentLog[];
+  logs: Log[];
   maxHeight?: string;
 }
 
