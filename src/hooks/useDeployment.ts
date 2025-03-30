@@ -1,225 +1,229 @@
 
 import { useState, useCallback } from 'react';
-import { DeploymentLogType } from './useDeploymentLogs';
+import { v4 as uuidv4 } from 'uuid';
+import { useDeploymentLogs } from './useDeploymentLogs';
+import { toast } from 'sonner';
 
-export type DeploymentStatus = 'idle' | 'running' | 'success' | 'error';
+export type DeploymentStepStatus = 'pending' | 'in-progress' | 'completed' | 'error';
 
-interface DeploymentStepConfig {
-  id: string; 
-  title: string;
-  description: string;
+export interface DeploymentLog {
+  message: string;
+  timestamp?: Date;
 }
 
 export interface DeploymentStep {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed';
-  startTime?: Date;
-  endTime?: Date;
-  logs: { message: string; type: string; }[];
+  status: DeploymentStepStatus;
+  logs: DeploymentLog[];
+  startTime: Date | null;
+  endTime: Date | null;
 }
 
-const deploymentStepsConfig: DeploymentStepConfig[] = [
-  {
-    id: 'backup',
-    title: 'Sauvegarde des données',
-    description: 'Création d\'un backup complet avant déploiement'
-  },
-  {
-    id: 'trigger-workflow',
-    title: 'Déclenchement workflow GitHub',
-    description: 'Envoi de l\'événement repository_dispatch'
-  },
-  {
-    id: 'build',
-    title: 'Construction du projet',
-    description: 'Compilation et build du projet'
-  },
-  {
-    id: 'tests',
-    title: 'Exécution des tests',
-    description: 'Vérification du bon fonctionnement'
-  },
-  {
-    id: 'deployment',
-    title: 'Déploiement FTP',
-    description: 'Transfert des fichiers vers l\'hébergement'
-  },
-  {
-    id: 'post-deploy',
-    title: 'Post-déploiement',
-    description: 'Configuration et vérifications finales'
-  }
-];
-
-interface UseDeploymentProps {
-  addLog: (message: string, type: DeploymentLogType) => void;
+interface DeploymentOptions {
+  environment?: 'production' | 'staging' | 'development';
+  withBackup?: boolean;
+  notifyOnComplete?: boolean;
 }
 
-export const useDeployment = ({ addLog }: UseDeploymentProps) => {
-  const [status, setStatus] = useState<DeploymentStatus>('idle');
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentStepId, setCurrentStepId] = useState<string | undefined>(undefined);
-  
-  // Initialize deployment steps from configuration
-  const [deploymentSteps, setDeploymentSteps] = useState<DeploymentStep[]>(
-    deploymentStepsConfig.map(step => ({
+export const useDeployment = () => {
+  const [steps, setSteps] = useState<DeploymentStep[]>([]);
+  const [isDeploying, setIsDeploying] = useState(false);
+  const [currentStepId, setCurrentStepId] = useState<string | null>(null);
+  const { addLog } = useDeploymentLogs();
+
+  const initDeployment = useCallback((deploymentSteps: Omit<DeploymentStep, 'id' | 'logs' | 'startTime' | 'endTime'>[]) => {
+    const initializedSteps = deploymentSteps.map(step => ({
       ...step,
-      status: 'pending',
-      logs: []
-    }))
-  );
-
-  // Update a specific step
-  const updateStep = useCallback((
-    stepId: string, 
-    updates: Partial<DeploymentStep>
-  ) => {
-    setDeploymentSteps(prev => prev.map(step => 
-      step.id === stepId ? { ...step, ...updates } : step
-    ));
-  }, []);
-
-  // Add a log to a specific step
-  const addStepLog = useCallback((
-    stepId: string, 
-    message: string, 
-    type: string = 'info'
-  ) => {
-    setDeploymentSteps(prev => prev.map(step => 
-      step.id === stepId ? { 
-        ...step, 
-        logs: [...step.logs, { message, type }] 
-      } : step
-    ));
-  }, []);
-
-  // Marks a step as started
-  const startStep = useCallback((stepId: string) => {
-    const now = new Date();
-    updateStep(stepId, { status: 'in-progress', startTime: now });
-    setCurrentStepId(stepId);
-    addStepLog(stepId, `Démarrage de l'étape: ${stepId}`, 'info');
-    addLog(`Démarrage de l'étape: ${stepId}`, 'info');
-  }, [updateStep, addStepLog, addLog]);
-
-  // Marks a step as completed
-  const completeStep = useCallback((stepId: string) => {
-    const now = new Date();
-    updateStep(stepId, { status: 'completed', endTime: now });
-    addStepLog(stepId, `Étape terminée avec succès: ${stepId}`, 'success');
-    addLog(`Étape terminée avec succès: ${stepId}`, 'success');
-  }, [updateStep, addStepLog, addLog]);
-
-  // Marks a step as failed
-  const failStep = useCallback((stepId: string, error: string) => {
-    const now = new Date();
-    updateStep(stepId, { status: 'failed', endTime: now });
-    addStepLog(stepId, `Échec de l'étape: ${error}`, 'error');
-    addLog(`Échec de l'étape: ${stepId} - ${error}`, 'error');
-  }, [updateStep, addStepLog, addLog]);
-
-  // Start the deployment process
-  const startDeployment = useCallback(async () => {
-    setIsLoading(true);
-    setStatus('running');
-    
-    // Reset all steps to pending
-    setDeploymentSteps(deploymentStepsConfig.map(step => ({
-      ...step,
-      status: 'pending',
+      id: uuidv4(),
       logs: [],
-      startTime: undefined,
-      endTime: undefined
-    })));
+      startTime: null,
+      endTime: null,
+      status: 'pending' as DeploymentStepStatus
+    }));
     
-    addLog('Démarrage du processus de déploiement', 'info');
+    setSteps(initializedSteps);
+    return initializedSteps;
+  }, []);
+
+  const startDeployment = useCallback(async (options: DeploymentOptions = {}) => {
+    if (isDeploying || steps.length === 0) return;
     
-    // Simulated deployment process for demo
+    setIsDeploying(true);
+    addLog("Démarrage du déploiement...", "info");
+    
     try {
-      // Step 1: Backup
-      startStep('backup');
-      await new Promise(r => setTimeout(r, 2000)); // Simulate work
-      addStepLog('backup', 'Connexion au serveur FTP', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      addStepLog('backup', 'Création de l\'archive de sauvegarde', 'info');
-      await new Promise(r => setTimeout(r, 1500));
-      completeStep('backup');
+      // Start first step
+      const firstStep = steps[0];
+      setCurrentStepId(firstStep.id);
       
-      // Step 2: Trigger GitHub workflow
-      startStep('trigger-workflow');
-      await new Promise(r => setTimeout(r, 2000));
-      addStepLog('trigger-workflow', 'Envoi de la requête à l\'API GitHub', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      completeStep('trigger-workflow');
+      // Update step status
+      updateStepStatus(firstStep.id, 'in-progress');
       
-      // Step 3: Build
-      startStep('build');
-      await new Promise(r => setTimeout(r, 3000));
-      addStepLog('build', 'Installation des dépendances', 'info');
-      await new Promise(r => setTimeout(r, 1500));
-      addStepLog('build', 'Compilation du code TypeScript', 'info');
-      await new Promise(r => setTimeout(r, 2000));
-      addStepLog('build', 'Optimisation des assets', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      completeStep('build');
+      // Log deployment start with options
+      const optionDetails = Object.entries(options)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(', ');
+        
+      addLog(`Configuration du déploiement: ${optionDetails || 'par défaut'}`, "info");
       
-      // Step 4: Tests
-      startStep('tests');
-      await new Promise(r => setTimeout(r, 2500));
-      addStepLog('tests', 'Exécution des tests unitaires', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      addStepLog('tests', 'Exécution des tests d\'intégration', 'info');
-      await new Promise(r => setTimeout(r, 1500));
-      completeStep('tests');
+      // Simulate the API call for starting a deployment
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Step 5: Deployment
-      startStep('deployment');
-      await new Promise(r => setTimeout(r, 3000));
-      addStepLog('deployment', 'Connexion au serveur FTP', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      addStepLog('deployment', 'Transfert des fichiers (1/3)', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      addStepLog('deployment', 'Transfert des fichiers (2/3)', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      addStepLog('deployment', 'Transfert des fichiers (3/3)', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      completeStep('deployment');
-      
-      // Step 6: Post-deployment
-      startStep('post-deploy');
-      await new Promise(r => setTimeout(r, 2000));
-      addStepLog('post-deploy', 'Vérification des permissions de fichiers', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      addStepLog('post-deploy', 'Purge des caches', 'info');
-      await new Promise(r => setTimeout(r, 1000));
-      completeStep('post-deploy');
-      
-      // Deployment successful
-      setStatus('success');
-      addLog('Déploiement terminé avec succès!', 'success');
-      
+      return true;
     } catch (error) {
-      // In case of error
-      if (currentStepId) {
-        failStep(currentStepId, error instanceof Error ? error.message : 'Erreur inconnue');
-      }
-      setStatus('error');
-      addLog('Échec du déploiement', 'error');
-    } finally {
-      setIsLoading(false);
-      setCurrentStepId(undefined);
+      addLog("Erreur lors du démarrage du déploiement", "error");
+      setIsDeploying(false);
+      return false;
     }
-  }, [addLog, startStep, completeStep, failStep, currentStepId]);
-  
+  }, [isDeploying, steps, addLog]);
+
+  const updateStepStatus = useCallback((stepId: string, status: DeploymentStepStatus, log?: string) => {
+    setSteps(prevSteps => 
+      prevSteps.map(step => {
+        if (step.id === stepId) {
+          const now = new Date();
+          const updatedStep = {
+            ...step,
+            status,
+            logs: log ? [...step.logs, { message: log, timestamp: now }] : step.logs
+          };
+          
+          if (status === 'in-progress' && !step.startTime) {
+            updatedStep.startTime = now;
+          } else if (['completed', 'error'].includes(status) && !step.endTime) {
+            updatedStep.endTime = now;
+          }
+          
+          return updatedStep;
+        }
+        return step;
+      })
+    );
+    
+    if (log) {
+      addLog(log, status === 'error' ? 'error' : status === 'completed' ? 'success' : 'info');
+    }
+  }, [addLog]);
+
+  const addStepLog = useCallback((stepId: string, message: string) => {
+    setSteps(prevSteps => 
+      prevSteps.map(step => {
+        if (step.id === stepId) {
+          return {
+            ...step,
+            logs: [...step.logs, { message, timestamp: new Date() }]
+          };
+        }
+        return step;
+      })
+    );
+  }, []);
+
+  const progressToNextStep = useCallback(() => {
+    if (!currentStepId) return false;
+    
+    const currentIndex = steps.findIndex(step => step.id === currentStepId);
+    if (currentIndex === -1 || currentIndex >= steps.length - 1) {
+      // Complete deployment if we're at the last step
+      if (currentIndex === steps.length - 1) {
+        updateStepStatus(currentStepId, 'completed', "Étape terminée avec succès");
+        setIsDeploying(false);
+        setCurrentStepId(null);
+        toast.success("Déploiement terminé avec succès");
+        addLog("Déploiement terminé avec succès", "success");
+      }
+      return false;
+    }
+    
+    // Complete current step
+    updateStepStatus(currentStepId, 'completed', "Étape terminée avec succès");
+    
+    // Move to next step
+    const nextStep = steps[currentIndex + 1];
+    setCurrentStepId(nextStep.id);
+    updateStepStatus(nextStep.id, 'in-progress', "Démarrage de l'étape");
+    
+    return true;
+  }, [currentStepId, steps, updateStepStatus, addLog]);
+
+  const completeDeployment = useCallback((success: boolean = true) => {
+    if (currentStepId) {
+      updateStepStatus(
+        currentStepId, 
+        success ? 'completed' : 'error',
+        success ? "Étape terminée avec succès" : "Échec de l'étape"
+      );
+    }
+    
+    setIsDeploying(false);
+    setCurrentStepId(null);
+    
+    if (success) {
+      toast.success("Déploiement terminé avec succès");
+      addLog("Déploiement terminé avec succès", "success");
+    } else {
+      toast.error("Échec du déploiement");
+      addLog("Échec du déploiement", "error");
+    }
+  }, [currentStepId, updateStepStatus, addLog]);
+
+  const cancelDeployment = useCallback(() => {
+    setIsDeploying(false);
+    setCurrentStepId(null);
+    
+    addLog("Déploiement annulé par l'utilisateur", "warning");
+    toast.info("Déploiement annulé");
+    
+    setSteps(prevSteps => 
+      prevSteps.map(step => {
+        if (step.status === 'in-progress') {
+          return {
+            ...step,
+            status: 'error',
+            endTime: new Date(),
+            logs: [...step.logs, { message: "Étape annulée par l'utilisateur", timestamp: new Date() }]
+          };
+        }
+        return step;
+      })
+    );
+  }, [addLog]);
+
+  const getOverallProgress = useCallback(() => {
+    if (steps.length === 0) return 0;
+    
+    const completedSteps = steps.filter(step => step.status === 'completed').length;
+    const inProgressStep = steps.find(step => step.status === 'in-progress');
+    
+    // Calculate basic progress from completed steps
+    let progress = (completedSteps / steps.length) * 100;
+    
+    // Add partial progress for the in-progress step if any
+    if (inProgressStep && inProgressStep.startTime) {
+      const stepIndex = steps.findIndex(step => step.id === inProgressStep.id);
+      const stepWeight = 1 / steps.length;
+      
+      // Estimate in-progress step to be 50% done on average
+      progress += (stepWeight * 0.5) * 100;
+    }
+    
+    return Math.min(Math.round(progress), 99); // Cap at 99% until fully complete
+  }, [steps]);
+
   return {
-    status,
-    isLoading,
-    deploymentSteps,
+    steps,
+    isDeploying,
     currentStepId,
+    initDeployment,
     startDeployment,
-    updateStep,
-    addStepLog
+    updateStepStatus,
+    addStepLog,
+    progressToNextStep,
+    completeDeployment,
+    cancelDeployment,
+    getOverallProgress
   };
 };

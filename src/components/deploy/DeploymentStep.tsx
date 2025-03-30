@@ -1,20 +1,14 @@
 
 import React, { useState } from 'react';
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, CheckCircle, Clock, AlertTriangle, Info } from "lucide-react";
+import { Check, AlertCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-export type DeploymentStatus = 'pending' | 'in-progress' | 'completed' | 'failed';
+type DeploymentStepStatus = 'pending' | 'in-progress' | 'completed' | 'error';
 
 interface DeploymentStepProps {
   title: string;
-  description: string;
-  status: DeploymentStatus;
+  description?: string;
+  status: DeploymentStepStatus;
   time?: string;
   details?: string;
   isCurrentStep?: boolean;
@@ -26,74 +20,80 @@ export const DeploymentStep: React.FC<DeploymentStepProps> = ({
   status,
   time,
   details,
-  isCurrentStep = false
+  isCurrentStep
 }) => {
-  const [isOpen, setIsOpen] = useState(isCurrentStep);
+  const [isExpanded, setIsExpanded] = useState(isCurrentStep);
 
-  const getStatusIcon = () => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'in-progress':
-        return <Clock className="h-5 w-5 text-blue-500 animate-pulse" />;
-      case 'failed':
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case 'pending':
-      default:
-        return <Info className="h-5 w-5 text-gray-400" />;
-    }
+  const statusIcon = {
+    pending: <Clock className="h-5 w-5 text-muted-foreground" />,
+    'in-progress': (
+      <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    ),
+    completed: <Check className="h-5 w-5 text-green-500" />,
+    error: <AlertCircle className="h-5 w-5 text-destructive" />
   };
 
-  const getStatusBadge = () => {
-    switch (status) {
-      case 'completed':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">Complété</Badge>;
-      case 'in-progress':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 animate-pulse">En cours</Badge>;
-      case 'failed':
-        return <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300">Échoué</Badge>;
-      case 'pending':
-      default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">En attente</Badge>;
-    }
+  const statusColor = {
+    pending: 'border-muted-foreground',
+    'in-progress': 'border-primary',
+    completed: 'border-green-500',
+    error: 'border-destructive'
   };
+
+  const hasDetails = details && details.length > 0;
 
   return (
-    <Collapsible
-      open={isOpen}
-      onOpenChange={setIsOpen}
-      className={`border rounded-lg overflow-hidden transition-colors ${
-        isCurrentStep ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/20' : 'border-border'
-      }`}
-    >
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center gap-3">
-          {getStatusIcon()}
-          <div>
-            <h3 className="font-medium">{title}</h3>
-            <p className="text-sm text-muted-foreground">{description}</p>
-          </div>
+    <div className={cn(
+      "bg-card rounded-lg border p-4",
+      isCurrentStep && "border-primary"
+    )}>
+      <div className="flex items-start gap-3">
+        <div className={cn(
+          "flex-shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center",
+          statusColor[status]
+        )}>
+          {statusIcon[status]}
         </div>
-        <div className="flex items-center gap-2">
-          {time && <span className="text-xs text-muted-foreground">{time}</span>}
-          {getStatusBadge()}
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
-              <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-              <span className="sr-only">Toggle</span>
-            </Button>
-          </CollapsibleTrigger>
+        
+        <div className="flex-grow">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 className="font-medium">{title}</h3>
+              {description && (
+                <p className="text-sm text-muted-foreground">{description}</p>
+              )}
+            </div>
+            
+            <div className="flex items-center gap-3">
+              {time && (
+                <span className="text-xs bg-muted px-2 py-1 rounded">
+                  {time}
+                </span>
+              )}
+              
+              {hasDetails && (
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="text-muted-foreground hover:text-foreground"
+                  aria-label={isExpanded ? "Réduire les détails" : "Voir les détails"}
+                >
+                  {isExpanded ? (
+                    <ChevronUp className="h-5 w-5" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5" />
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {hasDetails && isExpanded && (
+            <div className="mt-3 bg-muted/50 p-3 rounded-md text-sm overflow-x-auto">
+              <pre className="whitespace-pre-wrap">{details}</pre>
+            </div>
+          )}
         </div>
       </div>
-      <CollapsibleContent>
-        {details && (
-          <div className="p-4 pt-0 border-t mt-1 bg-black/5 dark:bg-white/5">
-            <pre className="text-xs font-mono whitespace-pre-wrap">
-              {details}
-            </pre>
-          </div>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
+    </div>
   );
 };
