@@ -5,10 +5,12 @@ import PageLoader from "@/components/PageLoader";
 import { ScrollToTop } from './components/ScrollToTop';
 import { MainNav } from './components/MainNav';
 import { Footer } from './components/Footer';
+import ResponsiveNavigation from './components/ResponsiveNavigation';
 
 // Lazy load pages for better performance
 const DeploymentDashboard = React.lazy(() => import('./pages/DeploymentDashboard'));
 const Index = React.lazy(() => import('./pages/Index'));
+const AdminRoutes = React.lazy(() => import('./components/routes/AdminRoutes'));
 
 function App() {
   return (
@@ -18,12 +20,23 @@ function App() {
         <Routes>
           <Route path="/deploy" element={
             <>
-              <MainNav />
+              <ResponsiveNavigation />
               <DeploymentDashboard />
               <Footer />
             </>
           } />
-          <Route path="/" element={<Index />} />
+          <Route path="/admin/*" element={
+            <Suspense fallback={<PageLoader />}>
+              <AdminRoutes />
+            </Suspense>
+          } />
+          <Route path="/" element={
+            <>
+              <MainNav />
+              <Index />
+              <Footer />
+            </>
+          } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

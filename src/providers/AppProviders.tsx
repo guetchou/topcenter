@@ -1,5 +1,4 @@
 
-import { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./ThemeProvider";
 import { Suspense } from "react";
@@ -14,18 +13,14 @@ import { HelmetProvider } from "react-helmet-async";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60 * 1000, // 1 minute
+      staleTime: 60 * 1000,
       retry: 1,
       refetchOnWindowFocus: false
     }
   }
 });
 
-interface AppProvidersProps {
-  children: ReactNode;
-}
-
-export function AppProviders({ children }: AppProvidersProps) {
+export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>

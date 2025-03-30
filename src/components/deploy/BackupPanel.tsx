@@ -1,63 +1,127 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Database, Download } from "lucide-react";
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Database, Download, Archive, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+
+interface Backup {
+  id: string;
+  name: string;
+  type: 'auto' | 'manual';
+  size: string;
+  createdAt: Date;
+}
 
 export const BackupPanel: React.FC = () => {
+  const [backups, setBackups] = useState<Backup[]>([
+    {
+      id: '1',
+      name: 'backup-auto-20250330-120000',
+      type: 'auto',
+      size: '142.5 MB',
+      createdAt: new Date(2025, 2, 30, 12, 0, 0)
+    },
+    {
+      id: '2',
+      name: 'backup-manual-20250329-153045',
+      type: 'manual',
+      size: '140.2 MB',
+      createdAt: new Date(2025, 2, 29, 15, 30, 45)
+    },
+    {
+      id: '3',
+      name: 'backup-auto-20250328-120000',
+      type: 'auto',
+      size: '138.7 MB',
+      createdAt: new Date(2025, 2, 28, 12, 0, 0)
+    }
+  ]);
+  
+  const [isCreatingBackup, setIsCreatingBackup] = useState(false);
+  
+  const handleCreateBackup = () => {
+    setIsCreatingBackup(true);
+    
+    // Simuler la création d'une sauvegarde
+    setTimeout(() => {
+      const newBackup: Backup = {
+        id: Date.now().toString(),
+        name: `backup-manual-${new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14)}`,
+        type: 'manual',
+        size: '143.1 MB',
+        createdAt: new Date()
+      };
+      
+      setBackups([newBackup, ...backups]);
+      setIsCreatingBackup(false);
+      
+      toast.success('Sauvegarde créée avec succès');
+    }, 2000);
+  };
+  
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Sauvegardes du site</CardTitle>
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-lg flex items-center">
+            <Database className="h-5 w-5 mr-2" />
+            Sauvegardes
+          </CardTitle>
+          <Button 
+            onClick={handleCreateBackup}
+            disabled={isCreatingBackup}
+          >
+            {isCreatingBackup ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Création en cours...
+              </>
+            ) : (
+              <>
+                <Archive className="h-4 w-4 mr-2" />
+                Créer une sauvegarde
+              </>
+            )}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
-          <div className="flex flex-col gap-2">
-            <Button className="w-full" variant="outline">
-              <Database className="h-4 w-4 mr-2" />
-              Créer une sauvegarde manuelle
-            </Button>
-            
-            <p className="text-sm text-muted-foreground mt-2">
-              Les sauvegardes sont créées automatiquement avant chaque déploiement et conservées pendant 30 jours.
-            </p>
-          </div>
-          
-          <div className="border rounded-md p-4">
-            <h3 className="font-medium mb-3">Sauvegardes récentes</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center p-2 hover:bg-accent rounded-md">
-                <div>
-                  <p className="font-medium">backup-2023-07-25-120035.zip</p>
-                  <p className="text-xs text-muted-foreground">25/07/2023 12:00:35 - 24.5 MB</p>
-                </div>
-                <Button variant="ghost" size="icon">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex justify-between items-center p-2 hover:bg-accent rounded-md">
-                <div>
-                  <p className="font-medium">backup-2023-07-22-093015.zip</p>
-                  <p className="text-xs text-muted-foreground">22/07/2023 09:30:15 - 23.8 MB</p>
-                </div>
-                <Button variant="ghost" size="icon">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <div className="flex justify-between items-center p-2 hover:bg-accent rounded-md">
-                <div>
-                  <p className="font-medium">backup-2023-07-18-143212.zip</p>
-                  <p className="text-xs text-muted-foreground">18/07/2023 14:32:12 - 23.5 MB</p>
-                </div>
-                <Button variant="ghost" size="icon">
-                  <Download className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Nom</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Taille</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {backups.map((backup) => (
+              <TableRow key={backup.id}>
+                <TableCell className="font-medium">{backup.name}</TableCell>
+                <TableCell>
+                  <Badge variant={backup.type === 'auto' ? 'default' : 'success'}>
+                    {backup.type === 'auto' ? 'Automatique' : 'Manuelle'}
+                  </Badge>
+                </TableCell>
+                <TableCell>{backup.size}</TableCell>
+                <TableCell>
+                  {backup.createdAt.toLocaleDateString()} {backup.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <Download className="h-4 w-4 mr-2" />
+                    Télécharger
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
     </Card>
   );

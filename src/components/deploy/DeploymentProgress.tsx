@@ -1,10 +1,10 @@
 
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { DeploymentStatus } from './DeploymentStep';
+import { DeploymentStepStatus } from '@/hooks/useDeployment';
 
 interface DeploymentProgressProps {
-  steps: Array<{ status: DeploymentStatus }>;
+  steps: Array<{ status: DeploymentStepStatus }>;
 }
 
 export const DeploymentProgress = ({ steps }: DeploymentProgressProps) => {

@@ -1,54 +1,56 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DeploymentStep } from "./DeploymentStep";
-import { DeploymentStep as DeploymentStepType } from "@/hooks/useDeployment";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DeploymentStep } from './DeploymentStep';
+import { DeploymentProgress } from './DeploymentProgress';
+import { DeploymentStep as DeploymentStepType } from '@/hooks/useDeployment';
 
 interface DeploymentStepsPanelProps {
   steps: DeploymentStepType[];
 }
 
 export const DeploymentStepsPanel: React.FC<DeploymentStepsPanelProps> = ({ steps }) => {
-  // Calculate elapsed time for each step
-  const getStepDuration = (step: DeploymentStepType): string => {
-    if (!step.startTime) return '0s';
+  const currentStepIndex = steps.findIndex(step => step.status === 'in-progress');
+  
+  const formatTime = (startTime: Date | null, endTime: Date | null) => {
+    if (!startTime) return '';
     
-    const endTime = step.endTime || new Date();
-    const durationMs = endTime.getTime() - step.startTime.getTime();
-    
-    if (durationMs < 1000) return `${durationMs}ms`;
-    if (durationMs < 60000) return `${Math.floor(durationMs / 1000)}s`;
-    
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}m ${seconds}s`;
-  };
-
-  // Get logs for a step
-  const getStepLogs = (step: DeploymentStepType): string => {
-    if (step.logs.length === 0) return '';
-    
-    return step.logs
-      .map(log => `${log.message}`)
-      .join('\n');
+    if (endTime) {
+      // Calculer la durée entre le début et la fin
+      const durationMs = endTime.getTime() - startTime.getTime();
+      const seconds = Math.floor(durationMs / 1000);
+      
+      if (seconds < 60) {
+        return `${seconds}s`;
+      } else {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}m ${remainingSeconds}s`;
+      }
+    } else {
+      // Afficher l'heure de début
+      return startTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
   };
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Étapes du déploiement</CardTitle>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Étapes de déploiement</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {steps.map((step) => (
+        <DeploymentProgress steps={steps} />
+        
+        <div className="space-y-3">
+          {steps.map((step, index) => (
             <DeploymentStep
               key={step.id}
               title={step.title}
               description={step.description}
               status={step.status}
-              time={getStepDuration(step)}
-              details={getStepLogs(step)}
-              isCurrentStep={step.status === 'in-progress'}
+              time={formatTime(step.startTime, step.endTime)}
+              details={step.logs.map(log => log.message).join('\n')}
+              isCurrentStep={index === currentStepIndex}
             />
           ))}
         </div>
