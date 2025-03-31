@@ -4,16 +4,27 @@ import { Button } from "@/components/ui/button";
 import { MessageSquare, Loader2, X, Sparkles, CircuitBoard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { useChatPal } from "@/hooks/useChatPal";
 
 interface AIChatBubbleProps {
   initialMessage?: string;
+  embedId?: string;
 }
 
-export const AIChatBubble = ({ initialMessage = "Bonjour, comment puis-je vous aider aujourd'hui ?" }: AIChatBubbleProps) => {
+export const AIChatBubble = ({ 
+  initialMessage = "Bonjour, comment puis-je vous aider aujourd'hui ?", 
+  embedId = "v8HfNRZjDyZ3" 
+}: AIChatBubbleProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPulsing, setIsPulsing] = useState(true);
   const chatterpalContainerRef = useRef<HTMLDivElement>(null);
+  
+  const { initChatPal, destroyChatPal, isInitialized, error } = useChatPal({
+    embedId,
+    containerSelector: '#chatterpal-container',
+    position: 'internal',
+  });
   
   // Start pulsing animation periodically to attract attention
   useEffect(() => {
@@ -31,52 +42,36 @@ export const AIChatBubble = ({ initialMessage = "Bonjour, comment puis-je vous a
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
-
-      // Vérifier si ChatterPal est chargé
-      const initChatterPal = () => {
-        if (window.ChatPal) {
-          try {
-            // Nettoyer l'instance précédente si elle existe
-            if (window.chatPal) {
-              window.chatPal.destroy();
-            }
-
-            // Initialiser une nouvelle instance
-            window.chatPal = new window.ChatPal({
-              embedId: 'v8HfNRZjDyZ3', // Nouvel embedId
-              remoteBaseUrl: 'https://chatappdemo.com/',
-              version: '8.3',
-              containerSelector: '#chatterpal-container',
-              position: 'internal',
-              width: '100%',
-              height: '100%'
-            });
-
-            setIsLoading(false);
-          } catch (error) {
-            console.error("Erreur lors de l'initialisation de ChatterPal:", error);
-            setIsLoading(false);
-          }
-        } else {
-          // Si ChatterPal n'est pas encore chargé, attendre et réessayer
-          setTimeout(initChatterPal, 500);
-        }
-      };
-
-      initChatterPal();
-
+      
+      // Initialiser ChatPal
+      initChatPal();
+      
+      // Considérer le chatbot comme chargé après un court délai
+      const loadingTimer = setTimeout(() => {
+        setIsLoading(false);
+      }, 1500);
+      
       return () => {
-        // Nettoyer à la fermeture
-        if (window.chatPal) {
-          try {
-            window.chatPal.destroy();
-          } catch (error) {
-            console.error("Erreur lors de la destruction de ChatterPal:", error);
-          }
-        }
+        clearTimeout(loadingTimer);
+        destroyChatPal();
       };
     }
-  }, [isOpen]);
+  }, [isOpen, initChatPal, destroyChatPal]);
+
+  // Afficher une erreur éventuelle
+  useEffect(() => {
+    if (error) {
+      console.error("Erreur ChatPal:", error);
+      setIsLoading(false);
+    }
+  }, [error]);
+
+  // Observer l'état d'initialisation
+  useEffect(() => {
+    if (isInitialized) {
+      setIsLoading(false);
+    }
+  }, [isInitialized]);
 
   return (
     <div className="fixed bottom-4 right-4 z-50">

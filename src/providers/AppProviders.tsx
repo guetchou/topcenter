@@ -8,8 +8,9 @@ import { SearchProvider } from "@/contexts/SearchContext";
 import { IntlProviderWrapper } from "@/components/IntlProvider";
 import { Toaster } from "sonner";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ChatPalInitializer } from "@/components/chat/ChatPalInitializer";
 
-// Création d'une instance de QueryClient avec une configuration minimale
+// Configuration simplifiée de QueryClient
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -29,6 +30,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
               <Suspense fallback={<PageLoader />}>
                 {children}
                 <Toaster position="top-right" richColors closeButton />
+                <ChatPalInitializer />
               </Suspense>
             </SearchProvider>
           </IntlProviderWrapper>
