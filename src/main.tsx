@@ -5,10 +5,14 @@ import NewApp from './NewApp';
 import { AppProviders } from './providers/AppProviders';
 import './index.css';
 
-// Utiliser createRoot avec une assertion non-null pour éviter les erreurs TypeScript
+// Récupération de l'élément racine et assertion de son existence
 const rootElement = document.getElementById('root');
-if (!rootElement) throw new Error('Root element not found');
+if (!rootElement) {
+  console.error('Élément racine non trouvé dans le DOM');
+  throw new Error('Root element not found');
+}
 
+// Utilisation de createRoot avec le composant racine
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
     <AppProviders>

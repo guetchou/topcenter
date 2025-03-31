@@ -14,14 +14,10 @@ const Index = React.lazy(() => import('./pages/Index'));
 const AdminRoutes = React.lazy(() => import('./components/routes/AdminRoutes'));
 
 function NewApp() {
-  const handleError = (error: Error) => {
-    console.error("Application error:", error);
-  };
-
   return (
-    <ErrorBoundary onError={handleError}>
-      <Router>
-        <ScrollToTop />
+    <Router>
+      <ScrollToTop />
+      <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/deploy" element={
@@ -46,8 +42,8 @@ function NewApp() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
-      </Router>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </Router>
   );
 }
 

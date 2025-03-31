@@ -7,23 +7,33 @@ import PageLoader from "@/components/PageLoader";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { IntlProviderWrapper } from "@/components/IntlProvider";
 import { Toaster } from "sonner";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Création d'une instance de QueryClient simple pour éviter les conflits
-const queryClient = new QueryClient();
+// Création d'une instance de QueryClient avec une configuration minimale
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1
+    },
+  },
+});
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="color-theme">
-        <IntlProviderWrapper>
-          <SearchProvider>
-            <Suspense fallback={<PageLoader />}>
-              {children}
-              <Toaster position="top-right" richColors closeButton />
-            </Suspense>
-          </SearchProvider>
-        </IntlProviderWrapper>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light" storageKey="color-theme">
+          <IntlProviderWrapper>
+            <SearchProvider>
+              <Suspense fallback={<PageLoader />}>
+                {children}
+                <Toaster position="top-right" richColors closeButton />
+              </Suspense>
+            </SearchProvider>
+          </IntlProviderWrapper>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
