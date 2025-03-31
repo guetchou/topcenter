@@ -16,7 +16,12 @@ class ChatPalManager {
   private static instance: ChatPalManager;
   private activeInstances: Map<string, any> = new Map();
 
-  private constructor() {}
+  private constructor() {
+    // S'assurer que les instances existantes sont détruites lors du rechargement de la page
+    window.addEventListener('beforeunload', () => {
+      this.destroyAllInstances();
+    });
+  }
 
   public static getInstance(): ChatPalManager {
     if (!ChatPalManager.instance) {
@@ -26,22 +31,39 @@ class ChatPalManager {
   }
 
   /**
+   * Vérifie si le script ChatPal est chargé et disponible
+   */
+  public isScriptLoaded(): boolean {
+    return typeof window.ChatPal === 'function';
+  }
+
+  /**
    * Initialise une instance ChatPal avec la configuration donnée
    * @param config Configuration ChatPal
    * @returns L'instance ChatPal créée ou existante
    */
   public initChatPal(config: ChatPalConfig): any {
-    if (!window.ChatPal) {
-      console.error('ChatPal script not loaded');
+    if (!this.isScriptLoaded()) {
+      console.error('ChatPal script not loaded or not ready yet');
       return null;
     }
 
     // Si une instance avec cet embedId existe déjà, la retourner
     if (this.activeInstances.has(config.embedId)) {
+      console.log(`Returning existing ChatPal instance for embedId: ${config.embedId}`);
       return this.activeInstances.get(config.embedId);
     }
 
     try {
+      console.log(`Creating new ChatPal instance for embedId: ${config.embedId}`);
+      
+      // Vérifier si une instance globale existe déjà
+      if (window.chatPal && config.embedId === 'HSNNDA8bdXzs') {
+        console.log('Using existing global ChatPal instance');
+        this.activeInstances.set(config.embedId, window.chatPal);
+        return window.chatPal;
+      }
+      
       // Créer une nouvelle instance
       const instance = new window.ChatPal({
         embedId: config.embedId,
@@ -53,6 +75,12 @@ class ChatPalManager {
 
       // Stocker l'instance
       this.activeInstances.set(config.embedId, instance);
+      
+      // Si c'est l'instance principale, la rendre disponible globalement
+      if (config.embedId === 'HSNNDA8bdXzs') {
+        window.chatPal = instance;
+      }
+      
       return instance;
     } catch (error) {
       console.error('Failed to initialize ChatPal:', error);
@@ -69,9 +97,15 @@ class ChatPalManager {
       try {
         const instance = this.activeInstances.get(embedId);
         if (instance && typeof instance.destroy === 'function') {
+          console.log(`Destroying ChatPal instance: ${embedId}`);
           instance.destroy();
         }
         this.activeInstances.delete(embedId);
+        
+        // Si c'était l'instance principale globale, nettoyer la référence
+        if (embedId === 'HSNNDA8bdXzs' && window.chatPal === instance) {
+          window.chatPal = undefined;
+        }
       } catch (error) {
         console.error(`Error destroying ChatPal instance ${embedId}:`, error);
       }
@@ -82,6 +116,7 @@ class ChatPalManager {
    * Détruit toutes les instances actives
    */
   public destroyAllInstances(): void {
+    console.log(`Destroying all ${this.activeInstances.size} ChatPal instances`);
     this.activeInstances.forEach((instance, embedId) => {
       try {
         if (instance && typeof instance.destroy === 'function') {
@@ -92,6 +127,9 @@ class ChatPalManager {
       }
     });
     this.activeInstances.clear();
+    
+    // Nettoyer la référence globale
+    window.chatPal = undefined;
   }
 
   /**
