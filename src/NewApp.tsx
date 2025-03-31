@@ -8,6 +8,7 @@ import { Footer } from './components/Footer';
 import ResponsiveNavigation from './components/ResponsiveNavigation';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Helmet } from 'react-helmet-async';
+import { ChatPalGlobalInitializer } from './components/chat/ChatPalGlobalInitializer';
 
 // Lazy load pages for better performance
 const DeploymentDashboard = React.lazy(() => import('./pages/DeploymentDashboard'));
@@ -20,6 +21,7 @@ function NewApp() {
       <ScrollToTop />
       <ErrorBoundary>
         <Suspense fallback={<PageLoader />}>
+          <ChatPalGlobalInitializer />
           <Routes>
             <Route path="/deploy" element={
               <>

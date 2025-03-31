@@ -50,8 +50,11 @@ export const useChatPal = (
     if (autoInit && chatbotConfigs && chatbotConfigs.length > 0 && !isInitialized) {
       const defaultConfig = chatbotConfigs[0];
       initChatPal(defaultConfig);
+    } else if (autoInit && config && config.embedId && !isInitialized) {
+      // Si pas de configs dans la base mais une config fournie en props
+      initChatPal(config);
     }
-  }, [chatbotConfigs, autoInit, isInitialized]);
+  }, [chatbotConfigs, autoInit, isInitialized, config]);
 
   // Nettoyage à la désinstallation du composant
   useEffect(() => {
