@@ -1,4 +1,5 @@
 
+import React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./ThemeProvider";
 import { Suspense } from "react";
@@ -6,17 +7,9 @@ import PageLoader from "@/components/PageLoader";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { IntlProviderWrapper } from "@/components/IntlProvider";
 import { Toaster } from "sonner";
-// Création d'une instance de QueryClient en dehors du composant
-// pour éviter sa recréation à chaque rendu
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 60 * 1000,
-      retry: 1,
-      refetchOnWindowFocus: false
-    }
-  }
-});
+
+// Création d'une instance de QueryClient simple pour éviter les conflits
+const queryClient = new QueryClient();
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   return (

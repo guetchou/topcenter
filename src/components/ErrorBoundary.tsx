@@ -4,6 +4,7 @@ import React, { Component, ErrorInfo, ReactNode } from "react";
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -23,6 +24,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    this.props.onError?.(error, errorInfo);
   }
 
   public render() {
@@ -38,6 +40,9 @@ class ErrorBoundary extends Component<Props, State> {
           <p className="text-red-600">
             Nous rencontrons des difficultés à charger ce contenu. Veuillez rafraîchir la page.
           </p>
+          <pre className="mt-2 text-xs p-2 bg-red-100 rounded overflow-auto">
+            {this.state.error?.message}
+          </pre>
         </div>
       );
     }
