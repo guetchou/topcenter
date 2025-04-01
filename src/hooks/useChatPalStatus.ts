@@ -10,7 +10,7 @@ export const useChatPalStatus = () => {
     // Vérifier si le script est chargé
     const checkScriptLoaded = () => {
       try {
-        const isLoaded = typeof window.ChatPal === 'function';
+        const isLoaded = typeof window !== 'undefined' && typeof window.ChatPal === 'function';
         console.log(`ChatPal script status: ${isLoaded ? 'loaded' : 'not loaded'}`);
         setIsLoaded(isLoaded);
         return isLoaded;
@@ -23,7 +23,7 @@ export const useChatPalStatus = () => {
     // Vérifier si une instance est déjà initialisée
     const checkInstanceInitialized = () => {
       try {
-        const isInitialized = window.chatPal !== undefined;
+        const isInitialized = typeof window !== 'undefined' && window.chatPal !== undefined;
         console.log(`ChatPal instance status: ${isInitialized ? 'initialized' : 'not initialized'}`);
         setIsInitialized(isInitialized);
         return isInitialized;

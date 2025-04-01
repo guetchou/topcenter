@@ -3,17 +3,24 @@ import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageLoader from "@/components/PageLoader";
 import { ScrollToTop } from './components/ScrollToTop';
-import { MainNav } from './components/MainNav';
 import { Footer } from './components/Footer';
 import ResponsiveNavigation from './components/ResponsiveNavigation';
 import ErrorBoundary from './components/ErrorBoundary';
 import { Helmet } from 'react-helmet-async';
 import { ChatPalGlobalInitializer } from './components/chat/ChatPalGlobalInitializer';
 
-// Lazy load pages for better performance
-const DeploymentDashboard = React.lazy(() => import('./pages/DeploymentDashboard'));
-const Index = React.lazy(() => import('./pages/Index'));
-const AdminRoutes = React.lazy(() => import('./components/routes/AdminRoutes'));
+// Lazy load pages with proper error handling
+const DeploymentDashboard = React.lazy(() => 
+  import('./pages/DeploymentDashboard').then(module => ({ default: module.default || module }))
+);
+
+const Index = React.lazy(() => 
+  import('./pages/Index').then(module => ({ default: module.default || module }))
+);
+
+const AdminRoutes = React.lazy(() => 
+  import('./components/routes/AdminRoutes').then(module => ({ default: module.default || module }))
+);
 
 function NewApp() {
   return (

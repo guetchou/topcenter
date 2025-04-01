@@ -11,18 +11,18 @@ import { AIChatBubble } from "@/components/AIChatBubble";
 import { Footer } from "@/components/Footer";
 import { MainNav } from "@/components/MainNav";
 
-// Lazy loading original sections
-const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
-const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection"));
-const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection"));
+// Lazy loading original sections - avec correction des imports lazy
+const HeroSection = lazy(() => import("@/components/sections/HeroSection").then(module => ({ default: module.default || module })));
+const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection").then(module => ({ default: module.default || module })));
+const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection").then(module => ({ default: module.default || module })));
 const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection").then(module => ({ default: module.TestimonialsSection })));
 const BlogSection = lazy(() => import("@/components/sections/BlogSection").then(module => ({ default: module.BlogSection })));
 const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(module => ({ default: module.TeamSection })));
 const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
 const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
-// Lazy loading new sections
-const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection"));
+// Lazy loading new sections - avec correction de l'import lazy
+const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection").then(module => ({ default: module.default || module })));
 
 // Enhanced fallback with more contextual information
 const Fallback = ({ size = "lg", label = "Chargement" }: { size?: "sm" | "lg", label?: string }) => (
