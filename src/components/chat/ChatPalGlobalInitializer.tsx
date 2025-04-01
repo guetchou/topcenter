@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useChatPal } from '@/hooks/useChatPal';
+import { useChatPalStatus } from '@/hooks/useChatPalStatus';
 import { toast } from 'sonner';
 
 /**
@@ -8,75 +9,65 @@ import { toast } from 'sonner';
  * avec la configuration par défaut au chargement de la page
  */
 export const ChatPalGlobalInitializer = () => {
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const { isLoaded, isInitialized, error: statusError } = useChatPalStatus();
   const { initChatPal, error } = useChatPal({
     embedId: 'HSNNDA8bdXzs',
     remoteBaseUrl: 'https://chatappdemo.com/',
     version: '8.3'
   }, false); // On désactive l'initialisation automatique pour mieux la contrôler ici
 
-  // Vérifier si le script ChatPal est chargé
+  // Initialiser ChatPal une fois que le script est détecté comme chargé
   useEffect(() => {
-    const checkScriptLoaded = () => {
-      if (window.ChatPal) {
-        setScriptLoaded(true);
-        console.log('Script ChatPal détecté et chargé.');
-        return true;
-      }
-      return false;
-    };
-
-    // Si déjà chargé, marquer comme prêt
-    if (checkScriptLoaded()) return;
-
-    // Sinon, attendre que le script soit chargé
-    const scriptCheckInterval = setInterval(() => {
-      if (checkScriptLoaded()) {
-        clearInterval(scriptCheckInterval);
-      }
-    }, 500);
-
-    // Timeout après 10 secondes si le script ne se charge pas
-    const timeout = setTimeout(() => {
-      clearInterval(scriptCheckInterval);
-      if (!window.ChatPal) {
-        console.error('Le script ChatPal n\'a pas pu être chargé après 10 secondes');
-        toast.error('Impossible de charger le chat. Veuillez rafraîchir la page.');
-      }
-    }, 10000);
-
-    return () => {
-      clearInterval(scriptCheckInterval);
-      clearTimeout(timeout);
-    };
-  }, []);
-
-  // Initialiser ChatPal une fois le script chargé
-  useEffect(() => {
-    if (scriptLoaded) {
-      console.log('Initialisation de ChatPal avec embedId: HSNNDA8bdXzs');
+    if (isLoaded && !isInitialized && !initialized) {
+      console.log('ChatPal script détecté, tentative d\'initialisation');
       try {
-        // Vérifier si une instance globale existe déjà et la détruire si nécessaire
+        // Vérifier s'il existe une ancienne instance et la nettoyer si nécessaire
         if (window.chatPal && typeof window.chatPal.destroy === 'function') {
           console.log('Instance ChatPal existante trouvée, destruction...');
           window.chatPal.destroy();
         }
         
-        // Initialiser notre instance gérée
-        initChatPal();
+        // Initialiser manuellement si nécessaire
+        if (!window.chatPal) {
+          console.log('Initialisation manuelle de ChatPal');
+          window.chatPal = new window.ChatPal({
+            embedId: 'HSNNDA8bdXzs', 
+            remoteBaseUrl: 'https://chatappdemo.com/', 
+            version: '8.3'
+          });
+        } else {
+          console.log('ChatPal déjà initialisé, réutilisation de l\'instance existante');
+        }
+        
+        setInitialized(true);
       } catch (err) {
         console.error('Erreur lors de l\'initialisation de ChatPal:', err);
+        toast.error('Problème avec le chat. Veuillez rafraîchir la page.');
       }
     }
-  }, [scriptLoaded, initChatPal]);
+  }, [isLoaded, isInitialized, initialized, initChatPal]);
 
   // Afficher les erreurs éventuelles
   useEffect(() => {
-    if (error) {
-      console.error('Erreur ChatPal:', error);
+    const errorToShow = error || statusError;
+    if (errorToShow) {
+      console.error('Erreur ChatPal:', errorToShow);
       toast.error('Problème avec le chat. Veuillez rafraîchir la page.');
     }
-  }, [error]);
+  }, [error, statusError]);
+
+  // Ajouter une vérification périodique pour s'assurer que ChatPal reste disponible
+  useEffect(() => {
+    const checkInterval = setInterval(() => {
+      if (!window.ChatPal || !window.chatPal) {
+        console.warn('ChatPal semble avoir été déchargé ou corrompu, tentative de réinitialisation...');
+        setInitialized(false);
+      }
+    }, 30000);
+    
+    return () => clearInterval(checkInterval);
+  }, []);
 
   // Composant invisible
   return null;

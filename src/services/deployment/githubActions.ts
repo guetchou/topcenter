@@ -20,6 +20,8 @@ export const triggerWorkflow = async (
     // Construire l'URL de l'API GitHub pour déclencher le workflow
     const url = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflow}/dispatches`;
     
+    console.log(`Déclenchement du workflow: ${url} sur la branche: ${branch}`);
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -37,9 +39,10 @@ export const triggerWorkflow = async (
       return true;
     } else {
       console.error(`Erreur lors du déclenchement du workflow: ${response.status}`);
-      const errorData = await response.json().catch(() => ({}));
+      console.error(`Headers: ${JSON.stringify([...response.headers.entries()])}`);
+      const errorData = await response.text();
       console.error("Détails de l'erreur:", errorData);
-      return false;
+      throw new Error(`Échec du déclenchement du workflow: ${response.status} - ${errorData}`);
     }
   } catch (error) {
     console.error("Erreur lors du déclenchement du workflow GitHub:", error);

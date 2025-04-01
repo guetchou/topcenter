@@ -9,25 +9,38 @@ export const useChatPalStatus = () => {
   useEffect(() => {
     // Vérifier si le script est chargé
     const checkScriptLoaded = () => {
-      if (window.ChatPal) {
-        setIsLoaded(true);
-        return true;
+      try {
+        const isLoaded = typeof window.ChatPal === 'function';
+        console.log(`ChatPal script status: ${isLoaded ? 'loaded' : 'not loaded'}`);
+        setIsLoaded(isLoaded);
+        return isLoaded;
+      } catch (err) {
+        console.error("Erreur lors de la vérification du script ChatPal:", err);
+        return false;
       }
-      return false;
     };
 
     // Vérifier si une instance est déjà initialisée
     const checkInstanceInitialized = () => {
-      if (window.chatPal) {
-        setIsInitialized(true);
-        return true;
+      try {
+        const isInitialized = window.chatPal !== undefined;
+        console.log(`ChatPal instance status: ${isInitialized ? 'initialized' : 'not initialized'}`);
+        setIsInitialized(isInitialized);
+        return isInitialized;
+      } catch (err) {
+        console.error("Erreur lors de la vérification de l'instance ChatPal:", err);
+        return false;
       }
-      return false;
     };
 
     // Première vérification immédiate
-    checkScriptLoaded();
-    checkInstanceInitialized();
+    const scriptLoaded = checkScriptLoaded();
+    const instanceInitialized = checkInstanceInitialized();
+
+    // Si tout est déjà initialisé, pas besoin de vérifications supplémentaires
+    if (scriptLoaded && instanceInitialized) {
+      return;
+    }
 
     // Vérifier périodiquement pour détecter les changements
     const intervalId = setInterval(() => {
@@ -42,9 +55,13 @@ export const useChatPalStatus = () => {
     // Timeout après 15 secondes
     const timeoutId = setTimeout(() => {
       if (!isLoaded) {
-        setError(new Error("Le script ChatPal n'a pas pu être chargé dans le délai imparti"));
+        const errorMsg = "Le script ChatPal n'a pas pu être chargé dans le délai imparti";
+        console.error(errorMsg);
+        setError(new Error(errorMsg));
       } else if (!isInitialized) {
-        setError(new Error("L'instance ChatPal n'a pas pu être initialisée dans le délai imparti"));
+        const errorMsg = "L'instance ChatPal n'a pas pu être initialisée dans le délai imparti";
+        console.error(errorMsg);
+        setError(new Error(errorMsg));
       }
       clearInterval(intervalId);
     }, 15000);

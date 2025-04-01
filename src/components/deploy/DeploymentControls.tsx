@@ -18,11 +18,14 @@ export const DeploymentControls: React.FC<DeploymentControlsProps> = ({
 }) => {
   const handleDeploy = async () => {
     try {
+      toast.info("Démarrage du processus de déploiement");
+      
       await onDeploy();
+      
       toast.success("Déploiement déclenché avec succès");
     } catch (error) {
       console.error("Erreur de déploiement:", error);
-      toast.error("Échec du déploiement");
+      toast.error(`Échec du déploiement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
