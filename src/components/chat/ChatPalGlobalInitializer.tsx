@@ -26,26 +26,32 @@ export const ChatPalGlobalInitializer = () => {
           window.chatPal.destroy();
         }
         
-        // Initialiser manuellement
-        console.log('Initialisation manuelle de ChatPal');
-        setTimeout(() => {
+        // Initialiser avec un délai pour s'assurer que le DOM et les scripts sont prêts
+        const initTimeout = setTimeout(() => {
           try {
-            window.chatPal = new window.ChatPal({
-              embedId: 'HSNNDA8bdXzs', 
-              remoteBaseUrl: 'https://chatappdemo.com/', 
-              version: '8.3'
-            });
-            
-            if (window.chatPal) {
-              console.log('ChatPal initialisé avec succès', window.chatPal);
-              setInitialized(true);
+            if (typeof window !== 'undefined' && window.ChatPal) {
+              window.chatPal = new window.ChatPal({
+                embedId: 'HSNNDA8bdXzs', 
+                remoteBaseUrl: 'https://chatappdemo.com/', 
+                version: '8.3'
+              });
+              
+              if (window.chatPal) {
+                console.log('ChatPal initialisé avec succès', window.chatPal);
+                setInitialized(true);
+              } else {
+                console.error('ChatPal non initialisé correctement');
+              }
             } else {
-              console.error('ChatPal non initialisé correctement');
+              console.error('ChatPal constructor not available in window');
             }
           } catch (innerErr) {
             console.error('Erreur lors de l\'initialisation différée de ChatPal:', innerErr);
           }
-        }, 1000); // Délai pour s'assurer que le DOM est prêt
+        }, 1500); // Délai augmenté pour s'assurer que le DOM est prêt
+        
+        // Nettoyage du timeout si le composant est démonté
+        return () => clearTimeout(initTimeout);
         
       } catch (err) {
         console.error('Erreur lors de l\'initialisation de ChatPal:', err);

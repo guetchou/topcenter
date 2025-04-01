@@ -1,5 +1,5 @@
 
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect, ComponentType } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyInfoSection } from "@/components/sections/CompanyInfoSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -11,18 +11,61 @@ import { AIChatBubble } from "@/components/AIChatBubble";
 import { Footer } from "@/components/Footer";
 import { MainNav } from "@/components/MainNav";
 
-// Lazy loading original sections - avec correction des imports lazy
-const HeroSection = lazy(() => import("@/components/sections/HeroSection").then(module => ({ default: module.default || module })));
-const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection").then(module => ({ default: module.default || module })));
-const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection").then(module => ({ default: module.default || module })));
-const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection").then(module => ({ default: module.TestimonialsSection })));
-const BlogSection = lazy(() => import("@/components/sections/BlogSection").then(module => ({ default: module.BlogSection })));
-const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(module => ({ default: module.TeamSection })));
-const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
-const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
+// Lazy loading with proper typing for React components
+const HeroSection = lazy(() => 
+  import("@/components/sections/HeroSection").then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
+);
 
-// Lazy loading new sections - avec correction de l'import lazy
-const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection").then(module => ({ default: module.default || module })));
+const ServicesSection = lazy(() => 
+  import("@/components/sections/FeaturesSection").then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
+);
+
+const CallToActionSection = lazy(() => 
+  import("@/components/sections/CallToActionSection").then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
+);
+
+const TestimonialsSection = lazy(() => 
+  import("@/components/sections/TestimonialsSection").then(module => ({ 
+    default: module.TestimonialsSection as ComponentType<any> 
+  }))
+);
+
+const BlogSection = lazy(() => 
+  import("@/components/sections/BlogSection").then(module => ({ 
+    default: module.BlogSection as ComponentType<any> 
+  }))
+);
+
+const TeamSection = lazy(() => 
+  import("@/components/sections/TeamSection").then(module => ({ 
+    default: module.TeamSection as ComponentType<any> 
+  }))
+);
+
+const PartnersSection = lazy(() => 
+  import("@/components/sections/PartnersSection").then(module => ({ 
+    default: module.PartnersSection as ComponentType<any> 
+  }))
+);
+
+const SocialMediaSection = lazy(() => 
+  import("@/components/sections/SocialMediaSection").then(module => ({ 
+    default: module.SocialMediaSection as ComponentType<any> 
+  }))
+);
+
+// New hero section with proper typing
+const NewHeroSection = lazy(() => 
+  import("@/components/sections/NewHeroSection").then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
+);
 
 // Enhanced fallback with more contextual information
 const Fallback = ({ size = "lg", label = "Chargement" }: { size?: "sm" | "lg", label?: string }) => (

@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, ComponentType } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageLoader from "@/components/PageLoader";
 import { ScrollToTop } from './components/ScrollToTop';
@@ -9,17 +9,23 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { Helmet } from 'react-helmet-async';
 import { ChatPalGlobalInitializer } from './components/chat/ChatPalGlobalInitializer';
 
-// Lazy load pages with proper error handling
+// Correctly typed lazy loading with proper handling of default exports
 const DeploymentDashboard = React.lazy(() => 
-  import('./pages/DeploymentDashboard').then(module => ({ default: module.default || module }))
+  import('./pages/DeploymentDashboard').then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
 );
 
 const Index = React.lazy(() => 
-  import('./pages/Index').then(module => ({ default: module.default || module }))
+  import('./pages/Index').then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
 );
 
 const AdminRoutes = React.lazy(() => 
-  import('./components/routes/AdminRoutes').then(module => ({ default: module.default || module }))
+  import('./components/routes/AdminRoutes').then(module => ({ 
+    default: module.default as ComponentType<any> 
+  }))
 );
 
 function NewApp() {
