@@ -3,8 +3,8 @@
 
 // Extension de Window pour ChatPal
 interface Window {
-  ChatPal?: any;
-  chatPal?: any;
+  ChatPal: any;
+  chatPal: any;
 }
 
 // Compatibilité avec les imports de modules sans types
