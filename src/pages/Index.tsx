@@ -1,71 +1,27 @@
 
-import { lazy, Suspense, useState, useEffect, ComponentType } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { Spinner } from "@/components/ui/spinner";
 import { CompanyInfoSection } from "@/components/sections/CompanyInfoSection";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { shouldUseNewDesign } from "@/lib/designUtils";
 import { DesignToggle } from "@/components/DesignToggle";
+import { useInView } from "react-intersection-observer";
 import { NewsHighlightSection } from "@/components/sections/NewsHighlightSection";
 import { MapLocation } from "@/components/sections/about/MapLocation";
-import { AIChatBubble } from "@/components/AIChatBubble";
-import { Footer } from "@/components/Footer";
-import { MainNav } from "@/components/MainNav";
 
-// Lazy loading with proper typing for React components
-const HeroSection = lazy(() => 
-  import("@/components/sections/HeroSection").then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
+// Lazy loading original sections
+const HeroSection = lazy(() => import("@/components/sections/HeroSection"));
+const ServicesSection = lazy(() => import("@/components/sections/FeaturesSection"));
+const CallToActionSection = lazy(() => import("@/components/sections/CallToActionSection"));
+const TestimonialsSection = lazy(() => import("@/components/sections/TestimonialsSection").then(module => ({ default: module.TestimonialsSection })));
+const BlogSection = lazy(() => import("@/components/sections/BlogSection").then(module => ({ default: module.BlogSection })));
+const TeamSection = lazy(() => import("@/components/sections/TeamSection").then(module => ({ default: module.TeamSection })));
+const PartnersSection = lazy(() => import("@/components/sections/PartnersSection").then(module => ({ default: module.PartnersSection })));
+const SocialMediaSection = lazy(() => import("@/components/sections/SocialMediaSection").then(module => ({ default: module.SocialMediaSection })));
 
-const ServicesSection = lazy(() => 
-  import("@/components/sections/FeaturesSection").then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
-
-const CallToActionSection = lazy(() => 
-  import("@/components/sections/CallToActionSection").then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
-
-const TestimonialsSection = lazy(() => 
-  import("@/components/sections/TestimonialsSection").then(module => ({ 
-    default: module.TestimonialsSection as ComponentType<any> 
-  }))
-);
-
-const BlogSection = lazy(() => 
-  import("@/components/sections/BlogSection").then(module => ({ 
-    default: module.BlogSection as ComponentType<any> 
-  }))
-);
-
-const TeamSection = lazy(() => 
-  import("@/components/sections/TeamSection").then(module => ({ 
-    default: module.TeamSection as ComponentType<any> 
-  }))
-);
-
-const PartnersSection = lazy(() => 
-  import("@/components/sections/PartnersSection").then(module => ({ 
-    default: module.PartnersSection as ComponentType<any> 
-  }))
-);
-
-const SocialMediaSection = lazy(() => 
-  import("@/components/sections/SocialMediaSection").then(module => ({ 
-    default: module.SocialMediaSection as ComponentType<any> 
-  }))
-);
-
-// New hero section with proper typing
-const NewHeroSection = lazy(() => 
-  import("@/components/sections/NewHeroSection").then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
+// Lazy loading new sections
+const NewHeroSection = lazy(() => import("@/components/sections/NewHeroSection"));
 
 // Enhanced fallback with more contextual information
 const Fallback = ({ size = "lg", label = "Chargement" }: { size?: "sm" | "lg", label?: string }) => (
@@ -79,31 +35,38 @@ const Fallback = ({ size = "lg", label = "Chargement" }: { size?: "sm" | "lg", l
   </div>
 );
 
-// Section component without intersection observer
+// Intersection Observer component to lazy load when in viewport
 const LazySection = ({ 
   children, 
   fallbackHeight = "50vh",
-  id
+  id,
+  threshold = 0.1
 }: { 
   children: React.ReactNode,
   fallbackHeight?: string,
-  id: string
+  id: string,
+  threshold?: number
 }) => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold
+  });
   const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    // Simulate loading effect
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+    if (inView && !isLoaded) {
+      setIsLoaded(true);
+    }
+  }, [inView, isLoaded]);
 
   return (
     <div 
+      ref={ref} 
       id={id} 
       style={{ minHeight: isLoaded ? 'auto' : fallbackHeight }}
       className="relative"
     >
-      {isLoaded ? (
+      {(inView || isLoaded) ? (
         <ErrorBoundary>
           <Suspense fallback={<Fallback label={`Chargement de la section ${id}`} />}>
             {children}
@@ -122,18 +85,26 @@ const LazySection = ({
 const Index = () => {
   // Determine which sections to use (old or new design)
   const useNewHero = shouldUseNewDesign('hero');
+  const useNewServices = shouldUseNewDesign('services');
+  const useNewTestimonials = shouldUseNewDesign('testimonials');
 
   return (
     <>
-      <header>
+      <Helmet>
         <title>TopCenter - Centre d'Appels Professionnel au Congo</title>
         <meta
           name="description"
           content="TopCenter, votre partenaire en solutions de centre d'appels et services clients personnalisés en République du Congo et Afrique centrale. Service client optimisé et technologie de pointe."
         />
-      </header>
-
-      <MainNav />
+        <meta name="keywords" content="centre d'appels, service client, Congo, Brazzaville, relation client, télémarketing, BPO, outsourcing" />
+        <meta property="og:title" content="TopCenter - Centre d'Appels Professionnel" />
+        <meta property="og:description" content="Solutions innovantes de centre d'appels et service client en République du Congo" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://topcenter.cg" />
+        <meta property="og:image" content="/public/lovable-uploads/logo-topcenter.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <link rel="canonical" href="https://topcenter.cg" />
+      </Helmet>
 
       <main>
         <ErrorBoundary>
@@ -186,12 +157,7 @@ const Index = () => {
         
         {/* Design toggle for development */}
         {process.env.NODE_ENV !== 'production' && <DesignToggle />}
-        
-        {/* ChatterPal Integration */}
-        <AIChatBubble />
       </main>
-      
-      <Footer />
     </>
   );
 };

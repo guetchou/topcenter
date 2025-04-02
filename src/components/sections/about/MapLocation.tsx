@@ -1,29 +1,95 @@
 
-import { Card, CardContent } from '@/components/ui/card';
-import { LazyImage } from '@/components/ui/lazy-image';
+import { useEffect, useRef, useState } from 'react';
+import mapboxgl from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { LazyImage } from '@/components/ui/lazy-image';
 
 export const MapLocation = () => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!mapContainer.current) return;
+
+    // Initialisation de la carte avec Mapbox
+    // Nous utilisons un token public générique pour la démo
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYW1iYW5ndWUtZ2VuIiwiYSI6ImNtOGFzdHRhNTBzeTcyaXFhajhuZjUyb3YifQ.7Q7th2FU4FmPRfJCzPnuMw';
+    
+    if (map.current) return; // Éviter la réinitialisation
+
+    // Coordonnées précises de Brazzaville comme un tuple [longitude, latitude]
+    const brazzavilleCoordinates: [number, number] = [15.2772, -4.2674];
+
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v12', // Style plus détaillé
+      center: brazzavilleCoordinates,
+      zoom: 14,
+      pitch: 40, // Angle d'inclinaison pour un rendu 3D
+      bearing: 20, // Légère rotation
+      attributionControl: false // Masquer les attributions par défaut
+    });
+
+    // Ajouter un marker personnalisé
+    const markerElement = document.createElement('div');
+    markerElement.className = 'custom-marker';
+    markerElement.innerHTML = `
+      <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center animate-pulse">
+        <div class="w-4 h-4 bg-white rounded-full"></div>
+      </div>
+    `;
+
+    new mapboxgl.Marker(markerElement)
+      .setLngLat(brazzavilleCoordinates)
+      .setPopup(
+        new mapboxgl.Popup({ offset: 25 })
+          .setHTML('<h3 class="text-base font-bold">TopCenter</h3><p>Centre d\'Appels Professionnels</p>')
+      )
+      .addTo(map.current);
+
+    // Ajouter des contrôles de navigation améliorés
+    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    map.current.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+    
+    // Activer le terrain 3D si disponible
+    map.current.on('style.load', () => {
+      map.current?.setFog({
+        color: 'rgb(255, 255, 255)',
+        'high-color': 'rgb(200, 200, 225)',
+        'horizon-blend': 0.2
+      });
+      
+      setLoaded(true);
+    });
+
+    return () => {
+      map.current?.remove();
+      map.current = null;
+    };
+  }, []);
+
   return (
     <div className="mb-16 space-y-6">
       <h3 className="text-2xl font-bold text-center mb-8">Localisation & Contact</h3>
       
       <div className="flex flex-col md:flex-row gap-8">
         <div className="flex-1">
-          {/* Carte Google Maps selon la demande exacte du client */}
-          <div className="w-full h-[400px] rounded-lg shadow-lg overflow-hidden relative">
-            <iframe 
-              src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3978.7452630686616!2d15.276011375048!3d-4.269680096165313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1stopcenter!5e0!3m2!1sfr!2scg!4v1743583739088!5m2!1sfr!2scg" 
-              width="100%" 
-              height="100%" 
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy" 
-              referrerPolicy="no-referrer-when-downgrade"
-              title="TopCenter Location on Google Maps"
-              className="w-full h-full"
-            />
+          {/* Carte interactive principale */}
+          <div 
+            className="w-full h-[400px] rounded-lg shadow-lg overflow-hidden relative"
+          >
+            <div ref={mapContainer} className="w-full h-full" />
+            
+            {/* Overlay de chargement */}
+            {!loaded && (
+              <div className="absolute inset-0 bg-card/80 flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
           </div>
         </div>
         
@@ -72,8 +138,21 @@ export const MapLocation = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Fallback Google Maps iframe pour les navigateurs plus anciens */}
+      <div className="w-full h-[400px] rounded-lg shadow-lg overflow-hidden mt-8 md:hidden">
+        <iframe 
+          src="https://www.google.com/maps/embed?pb=!1m16!1m12!1m3!1d3978.745263068652!2d15.276011375048!3d-4.269680096165313!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!2m1!1stopcenter%20!5e0!3m2!1sfr!2scg!4v1740498139400!5m2!1sfr!2scg" 
+          width="100%" 
+          height="100%" 
+          style={{ border: 0 }}
+          allowFullScreen 
+          loading="lazy" 
+          referrerPolicy="no-referrer-when-downgrade"
+          className="w-full h-full"
+          title="TopCenter Location on Google Maps"
+        />
+      </div>
     </div>
   );
 };
-
-export default MapLocation;

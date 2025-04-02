@@ -1,42 +1,24 @@
 
-<!doctype html>
-<html lang="fr">
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#1976d2" />
-    <meta name="description" content="TopCenter - Centre d'appels professionnel au Congo" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <title>TopCenter Hub</title>
+    <meta name="description" content="TopCenter Hub - Centre d'appel et solutions digitales" />
+    <link rel="apple-touch-icon" href="/favicon.ico" />
     <link rel="manifest" href="/manifest.json" />
-    
-    <!-- ChatPal Script avec intégrité et attributs de sécurité -->
-    <script type="text/javascript" src="https://chatappdemo.com/build/js/chatpal.js?8.3" 
-      integrity="sha384-+YIWcPZjPZYuhrEm13vJJg76TIO/g7y5B14VE35zhQdrojfD9dPemo7q6vnH44FR" 
-      crossorigin="anonymous" 
-      data-cfasync="false">
-    </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-          try {
-            window.chatPal = new ChatPal({
-              embedId: 'HSNNDA8bdXzs', 
-              remoteBaseUrl: 'https://chatappdemo.com/', 
-              version: '8.3'
-            });
-            console.log("ChatPal initialisé avec succès depuis index.html");
-          } catch (error) {
-            console.error("Erreur lors de l'initialisation de ChatPal depuis index.html:", error);
-          }
-        }, 2000); // Attendre 2 secondes après le chargement du DOM
-      });
-    </script>
-    
-    <title>TopCenter - Centre d'Appels Professionnel au Congo</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- ChatterPal Integration -->
+    <script type="text/javascript" src="https://chatappdemo.com/build/js/chatpal.js?8.3" integrity="sha384-+YIWcPZjPZYuhrEm13vJJg76TIO/g7y5B14VE35zhQdrojfD9dPemo7q6vnH44FR" crossorigin="anonymous" data-cfasync="false"></script>
   </head>
   <body>
     <div id="root"></div>
+    <!-- Add Lovable script tag for the "Select" feature -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

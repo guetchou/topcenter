@@ -2,23 +2,21 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Message } from '@/types/chat';
 import { ChatAdapterInterface } from '../types/adapterTypes';
-import { initPocketBase } from '@/integrations/pocketbase/client';
+import { pb } from '@/integrations/pocketbase/client';
 
 export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
   private messageCallback?: (message: Message) => void;
   private connected: boolean = false;
   private unsubscribeFunc: (() => void) | null = null;
-  private pb: any;
 
   constructor() {
     // Initialize PocketBase connection
-    this.pb = initPocketBase();
   }
 
   async connect(): Promise<boolean> {
     try {
       // Check if PocketBase is accessible
-      await this.pb.health.check();
+      await pb.health.check();
       this.connected = true;
       
       // Subscribe to realtime updates for new messages
@@ -50,7 +48,7 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
       };
 
       // Save message to PocketBase
-      const savedMessage = await this.pb.collection('chat_messages').create({
+      const savedMessage = await pb.collection('chat_messages').create({
         content,
         sender: 'user',
         timestamp: new Date().toISOString(),
@@ -78,7 +76,7 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
   async getMessages(): Promise<Message[]> {
     try {
       // Fetch messages from PocketBase
-      const records = await this.pb.collection('chat_messages').getList(1, 50, {
+      const records = await pb.collection('chat_messages').getList(1, 50, {
         sort: 'timestamp',
       });
 
@@ -103,7 +101,7 @@ export class PocketBaseProvider implements Partial<ChatAdapterInterface> {
   private async subscribeToMessages() {
     try {
       // Subscribe to the collection
-      const subscription = await this.pb.collection('chat_messages').subscribe('*', (data) => {
+      const subscription = await pb.collection('chat_messages').subscribe('*', (data) => {
         if (data.action === 'create' && data.record.sender !== 'user' && this.messageCallback) {
           // Convert PocketBase record to Message format
           const message: Message = {

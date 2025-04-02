@@ -1,58 +1,47 @@
 
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Navigate, Routes, Route } from "react-router-dom";
+import { AdminDashboard } from "@/pages/admin/Dashboard";
+import { SettingsPage } from "@/pages/admin/settings/SettingsPage";
+import { CMSLayout } from "@/pages/admin/CMSLayout";
+import UserManagement from "@/pages/admin/UserManagement";
+import { UserCredentialsPage } from "@/pages/admin/settings/UserCredentialsPage";
+import { CredentialsDocPage } from "@/pages/admin/CredentialsDocPage";
+import DeployDashboard from "@/pages/DeployDashboard";
+import ChatBotsSettingsPage from "@/pages/admin/settings/ChatBotsSettingsPage";
+import NewsManagementPage from "@/pages/admin/news/NewsManagementPage";
+import NewsEditorPage from "@/pages/admin/news/NewsEditorPage";
+import NewsCollaboratorsPage from "@/pages/admin/news/NewsCollaboratorsPage";
+import PocketBaseTestPage from "@/pages/admin/PocketBaseTest";
+import PocketBaseDashboard from "@/pages/admin/PocketBaseDashboard";
+import { useAuth } from "@/hooks/useAuth";
 
-const AdminDashboard = React.lazy(() => import('@/pages/admin/Dashboard'));
-const UserManagement = React.lazy(() => import('@/pages/admin/UserManagement'));
-const ArticlesPage = React.lazy(() => import('@/pages/admin/articles/ArticlesPage'));
-const ArticleEditor = React.lazy(() => import('@/pages/admin/articles/ArticleEditor'));
-const CategoriesPage = React.lazy(() => import('@/pages/admin/categories/CategoriesPage'));
-const MediasPage = React.lazy(() => import('@/pages/admin/medias/MediasPage'));
-const NewsManagementPage = React.lazy(() => import('@/pages/admin/news/NewsManagementPage'));
-const NewsEditorPage = React.lazy(() => import('@/pages/admin/news/NewsEditorPage'));
-const NewsCollaboratorsPage = React.lazy(() => import('@/pages/admin/news/NewsCollaboratorsPage'));
-const MenusPage = React.lazy(() => import('@/pages/admin/menus/MenusPage'));
-const SettingsPage = React.lazy(() => import('@/pages/admin/settings/SettingsPage'));
-const UserCredentialsPage = React.lazy(() => import('@/pages/admin/settings/UserCredentialsPage'));
-const ChatBotsSettingsPage = React.lazy(() => import('@/pages/admin/settings/ChatBotsSettingsPage'));
-const CMSLayout = React.lazy(() => import('@/pages/admin/CMSLayout'));
-const CredentialsDocPage = React.lazy(() => import('@/pages/admin/CredentialsDocPage'));
-const DatabaseConnection = React.lazy(() => import('@/pages/admin/DatabaseConnection'));
-const DatabaseMigration = React.lazy(() => import('@/pages/admin/DatabaseMigration'));
-const DatabaseExplorerPage = React.lazy(() => import('@/pages/admin/DatabaseExplorerPage'));
-const DeploymentDashboard = React.lazy(() => import('@/pages/DeploymentDashboard'));
-const PocketBaseTest = React.lazy(() => import('@/pages/admin/PocketBaseTest'));
-const PocketBaseDashboard = React.lazy(() => import('@/pages/admin/PocketBaseDashboard'));
+export const AdminRoutes = () => {
+  const { user, isAuthenticated } = useAuth();
+  
+  // Vérifier que l'utilisateur est authentifié et a le rôle d'administrateur
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to="/login" replace />;
+  }
 
-const AdminRoutes = () => {
   return (
     <Routes>
-      <Route path="dashboard" element={<AdminDashboard />} />
-      <Route path="users" element={<UserManagement />} />
-      <Route path="cms" element={<CMSLayout />} />
-      <Route path="articles" element={<ArticlesPage />} />
-      <Route path="articles/new" element={<ArticleEditor />} />
-      <Route path="articles/:id" element={<ArticleEditor />} />
-      <Route path="categories" element={<CategoriesPage />} />
-      <Route path="medias" element={<MediasPage />} />
-      <Route path="news" element={<NewsManagementPage />} />
-      <Route path="news/new" element={<NewsEditorPage />} />
-      <Route path="news/:id" element={<NewsEditorPage />} />
-      <Route path="news/collaborators" element={<NewsCollaboratorsPage />} />
-      <Route path="menus" element={<MenusPage />} />
-      <Route path="settings" element={<SettingsPage />} />
-      <Route path="settings/users" element={<UserCredentialsPage />} />
-      <Route path="settings/chatbots" element={<ChatBotsSettingsPage />} />
-      <Route path="credentials" element={<CredentialsDocPage />} />
-      <Route path="database-connection" element={<DatabaseConnection />} />
-      <Route path="database-migration" element={<DatabaseMigration />} />
-      <Route path="database-explorer" element={<DatabaseExplorerPage />} />
-      <Route path="pocketbase-test" element={<PocketBaseTest />} />
-      <Route path="pocketbase-dashboard" element={<PocketBaseDashboard />} />
-      <Route path="deploy" element={<DeploymentDashboard />} />
-      <Route path="*" element={<Navigate to="dashboard" replace />} />
+      <Route element={<CMSLayout />}>
+        <Route path="/" element={<AdminDashboard />} />
+        <Route path="/dashboard" element={<AdminDashboard />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/users" element={<UserManagement />} />
+        <Route path="/credentials" element={<UserCredentialsPage />} />
+        <Route path="/credentials/docs" element={<CredentialsDocPage />} />
+        <Route path="/deploy" element={<DeployDashboard />} />
+        <Route path="/chatbots" element={<ChatBotsSettingsPage />} />
+        <Route path="/pocketbase-test" element={<PocketBaseTestPage />} />
+        <Route path="/pocketbase" element={<PocketBaseDashboard />} />
+        {/* Routes de gestion des actualités */}
+        <Route path="/news" element={<NewsManagementPage />} />
+        <Route path="/news/create" element={<NewsEditorPage />} />
+        <Route path="/news/edit/:id" element={<NewsEditorPage />} />
+        <Route path="/news/collaborators/:id" element={<NewsCollaboratorsPage />} />
+      </Route>
     </Routes>
   );
 };
-
-export default AdminRoutes;

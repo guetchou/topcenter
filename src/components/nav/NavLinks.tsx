@@ -1,6 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { FormattedMessage } from "react-intl";
 import { AnimationSequence } from "../AnimationWrapper";
 
 // Modern interface for navigation links
@@ -41,7 +42,10 @@ export function NavLinks() {
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {item.defaultMessage}
+            <FormattedMessage
+              id={item.id}
+              defaultMessage={item.defaultMessage}
+            />
           </Link>
         ))}
       </AnimationSequence>

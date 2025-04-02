@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Phone, Globe, Shield, Headphones, Users, Clock } from "lucide-react";
 
 const services = [
@@ -39,7 +39,7 @@ export const ServiceViewer3D = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <div className="relative py-20">
+    <div className="relative py-20 perspective-1000">
       <div className="container">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Nos Services en Détail</h2>
@@ -51,13 +51,14 @@ export const ServiceViewer3D = () => {
           {services.map((service, index) => {
             const Icon = service.icon;
             return (
-              <div
+              <motion.div
                 key={index}
-                className={`p-6 rounded-xl transition-all duration-300 hover:scale-105 ${
+                className={`p-6 rounded-xl backdrop-blur-md ${
                   activeIndex === index
                     ? "bg-gradient-to-br from-primary/20 to-secondary/20"
                     : "bg-white/10"
                 }`}
+                whileHover={{ scale: 1.05, rotateY: 10 }}
                 onClick={() => setActiveIndex(index)}
               >
                 <Icon className="w-12 h-12 mb-4 text-primary" />
@@ -65,7 +66,7 @@ export const ServiceViewer3D = () => {
                 <p className="text-muted-foreground">
                   {service.description}
                 </p>
-              </div>
+              </motion.div>
             );
           })}
         </div>

@@ -28,8 +28,12 @@ export const PocketBaseAdminTest: React.FC = () => {
     setTestResult('idle');
     
     try {
-      const result = await testPocketBaseConnection();
-      setTestResult(result ? 'success' : 'error');
+      const result = await testPocketBaseConnection('https://api.topcenter.cg');
+      if (result.success) {
+        setTestResult('success');
+      } else {
+        setTestResult('error');
+      }
     } catch (error) {
       console.error('Test error:', error);
       setTestResult('error');

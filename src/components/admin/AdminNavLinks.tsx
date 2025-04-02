@@ -1,58 +1,101 @@
 
 import React from 'react';
-import { LayoutDashboard, Users, FileText, Settings, Database, Layers, Upload, Menu, Webhook, HardDrive } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import {
+  LayoutDashboard,
+  Users,
+  Settings,
+  Key,
+  Rocket,
+  Bot,
+  Newspaper,
+  Database
+} from 'lucide-react';
 
-export const adminLinks = [
-  {
-    to: '/admin/dashboard',
-    icon: <LayoutDashboard className="h-4 w-4" />,
-    label: 'Tableau de bord'
-  },
-  {
-    to: '/admin/users',
-    icon: <Users className="h-4 w-4" />,
-    label: 'Utilisateurs'
-  },
-  {
-    to: '/admin/articles',
-    icon: <FileText className="h-4 w-4" />,
-    label: 'Articles'
-  },
-  {
-    to: '/admin/news',
-    icon: <Layers className="h-4 w-4" />,
-    label: 'Actualités'
-  },
-  {
-    to: '/admin/medias',
-    icon: <Upload className="h-4 w-4" />,
-    label: 'Médias'
-  },
-  {
-    to: '/admin/menus',
-    icon: <Menu className="h-4 w-4" />,
-    label: 'Menus'
-  },
-  {
-    to: '/admin/database-connection',
-    icon: <Database className="h-4 w-4" />,
-    label: 'Connexion BDD'
-  },
-  {
-    to: '/admin/database-migration',
-    icon: <HardDrive className="h-4 w-4" />,
-    label: 'Migration Infomaniak'
-  },
-  {
-    to: '/deploy',
-    icon: <Webhook className="h-4 w-4" />,
-    label: 'Déploiement'
-  },
-  {
-    to: '/admin/settings',
-    icon: <Settings className="h-4 w-4" />,
-    label: 'Paramètres'
-  }
-];
+export interface AdminNavLinksProps {
+  closeMobileMenu?: () => void;
+}
 
-export default adminLinks;
+export const AdminNavLinks: React.FC<AdminNavLinksProps> = ({
+  closeMobileMenu = () => {},
+}) => {
+  const isActiveClass = ({ isActive }: { isActive: boolean }) =>
+    cn(
+      'flex items-center gap-3 rounded-lg px-3 py-2 transition-all',
+      isActive
+        ? 'bg-primary text-primary-foreground'
+        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+    );
+
+  return (
+    <nav className="space-y-1">
+      <NavLink
+        to="/admin/dashboard"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <LayoutDashboard className="h-5 w-5" />
+        <span>Dashboard</span>
+      </NavLink>
+      <NavLink
+        to="/admin/users"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Users className="h-5 w-5" />
+        <span>Utilisateurs</span>
+      </NavLink>
+      <NavLink
+        to="/admin/settings"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Settings className="h-5 w-5" />
+        <span>Paramètres</span>
+      </NavLink>
+      <NavLink
+        to="/admin/credentials"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Key className="h-5 w-5" />
+        <span>Identifiants</span>
+      </NavLink>
+      <NavLink
+        to="/admin/deploy"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Rocket className="h-5 w-5" />
+        <span>Déploiement</span>
+      </NavLink>
+      <NavLink
+        to="/admin/chatbots"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Bot className="h-5 w-5" />
+        <span>Chatbots</span>
+      </NavLink>
+      <NavLink
+        to="/admin/news"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Newspaper className="h-5 w-5" />
+        <span>Actualités</span>
+      </NavLink>
+      <NavLink
+        to="/admin/pocketbase"
+        className={isActiveClass}
+        onClick={closeMobileMenu}
+      >
+        <Database className="h-5 w-5" />
+        <span>PocketBase</span>
+      </NavLink>
+    </nav>
+  );
+};
+
+export default AdminNavLinks;

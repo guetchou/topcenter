@@ -1,23 +1,17 @@
 
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { DeploymentStepStatus } from '@/hooks/useDeployment';
+import { DeploymentStatus } from './DeploymentStep';
 
 interface DeploymentProgressProps {
-  steps: Array<{ status: DeploymentStepStatus }>;
+  steps: Array<{ status: DeploymentStatus }>;
 }
 
 export const DeploymentProgress = ({ steps }: DeploymentProgressProps) => {
   // Calculate the progress percentage
   const calculateProgress = () => {
-    if (steps.length === 0) return 0;
-    
     const completedSteps = steps.filter(step => step.status === 'completed').length;
-    const inProgressSteps = steps.filter(step => step.status === 'in-progress').length;
-    
-    // Count in-progress steps as half completed
-    const completionValue = completedSteps + (inProgressSteps * 0.5);
-    return Math.round((completionValue / steps.length) * 100);
+    return Math.round((completedSteps / steps.length) * 100);
   };
 
   const progress = calculateProgress();

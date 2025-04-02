@@ -1,16 +1,11 @@
-name: 🚀 Déploiement sur Infomaniak
+
+name: 🚀 Déploiement Infomaniak
 
 on:
   push:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      migrate_db:
-        description: 'Exécuter la migration de la base de données'
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   deploy:
@@ -37,67 +32,16 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
-          VITE_POCKETBASE_URL: ${{ secrets.VITE_POCKETBASE_URL }}
-          VITE_DB_HOST: ${{ secrets.DB_HOST }}
-          VITE_DB_PORT: ${{ secrets.DB_PORT }}
-          VITE_DB_USER: ${{ secrets.DB_USER }}
-          VITE_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          VITE_DB_NAME: ${{ secrets.DB_NAME }}
-          VITE_DB_SSL: ${{ secrets.DB_SSL }}
-
-      - name: 🗃️ Exécuter les migrations de base de données
-        if: github.event.inputs.migrate_db == 'true'
-        run: |
-          echo "Exécution des migrations de base de données..."
-          # Utilisation de mysql client pour exécuter les scripts SQL
-          mysql -h ${{ secrets.DB_HOST }} -P ${{ secrets.DB_PORT }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} < ./backend/db-init/01-schema.sql
-          mysql -h ${{ secrets.DB_HOST }} -P ${{ secrets.DB_PORT }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} < ./backend/db-init/02-feature-tables.sql
-          mysql -h ${{ secrets.DB_HOST }} -P ${{ secrets.DB_PORT }} -u ${{ secrets.DB_USER }} -p${{ secrets.DB_PASSWORD }} ${{ secrets.DB_NAME }} < ./backend/db-init/03-default-users.sql
-          echo "Migrations terminées avec succès."
-        continue-on-error: true
 
       - name: 📤 Déploiement via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
           server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
           local-dir: ./dist/
-          server-dir: /home/clients/182ddf0dfc453b3faeaee042d1660720/sites/
+          server-dir: /www/
           dangerous-clean-slate: true
-
-      - name: 🔧 Déployer la configuration du serveur
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./server-config/
-          server-dir: /home/clients/182ddf0dfc453b3faeaee042d1660720/config/
-          dangerous-clean-slate: false
-
-      - name: 📦 Déployer le backend
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./backend/
-          server-dir: /home/clients/182ddf0dfc453b3faeaee042d1660720/api/
-          dangerous-clean-slate: false
-          exclude: |
-            node_modules/**
-            tests/**
-            *.log
-
-      - name: 📨 Notification webhook
-        if: success()
-        run: |
-          curl -X POST ${{ secrets.DEPLOY_WEBHOOK_URL }} \
-            -H 'Content-Type: application/json' \
-            -d '{"status":"success","commit":"'$GITHUB_SHA'","branch":"'$GITHUB_REF_NAME'","time":"'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"}'
-        continue-on-error: true
 
       - name: ✅ Notification de déploiement
         run: echo "Déploiement terminé avec succès!"

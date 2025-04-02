@@ -1,90 +1,108 @@
 
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const bodyParser = require('body-parser');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const path = require('path');
-const fs = require('fs');
-const morgan = require('morgan');
-const dotenv = require('dotenv');
 const { createConnection } = require('./db/connection');
-const logger = require('./utils/logger');
-
-dotenv.config();
-
-// Import routes
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
-const chatRoutes = require('./routes/chat');
-const adminRoutes = require('./routes/admin');
-const newsRoutes = require('./routes/news');
-const articleRoutes = require('./routes/articles');
-const categoryRoutes = require('./routes/categories');
-const menuRoutes = require('./routes/menus');
-const mediaRoutes = require('./routes/medias');
-const systemRoutes = require('./routes/system');
-const uploadRoutes = require('./routes/upload');
-const dbExplorerRouter = require('./routes/db-explorer');
-const dbMigrationRouter = require('./routes/db-migration');
+const logger = require('./utils/logger');
+const featureFlags = require('./utils/featureFlags');
 
-// Initialize the app
+// Initialiser l'application Express
 const app = express();
+const PORT = process.env.PORT || 4000;
 
-// Enable CORS
-app.use(cors());
-
-// Set security HTTP headers
+// Middleware
 app.use(helmet());
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// Limit request rate
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use(limiter);
-
-// Parse JSON request bodies
-app.use(express.json());
-
-// Log HTTP requests
-const logStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' });
-app.use(morgan('combined', { stream: logStream }));
-
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Initialize database connection
-createConnection().then(() => {
-  logger.info('Database connection established');
-}).catch((err) => {
-  logger.error('Failed to connect to the database:', err);
-  process.exit(1); // Exit the process if the database connection fails
+// Logging middleware
+app.use((req, res, next) => {
+  logger.info(`${req.method} ${req.url}`);
+  next();
 });
 
-// Register routes
+// Vérifier la connexion à la base de données
+createConnection()
+  .then(() => {
+    logger.info('Database connection successful');
+  })
+  .catch(err => {
+    logger.error('Database connection failed:', err);
+  });
+
+// Feature flags middleware
+app.use(featureFlags.middleware);
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/news', newsRoutes);
-app.use('/api/articles', articleRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/menus', menuRoutes);
-app.use('/api/medias', mediaRoutes);
-app.use('/api/system', systemRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/db-explorer', dbExplorerRouter);
-app.use('/api/db-migration', dbMigrationRouter);
 
-// Error handling middleware
+// Ajouter les routes conditionnelles basées sur les feature flags
+if (featureFlags.isEnabled('FEATURE_CHATBOT')) {
+  const chatbotRoutes = require('./routes/chatbot');
+  app.use('/api/chatbot', chatbotRoutes);
+  logger.info('Chatbot feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_ANALYTICS')) {
+  const analyticsRoutes = require('./routes/analytics');
+  app.use('/api/analytics', analyticsRoutes);
+  logger.info('Analytics feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_TRANSLATION')) {
+  const translationRoutes = require('./routes/translation');
+  app.use('/api/translation', translationRoutes);
+  logger.info('Translation feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_PREDICTIVE_ANALYTICS')) {
+  const predictiveRoutes = require('./routes/predictive');
+  app.use('/api/predictive', predictiveRoutes);
+  logger.info('Predictive analytics feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_CRM_INTEGRATION')) {
+  const crmRoutes = require('./routes/crm');
+  app.use('/api/crm', crmRoutes);
+  logger.info('CRM integration feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_APPOINTMENT_SYSTEM')) {
+  const appointmentRoutes = require('./routes/appointments');
+  app.use('/api/appointments', appointmentRoutes);
+  logger.info('Appointment system feature enabled');
+}
+
+if (featureFlags.isEnabled('FEATURE_ADMIN_DASHBOARD')) {
+  const adminRoutes = require('./routes/admin');
+  app.use('/api/admin', adminRoutes);
+  logger.info('Admin dashboard feature enabled');
+}
+
+// Servir les fichiers statiques du frontend
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Route fallback pour SPA
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public', 'index.html'));
+});
+
+// Gestionnaire d'erreurs
 app.use((err, req, res, next) => {
   logger.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
-// Start the server
-const port = process.env.PORT || 4000;
-app.listen(port, () => {
-  logger.info(`Server is running on port ${port}`);
+// Démarrer le serveur
+app.listen(PORT, () => {
+  logger.info(`Server running on port ${PORT}`);
 });
+
+module.exports = app;

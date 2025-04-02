@@ -1,41 +1,39 @@
 
-import React from "react";
+import { ReactNode } from "react";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "./ThemeProvider";
+import { HelmetProvider } from "react-helmet-async";
 import { Suspense } from "react";
 import PageLoader from "@/components/PageLoader";
 import { SearchProvider } from "@/contexts/SearchContext";
 import { IntlProviderWrapper } from "@/components/IntlProvider";
 import { Toaster } from "sonner";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { ChatPalInitializer } from "@/components/chat/ChatPalInitializer";
 
-// Configuration simplifiée de QueryClient
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1
-    },
-  },
-});
+// Création d'une instance de QueryClient en dehors du composant
+// pour éviter sa recréation à chaque rendu
+const queryClient = new QueryClient();
 
-export function AppProviders({ children }: { children: React.ReactNode }) {
+interface AppProvidersProps {
+  children: ReactNode;
+}
+
+export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light" storageKey="color-theme">
-          <IntlProviderWrapper>
-            <SearchProvider>
-              <Suspense fallback={<PageLoader />}>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="light" storageKey="color-theme">
+        <IntlProviderWrapper>
+          <SearchProvider>
+            <Suspense fallback={<PageLoader />}>
+              <HelmetProvider>
                 {children}
                 <Toaster position="top-right" richColors closeButton />
-                <ChatPalInitializer />
-              </Suspense>
-            </SearchProvider>
-          </IntlProviderWrapper>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+              </HelmetProvider>
+            </Suspense>
+          </SearchProvider>
+        </IntlProviderWrapper>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }

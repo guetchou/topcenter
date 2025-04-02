@@ -1,6 +1,6 @@
 
 import { Outlet, useLocation, Link } from "react-router-dom";
-import Sidebar from "@/components/admin/Sidebar";
+import { Sidebar } from "@/components/admin/Sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
@@ -119,5 +119,3 @@ export const CMSLayout = () => {
     </div>
   );
 };
-
-export default CMSLayout;

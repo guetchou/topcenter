@@ -1,130 +1,199 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useContext, useEffect, useState } from 'react';
+import api from '@/services/api';
 import { toast } from 'sonner';
-import apiClient from '@/services/api';
+import { UserRole } from '@/types/auth';
 
 interface User {
   id: string;
   email: string;
-  fullName: string;
-  role: string;
+  role: UserRole;
+  profile: any;
 }
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  register: (userData: any) => Promise<boolean>;
+  profile: any | null;
+  isAdmin: boolean;
+  isSuperAdmin: boolean;
+  userRole: UserRole | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  updatePassword: (password: string, token: string) => Promise<void>;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const [profile, setProfile] = useState<any | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    // Initialize the session
+    const initSession = async () => {
+      setLoading(true);
       try {
-        setIsLoading(true);
-        const storedUser = localStorage.getItem('user');
-        
-        if (storedUser) {
-          // Valider la session côté serveur
-          const sessionResponse = await apiClient.auth.checkSession();
-          
-          if (sessionResponse.authenticated) {
-            setUser(JSON.parse(storedUser));
-          } else {
-            // Session expirée, nettoyer le stockage local
-            localStorage.removeItem('user');
-            localStorage.removeItem('authToken');
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+          try {
+            const response = await api.get('/auth/me');
+            const userData = response.data.user;
+            
+            if (userData && userData.id) {
+              setUser(userData);
+              setProfile(userData.profile || null);
+              setUserRole(userData.role as UserRole || null);
+            } else {
+              // Invalid user data
+              localStorage.removeItem('auth_token');
+              setUser(null);
+            }
+          } catch (error) {
+            console.error("Error initializing session:", error);
+            localStorage.removeItem('auth_token');
             setUser(null);
           }
         }
       } catch (error) {
-        console.error('Error checking auth status:', error);
-        // En cas d'erreur, supposer que l'utilisateur n'est pas authentifié
-        localStorage.removeItem('user');
-        localStorage.removeItem('authToken');
-        setUser(null);
+        console.error("Error initializing session:", error);
+        localStorage.removeItem('auth_token');
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    
-    checkAuthStatus();
+
+    initSession();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const signIn = async (email: string, password: string) => {
     try {
-      setIsLoading(true);
-      const response = await apiClient.auth.login({ email, password });
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user: userData } = response.data;
       
-      if (response.user && response.token) {
-        // Stocker les informations d'authentification
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('authToken', response.token);
-        setUser(response.user);
-        
-        toast.success(`Bienvenue, ${response.user.fullName}`);
-        return true;
-      } else {
-        toast.error('Identifiants incorrects');
-        return false;
+      if (!userData || !userData.id) {
+        throw new Error("Invalid user data received");
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      toast.error('Échec de la connexion');
-      return false;
-    } finally {
-      setIsLoading(false);
+      
+      localStorage.setItem('auth_token', token);
+      setUser(userData);
+      setProfile(userData.profile || null);
+      setUserRole(userData.role || null);
+      
+      toast.success("Connexion réussie");
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast.error(error.response?.data?.message || "Impossible de se connecter");
+      throw error;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('authToken');
-    setUser(null);
-    navigate('/login');
-    toast.info('Vous avez été déconnecté');
-  };
-
-  const register = async (userData: any): Promise<boolean> => {
+  const signInWithGoogle = async () => {
     try {
-      setIsLoading(true);
-      const response = await apiClient.auth.register(userData);
-      
-      if (response.success) {
-        toast.success('Inscription réussie. Vous pouvez maintenant vous connecter.');
-        navigate('/login');
-        return true;
-      } else {
-        toast.error(response.message || 'Échec de l\'inscription');
-        return false;
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      toast.error('Échec de l\'inscription');
-      return false;
-    } finally {
-      setIsLoading(false);
+      window.location.href = `${api.defaults.baseURL}/auth/google`;
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      toast.error("Impossible de se connecter avec Google");
+      throw error;
     }
   };
+
+  const signUp = async (email: string, password: string, fullName: string) => {
+    try {
+      const response = await api.post('/auth/register', {
+        email,
+        password,
+        fullName
+      });
+      
+      const { token, user: userData } = response.data;
+      
+      if (!userData || !userData.id) {
+        throw new Error("Invalid user data received");
+      }
+      
+      localStorage.setItem('auth_token', token);
+      setUser(userData);
+      setProfile(userData.profile || null);
+      setUserRole(userData.role || null);
+      
+      toast.success("Compte créé avec succès");
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      toast.error(error.response?.data?.message || "Impossible de créer le compte");
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      await api.post('/auth/reset-password', { email });
+      toast.success("Email de réinitialisation envoyé");
+    } catch (error: any) {
+      console.error("Password reset error:", error);
+      toast.error(error.response?.data?.message || "Impossible d'envoyer l'email de réinitialisation");
+      throw error;
+    }
+  };
+
+  const updatePassword = async (password: string, token: string) => {
+    try {
+      await api.post('/auth/update-password', {
+        password,
+        token
+      });
+      
+      toast.success("Mot de passe mis à jour");
+    } catch (error: any) {
+      console.error("Password update error:", error);
+      toast.error(error.response?.data?.message || "Impossible de mettre à jour le mot de passe");
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await api.post('/auth/logout');
+      localStorage.removeItem('auth_token');
+      setUser(null);
+      setProfile(null);
+      setUserRole(null);
+      toast.success("Déconnexion réussie");
+    } catch (error: any) {
+      console.error("Logout error:", error);
+      localStorage.removeItem('auth_token');
+      setUser(null);
+      setProfile(null);
+      setUserRole(null);
+      toast.error("Impossible de se déconnecter");
+      throw error;
+    }
+  };
+
+  // Safe check for admin roles
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin';
+  const isSuperAdmin = userRole === 'super_admin';
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        logout,
-        register
+      value={{ 
+        user, 
+        profile,
+        isAdmin,
+        isSuperAdmin,
+        userRole,
+        signIn, 
+        signUp, 
+        signOut, 
+        signInWithGoogle,
+        resetPassword,
+        updatePassword,
+        loading 
       }}
     >
       {children}
@@ -132,12 +201,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = (): AuthContextType => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 };
-
-export default AuthContext;

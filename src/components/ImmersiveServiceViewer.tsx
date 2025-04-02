@@ -2,7 +2,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls, Text, Line, Sphere } from "@react-three/drei";
-import * as THREE from "three";
+import * as THREE from "three"; // Import THREE as a namespace
 import { Spinner } from "@/components/ui/spinner";
 
 interface Node {

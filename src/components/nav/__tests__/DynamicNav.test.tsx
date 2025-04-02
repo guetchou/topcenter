@@ -1,5 +1,5 @@
 
-import { render } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { DynamicNav } from '../DynamicNav';
@@ -47,7 +47,15 @@ describe('DynamicNav', () => {
   });
 
   it('renders navigation', () => {
-    const { getByRole } = render(<DynamicNav />, { wrapper: Wrapper });
-    expect(getByRole('banner')).toBeInTheDocument();
+    render(<DynamicNav />, { wrapper: Wrapper });
+    expect(screen.getByRole('banner')).toBeInTheDocument();
+  });
+
+  it('toggles mobile menu when burger button is clicked', () => {
+    render(<DynamicNav />, { wrapper: Wrapper });
+    const burgerButton = screen.getByLabelText('Menu');
+    fireEvent.click(burgerButton);
+    // Test that the menu is opened
+    expect(document.querySelector('[role="dialog"]')).toBeInTheDocument();
   });
 });

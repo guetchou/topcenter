@@ -1,22 +1,62 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import NewApp from './NewApp';
-import { AppProviders } from './providers/AppProviders';
-import './index.css';
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App.tsx'
+import './index.css'
+import './lib/accessibilityStyles.css'
+import { AppProviders } from './providers/AppProviders.tsx'
+import { toast } from 'sonner'
 
-// Récupération de l'élément racine et assertion de son existence
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  console.error('Élément racine non trouvé dans le DOM');
-  throw new Error('Root element not found');
+// Service worker registration code
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/serviceWorker.js', { 
+        scope: '/'
+      });
+      
+      console.log('Service Worker enregistré avec succès:', registration.scope);
+      
+      // Vérifier les mises à jour du service worker
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              toast.info(
+                "Une mise à jour est disponible. Veuillez rafraîchir la page pour l'appliquer.",
+                { duration: 10000 }
+              );
+            }
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Échec de l\'enregistrement du Service Worker:', error);
+    }
+  });
+  
+  // Gérer les messages du service worker
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'CACHE_UPDATED') {
+      toast.info('Contenu mis en cache pour utilisation hors ligne');
+    }
+  });
 }
 
-// Utilisation de createRoot avec le composant racine
-ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
+// Add skip-to-content link for keyboard navigation
+const skipLink = document.createElement('a');
+skipLink.href = '#main-content';
+skipLink.className = 'skip-link';
+skipLink.textContent = 'Aller au contenu principal';
+document.body.prepend(skipLink);
+
+// Initialize application with optimized resources
+createRoot(document.getElementById("root")!).render(
+  <BrowserRouter>
     <AppProviders>
-      <NewApp />
+      <App />
     </AppProviders>
-  </React.StrictMode>
+  </BrowserRouter>
 );

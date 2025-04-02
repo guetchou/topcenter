@@ -1,72 +1,54 @@
 
-import React, { Suspense, ComponentType } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import PageLoader from "@/components/PageLoader";
-import { ScrollToTop } from './components/ScrollToTop';
-import { Footer } from './components/Footer';
-import ResponsiveNavigation from './components/ResponsiveNavigation';
-import ErrorBoundary from './components/ErrorBoundary';
-import { ChatPalGlobalInitializer } from './components/chat/ChatPalGlobalInitializer';
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/react-query";
+import { NotificationsProvider } from "@/components/notifications/NotificationsProvider";
+import { HelmetProvider } from "react-helmet-async";
+import { Toaster } from "sonner";
 
-// Correctly typed lazy loading with proper handling of default exports
-const DeploymentDashboard = React.lazy(() => 
-  import('./pages/DeploymentDashboard').then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
+// Components
+import { MainNav } from "@/components/MainNav";
+import { Footer } from "@/components/Footer";
 
-const Index = React.lazy(() => 
-  import('./pages/Index').then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
+// Pages
+import HomeNew from "@/pages/HomeNew";
+import About from "@/pages/About";
+import Services from "@/pages/Services";
+import Contact from "@/pages/Contact";
+import NotFound from "@/pages/NotFound";
 
-const AdminRoutes = React.lazy(() => 
-  import('./components/routes/AdminRoutes').then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
-
-const Contact = React.lazy(() => 
-  import('./pages/Contact').then(module => ({ 
-    default: module.default as ComponentType<any> 
-  }))
-);
-
-function NewApp() {
+/**
+ * Version alternative de l'application avec le nouveau design
+ * Pour tester sans impacter l'application existante
+ */
+const NewApp = () => {
   return (
-    <Router>
-      <ScrollToTop />
-      <ErrorBoundary>
-        <Suspense fallback={<PageLoader />}>
-          <ChatPalGlobalInitializer />
-          <Routes>
-            <Route path="/deploy" element={
-              <>
-                <ResponsiveNavigation />
-                <DeploymentDashboard />
-                <Footer />
-              </>
-            } />
-            <Route path="/admin/*" element={
-              <Suspense fallback={<PageLoader />}>
-                <AdminRoutes />
-              </Suspense>
-            } />
-            <Route path="/contact" element={
-              <>
-                <ResponsiveNavigation />
-                <Contact />
-                <Footer />
-              </>
-            } />
-            <Route path="/" element={<Index />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </ErrorBoundary>
-    </Router>
+    <HelmetProvider>
+      <ThemeProvider attribute="class" defaultTheme="light">
+        <QueryClientProvider client={queryClient}>
+          <NotificationsProvider>
+            {/* Utilise le nouveau design du MainNav */}
+            <MainNav useNewDesign={true} />
+            
+            <main className="min-h-screen">
+              <Routes>
+                <Route path="/" element={<HomeNew />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/services" element={<Services />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+            
+            <Footer />
+            <Toaster position="bottom-right" richColors />
+          </NotificationsProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </HelmetProvider>
   );
-}
+};
 
 export default NewApp;
