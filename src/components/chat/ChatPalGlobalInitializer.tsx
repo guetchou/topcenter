@@ -4,32 +4,40 @@ import { useChatPalStatus } from '@/hooks/useChatPalStatus';
 import { toast } from 'sonner';
 
 /**
- * Composant global qui initialise automatiquement ChatterPal
- * avec la configuration par défaut au chargement de la page
+ * Composant global qui détecte l'existence de ChatPal et gère ses erreurs,
+ * mais n'initialise pas de nouvelle instance si une globale existe déjà
  */
 export const ChatPalGlobalInitializer = () => {
-  const [initialized, setInitialized] = useState(false);
   const { isLoaded, isInitialized, error: statusError } = useChatPalStatus();
   const initAttemptsRef = useRef(0);
   const maxInitAttempts = 3;
+  const [hasAttemptedInit, setHasAttemptedInit] = useState(false);
 
-  // Initialiser ChatPal une fois que le script est détecté comme chargé
+  // Initialiser ChatPal une fois que le script est détecté comme chargé (seulement si aucune instance n'existe)
   useEffect(() => {
-    if (isLoaded && !isInitialized && !initialized && initAttemptsRef.current < maxInitAttempts) {
+    if (isLoaded && !isInitialized && !hasAttemptedInit && initAttemptsRef.current < maxInitAttempts) {
       initAttemptsRef.current += 1;
-      console.log(`ChatPal script détecté, tentative d'initialisation #${initAttemptsRef.current}`);
+      setHasAttemptedInit(true);
+      console.log(`ChatPal script détecté, mais pas d'instance. Tentative d'initialisation #${initAttemptsRef.current}`);
       
       try {
+        // Vérifier si la fonction est disponible
+        if (typeof window.ChatPal !== 'function') {
+          console.error('La fonction ChatPal n\'est pas disponible globalement');
+          return;
+        }
+
         // Vérifier s'il existe une ancienne instance et la nettoyer si nécessaire
         if (window.chatPal && typeof window.chatPal.destroy === 'function') {
-          console.log('Instance ChatPal existante trouvée, destruction...');
-          window.chatPal.destroy();
+          console.log('Instance ChatPal existante trouvée, aucune nouvelle initialisation nécessaire');
+          return; // Une instance existe déjà, ne pas réinitialiser
         }
         
         // Initialiser avec un délai pour s'assurer que le DOM et les scripts sont prêts
         const initTimeout = setTimeout(() => {
           try {
-            if (typeof window !== 'undefined' && window.ChatPal) {
+            if (!window.chatPal) {
+              console.log('Aucune instance ChatPal existante, initialisation...');
               window.chatPal = new window.ChatPal({
                 embedId: 'HSNNDA8bdXzs', 
                 remoteBaseUrl: 'https://chatappdemo.com/', 
@@ -37,18 +45,17 @@ export const ChatPalGlobalInitializer = () => {
               });
               
               if (window.chatPal) {
-                console.log('ChatPal initialisé avec succès', window.chatPal);
-                setInitialized(true);
+                console.log('ChatPal initialisé avec succès par ChatPalGlobalInitializer', window.chatPal);
               } else {
                 console.error('ChatPal non initialisé correctement');
               }
             } else {
-              console.error('ChatPal constructor not available in window');
+              console.log('Instance ChatPal déjà existante, utilisation de celle-ci');
             }
           } catch (innerErr) {
             console.error('Erreur lors de l\'initialisation différée de ChatPal:', innerErr);
           }
-        }, 1500); // Délai augmenté pour s'assurer que le DOM est prêt
+        }, 3000); // Délai augmenté à 3 secondes pour s'assurer que le DOM est prêt
         
         // Nettoyage du timeout si le composant est démonté
         return () => clearTimeout(initTimeout);
@@ -61,7 +68,7 @@ export const ChatPalGlobalInitializer = () => {
         }
       }
     }
-  }, [isLoaded, isInitialized, initialized]);
+  }, [isLoaded, isInitialized, hasAttemptedInit]);
 
   // Afficher les erreurs éventuelles
   useEffect(() => {
@@ -70,19 +77,6 @@ export const ChatPalGlobalInitializer = () => {
       toast.error('Problème avec le chat. Veuillez rafraîchir la page.');
     }
   }, [statusError]);
-
-  // Ajouter une vérification périodique pour s'assurer que ChatPal reste disponible
-  useEffect(() => {
-    const checkInterval = setInterval(() => {
-      if (initialized && (!window.ChatPal || !window.chatPal)) {
-        console.warn('ChatPal semble avoir été déchargé ou corrompu, tentative de réinitialisation...');
-        setInitialized(false);
-        initAttemptsRef.current = 0; // Réinitialiser le compteur pour permettre de nouvelles tentatives
-      }
-    }, 30000);
-    
-    return () => clearInterval(checkInterval);
-  }, [initialized]);
 
   // Composant invisible
   return null;

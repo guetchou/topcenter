@@ -11,7 +11,6 @@ export const useChatPalStatus = () => {
     const checkScriptLoaded = () => {
       try {
         const isLoaded = typeof window !== 'undefined' && 
-          window.ChatPal !== undefined && 
           typeof window.ChatPal === 'function';
         console.log(`ChatPal script status: ${isLoaded ? 'loaded' : 'not loaded'}`);
         setIsLoaded(isLoaded);
@@ -51,11 +50,12 @@ export const useChatPalStatus = () => {
       const instanceInitialized = checkInstanceInitialized();
       
       if (scriptLoaded && instanceInitialized) {
+        console.log("ChatPal est complètement initialisé");
         clearInterval(intervalId);
       }
-    }, 1000);
+    }, 1500);
 
-    // Timeout après 15 secondes
+    // Timeout après 20 secondes
     const timeoutId = setTimeout(() => {
       if (!isLoaded) {
         const errorMsg = "Le script ChatPal n'a pas pu être chargé dans le délai imparti";
@@ -67,7 +67,7 @@ export const useChatPalStatus = () => {
         setError(new Error(errorMsg));
       }
       clearInterval(intervalId);
-    }, 15000);
+    }, 20000); // Augmenté à 20 secondes pour donner plus de temps
 
     return () => {
       clearInterval(intervalId);

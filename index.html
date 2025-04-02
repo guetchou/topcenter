@@ -16,6 +16,22 @@
       crossorigin="anonymous" 
       data-cfasync="false">
     </script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          try {
+            window.chatPal = new ChatPal({
+              embedId: 'HSNNDA8bdXzs', 
+              remoteBaseUrl: 'https://chatappdemo.com/', 
+              version: '8.3'
+            });
+            console.log("ChatPal initialisé avec succès depuis index.html");
+          } catch (error) {
+            console.error("Erreur lors de l'initialisation de ChatPal depuis index.html:", error);
+          }
+        }, 2000); // Attendre 2 secondes après le chargement du DOM
+      });
+    </script>
     
     <title>TopCenter - Centre d'Appels Professionnel au Congo</title>
   </head>
