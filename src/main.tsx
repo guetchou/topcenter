@@ -3,7 +3,6 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import NewApp from './NewApp';
 import { AppProviders } from './providers/AppProviders';
-import { HelmetProvider } from 'react-helmet-async';
 import './index.css';
 
 // Récupération de l'élément racine et assertion de son existence
@@ -16,10 +15,8 @@ if (!rootElement) {
 // Utilisation de createRoot avec le composant racine
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <HelmetProvider>
-      <AppProviders>
-        <NewApp />
-      </AppProviders>
-    </HelmetProvider>
+    <AppProviders>
+      <NewApp />
+    </AppProviders>
   </React.StrictMode>
 );
