@@ -64,6 +64,12 @@ export const useTeamMembers = () => {
     queryKey: ['team-members'],
     queryFn: async () => {
       try {
+        // En cas d'erreur API, retourner immédiatement les données de secours
+        if (!supabase) {
+          console.log("Supabase client not available, using fallback data");
+          return fallbackTeamMembers;
+        }
+
         const { data, error } = await supabase
           .from('team_members')
           .select('*')
@@ -71,11 +77,11 @@ export const useTeamMembers = () => {
         
         if (error) {
           console.error("Erreur lors de la récupération des membres de l'équipe:", error);
-          throw error;
+          return fallbackTeamMembers;
         }
         
         // If no data is available, return fallback data
-        return data.length > 0 ? data.map(member => ({
+        return data && data.length > 0 ? data.map(member => ({
           ...member,
           specialties: member.specialties || []
         })) : fallbackTeamMembers;

@@ -45,7 +45,7 @@ export const NewsHighlightSection = () => {
             <p className="text-muted-foreground mt-1">Restez informé des dernières nouvelles de TopCenter</p>
           </div>
           <Button variant="outline" asChild>
-            <Link to="/news" className="flex items-center gap-1">
+            <Link to="/actualites" className="flex items-center gap-1">
               Toutes les actualités
               <ArrowRight className="h-4 w-4" />
             </Link>

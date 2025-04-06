@@ -35,6 +35,16 @@ export const NewsGrid: React.FC<NewsGridProps> = ({
   // Limit the number of news items if specified
   const limitedNews = limit ? news.slice(0, limit) : news;
 
+  // Vérifier si on utilise la nouvelle route 'actualites' ou l'ancienne 'news'
+  const getDetailRoute = (id: string) => {
+    // Vérifier dans quelle route nous sommes en analysant l'URL actuelle
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/actualites') || currentPath.includes('/blog')) {
+      return `/actualites/${id}`;
+    }
+    return `/news/${id}`;
+  };
+
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

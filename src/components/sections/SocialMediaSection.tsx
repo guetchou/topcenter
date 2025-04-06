@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Facebook, Linkedin, MessageCircle, PhoneCall } from "lucide-react";
 import { useEffect, useState, Suspense } from "react";
@@ -5,9 +6,17 @@ import { motion } from "framer-motion";
 
 export const SocialMediaSection = () => {
   const [isClient, setIsClient] = useState(false);
+  const [iframesLoaded, setIframesLoaded] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    
+    // Simuler un chargement des iframes après le montage du composant
+    const timer = setTimeout(() => {
+      setIframesLoaded(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   // Animation d'apparition avec fade-in
@@ -27,6 +36,13 @@ export const SocialMediaSection = () => {
     initial: { scale: 1 },
     tap: { scale: 0.95, x: [0, -2, 2, -2, 2, 0], transition: { duration: 0.2 } },
   };
+
+  // Composant de secours pour les iframes
+  const IframeFallback = () => (
+    <div className="flex items-center justify-center w-full h-[400px] bg-gray-100 rounded-md animate-pulse">
+      <div className="text-gray-500">Chargement...</div>
+    </div>
+  );
 
   return (
     <motion.section 
@@ -88,19 +104,23 @@ export const SocialMediaSection = () => {
                 Suivez nos actualités et interagissez avec nous sur Facebook.
               </p>
               {isClient && (
-                <Suspense fallback={<p>Chargement du flux Facebook...</p>}>
-                  <iframe
-                    title="Facebook Timeline"
-                    src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Ftopcenter.cg&tabs=timeline"
-                    width="100%"
-                    height="400"
-                    style={{ border: "none", overflow: "hidden" }}
-                    scrolling="no"
-                    frameBorder="0"
-                    allowFullScreen
-                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                    className="rounded-md"
-                  />
+                <Suspense fallback={<IframeFallback />}>
+                  {iframesLoaded ? (
+                    <iframe
+                      title="Facebook Timeline"
+                      src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Ftopcenter.cg&tabs=timeline"
+                      width="100%"
+                      height="400"
+                      style={{ border: "none", overflow: "hidden" }}
+                      scrolling="no"
+                      frameBorder="0"
+                      allowFullScreen
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      className="rounded-md"
+                    />
+                  ) : (
+                    <IframeFallback />
+                  )}
                 </Suspense>
               )}
             </div>
@@ -121,16 +141,20 @@ export const SocialMediaSection = () => {
                 Découvrez nos opportunités et nos activités sur LinkedIn.
               </p>
               {isClient && (
-                <Suspense fallback={<p>Chargement du flux LinkedIn...</p>}>
-                  <iframe
-                    title="LinkedIn Feed"
-                    src="https://www.linkedin.com/embed/feed/update/urn:li:organization:top-center-cg"
-                    width="100%"
-                    height="400"
-                    frameBorder="0"
-                    allowFullScreen
-                    className="rounded-md"
-                  />
+                <Suspense fallback={<IframeFallback />}>
+                  {iframesLoaded ? (
+                    <iframe
+                      title="LinkedIn Feed"
+                      src="https://www.linkedin.com/embed/feed/update/urn:li:organization:top-center-cg"
+                      width="100%"
+                      height="400"
+                      frameBorder="0"
+                      allowFullScreen
+                      className="rounded-md"
+                    />
+                  ) : (
+                    <IframeFallback />
+                  )}
                 </Suspense>
               )}
             </div>
