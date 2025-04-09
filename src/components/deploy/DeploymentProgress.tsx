@@ -1,28 +1,30 @@
 
-import React from 'react';
-import { Progress } from '@/components/ui/progress';
-import { DeploymentStatus } from './DeploymentStep';
+import React from "react";
 
 interface DeploymentProgressProps {
-  steps: Array<{ status: DeploymentStatus }>;
+  currentStep: number;
+  totalSteps: number;
 }
 
-export const DeploymentProgress = ({ steps }: DeploymentProgressProps) => {
-  // Calculate the progress percentage
-  const calculateProgress = () => {
-    const completedSteps = steps.filter(step => step.status === 'completed').length;
-    return Math.round((completedSteps / steps.length) * 100);
-  };
-
-  const progress = calculateProgress();
+export const DeploymentProgress: React.FC<DeploymentProgressProps> = ({
+  currentStep,
+  totalSteps,
+}) => {
+  const progressPercentage = Math.min((currentStep / totalSteps) * 100, 100);
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium">Progression de déploiement</span>
-        <span className="text-sm font-medium">{progress}%</span>
+    <div className="w-full space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>Progression: {Math.round(progressPercentage)}%</span>
+        <span>Étape {currentStep} sur {totalSteps}</span>
       </div>
-      <Progress value={progress} className="h-2" />
+      
+      <div className="w-full bg-muted h-3 rounded-full overflow-hidden">
+        <div 
+          className="bg-primary h-full transition-all duration-300"
+          style={{ width: `${progressPercentage}%` }}
+        ></div>
+      </div>
     </div>
   );
 };

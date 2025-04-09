@@ -1,80 +1,57 @@
 
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronDown, Clock, Server } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, Hash, Package, Clock } from "lucide-react";
 
 interface DeploymentSummaryProps {
-  environment: string;
-  buildTime: string;
-  startTime: string;
-  domain: string;
-  deployId: string;
-  gitBranch: string;
+  packageType: string;
+  deploymentDate: string;
+  deploymentId: string;
 }
 
-export const DeploymentSummary = ({
-  environment,
-  buildTime,
-  startTime,
-  domain,
-  deployId,
-  gitBranch
-}: DeploymentSummaryProps) => {
-  const [isExpanded, setIsExpanded] = React.useState(false);
-
+export const DeploymentSummary: React.FC<DeploymentSummaryProps> = ({
+  packageType,
+  deploymentDate,
+  deploymentId,
+}) => {
   return (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Server className="h-5 w-5" />
-          Résumé du déploiement
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-sm text-muted-foreground">Environnement</p>
-            <p className="font-medium">{environment}</p>
+    <Card>
+      <CardContent className="p-4 space-y-4">
+        <h3 className="font-medium">Résumé du déploiement</h3>
+        
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <Package className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm text-muted-foreground">Type de package</p>
+              <p className="font-medium">{packageType}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Temps de construction</p>
-            <p className="font-medium flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              {buildTime}
-            </p>
+          
+          <div className="flex items-center gap-3">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm text-muted-foreground">Date de déploiement</p>
+              <p className="font-medium">{deploymentDate}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Démarré à</p>
-            <p className="font-medium">{startTime}</p>
+          
+          <div className="flex items-center gap-3">
+            <Hash className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm text-muted-foreground">Identifiant de déploiement</p>
+              <p className="font-medium">{deploymentId}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Domaine</p>
-            <p className="font-medium">{domain}</p>
+          
+          <div className="flex items-center gap-3">
+            <Clock className="h-5 w-5 text-muted-foreground" />
+            <div>
+              <p className="text-sm text-muted-foreground">Statut</p>
+              <p className="font-medium text-green-600">Déploiement terminé avec succès</p>
+            </div>
           </div>
         </div>
-
-        <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
-          <CollapsibleTrigger asChild>
-            <Button variant="outline" size="sm" className="w-full">
-              {isExpanded ? "Masquer les détails" : "Afficher plus de détails"}
-              <ChevronDown className={`h-4 w-4 ml-2 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">ID de déploiement</p>
-                <p className="font-medium">{deployId}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Branche Git</p>
-                <p className="font-medium">{gitBranch}</p>
-              </div>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
       </CardContent>
     </Card>
   );
