@@ -1,20 +1,16 @@
 
-import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig, AxiosError, AxiosRequestHeaders, AxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
 import { serverIsAvailable, markServerAsUnavailable, markServerAsAvailable } from './api/serverStatus';
 import { setupErrorHandlers } from './api/errorHandler';
 import { setupInterceptors } from './api/interceptors';
+import { CustomAxiosRequestConfig } from '@/types/api';
 
 // Timeout par défaut pour les requêtes
 const DEFAULT_TIMEOUT = 30000;
 
 // URL de base de l'API
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-
-// Custom Axios request config type with our additional properties
-interface CustomAxiosRequestConfig extends AxiosRequestConfig {
-  silentError?: boolean;
-}
 
 // Instance Axios avec configuration de base
 const api: AxiosInstance = axios.create({
