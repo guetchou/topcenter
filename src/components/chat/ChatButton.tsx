@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
@@ -92,7 +91,7 @@ export const ChatButton = ({
       )}
       aria-label="Ouvrir le chat"
     >
-      <MessageSquareText className={cn(
+      <MessageSquare className={cn(
         "w-6 h-6", 
         getIconAnimationClass()
       )} />

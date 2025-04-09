@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { 
   Card, 
@@ -616,7 +615,7 @@ const DeployDashboard = () => {
                 </CardContent>
                 <CardFooter className="flex justify-between">
                   <Button variant="outline" className="gap-2" onClick={downloadQuote}>
-                    <Download className="h-4 w-4" />
+                    <DownloadCloud className="h-4 w-4" />
                     Télécharger PDF
                   </Button>
                   <Button className="gap-2" onClick={() => {
@@ -866,13 +865,4 @@ import {
   MessageSquare, 
   Mail, 
   Globe,
-  Building, 
-  Settings, 
-  Bot, 
-  ServerCog, 
-  Network, 
-  TerminalSquare, 
-  History 
-} from "lucide-react";
-
-export default DeployDashboard;
+  Building,

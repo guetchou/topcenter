@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Handshake, Award, Building, BarChart4 } from "lucide-react";
+import { Award, Building, BarChart4, Users } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export const LoyaltySection = () => {
@@ -38,7 +38,7 @@ export const LoyaltySection = () => {
             
             <div className="space-y-4">
               <div className="flex justify-center">
-                <Handshake className="h-8 w-8 text-primary" />
+                <Users className="h-8 w-8 text-primary" />
               </div>
               <h3 className="font-semibold text-xl">Revendeurs</h3>
               <p className="text-muted-foreground">
@@ -63,7 +63,7 @@ export const LoyaltySection = () => {
               onClick={handlePartnerInquiry}
               className="gap-2"
             >
-              <Handshake className="h-5 w-5" />
+              <Users className="h-5 w-5" />
               Devenir partenaire
             </Button>
           </div>

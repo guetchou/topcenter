@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { MessageSquareText } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { QuickReplies } from "./QuickReplies";
@@ -104,7 +103,7 @@ export const ChatInputForm = ({
           size="icon" 
           disabled={isLoading || transferring || !message.trim()}
         >
-          <MessageSquareText className="w-4 h-4" />
+          <MessageSquare className="w-4 h-4" />
         </Button>
       </form>
     </div>

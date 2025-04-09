@@ -127,7 +127,7 @@ export const PocketBaseAdminTest: React.FC = () => {
                 <XCircle className="ml-2 h-5 w-5 text-red-500" />
               )}
             </h3>
-            <Badge variant={testResult === 'success' ? "success" : "destructive"}>
+            <Badge variant={testResult === 'success' ? "secondary" : "destructive"} className={testResult === 'success' ? "bg-green-100 text-green-800" : ""}>
               {testResult === 'success' ? 'Connecté' : 'Échec de connexion'}
             </Badge>
           </div>

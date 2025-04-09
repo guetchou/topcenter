@@ -1,7 +1,6 @@
-
-import { Bot, MessageSquareText, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { MessageSquare, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { createClient } from "@supabase/supabase-js";
@@ -118,7 +117,7 @@ export const AIChatBubble = () => {
                 className="flex-1"
               />
               <Button type="submit" size="icon" disabled={isLoading}>
-                <MessageSquareText className="w-4 h-4" />
+                <MessageSquare className="w-4 h-4" />
               </Button>
             </form>
           </div>

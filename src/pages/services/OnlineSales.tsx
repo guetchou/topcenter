@@ -1,5 +1,6 @@
+
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShoppingCart, CreditCard, Truck, Globe, Shield, Headset } from "lucide-react";
+import { ArrowLeft, ShoppingCart, CreditCard, Truck, Globe, Shield, Headphones } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 
@@ -47,7 +48,7 @@ const OnlineSales = () => {
           </div>
           
           <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card">
-            <Headset className="w-12 h-12 text-primary mb-4" />
+            <Headphones className="w-12 h-12 text-primary mb-4" />
             <h3 className="text-xl font-semibold mb-2">Support 24/7</h3>
             <p className="text-muted-foreground">
               Assistance client permanente
