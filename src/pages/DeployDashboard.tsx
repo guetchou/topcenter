@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { 
   Card, 
@@ -30,7 +31,19 @@ import {
   Shield,
   Database,
   DownloadCloud,
-  Upload
+  Upload,
+  Phone,
+  Users,
+  MessageSquare,
+  Mail,
+  Globe,
+  Building,
+  Settings,
+  TerminalSquare,
+  History,
+  Bot,
+  ServerCog,
+  Network
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { DeploymentProgress } from "@/components/deploy/DeploymentProgress";
@@ -858,11 +871,4 @@ const DeployDashboard = () => {
   );
 };
 
-// Lucide icon components needed
-import { 
-  Phone, 
-  Users, 
-  MessageSquare, 
-  Mail, 
-  Globe,
-  Building,
+export default DeployDashboard;
