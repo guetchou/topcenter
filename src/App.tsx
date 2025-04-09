@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
@@ -41,6 +42,7 @@ import Settings from "@/pages/Settings";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import ClientPortal from "@/pages/ClientPortal";
 import AuthCallback from "@/components/auth/AuthCallback";
+import PortailSaaS from "@/pages/PortailSaaS";
 
 // Admin
 import { CMSLayout } from "@/pages/admin/CMSLayout";
@@ -85,6 +87,7 @@ const App = () => {
                 <Route path="/news/:id" element={<NewsDetail />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<Terms />} />
+                <Route path="/saas" element={<PortailSaaS />} />
                 
                 {/* Auth routes */}
                 <Route path="/auth" element={<Auth />} />
