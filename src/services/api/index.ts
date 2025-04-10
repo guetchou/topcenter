@@ -1,9 +1,9 @@
 
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
-import { serverIsAvailable, markServerAsUnavailable, markServerAsAvailable } from './serverStatus';
-import { setupErrorHandlers } from './errorHandler';
-import { setupInterceptors } from './interceptors';
+import { serverIsAvailable, markServerAsUnavailable, markServerAsAvailable } from './api/serverStatus';
+import { setupErrorHandlers } from './api/errorHandler';
+import { setupInterceptors } from './api/interceptors';
 import { CustomAxiosRequestConfig } from '@/types/api';
 
 // Timeout par défaut pour les requêtes

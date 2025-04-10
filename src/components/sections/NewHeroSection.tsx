@@ -8,7 +8,7 @@ import { HeroContent } from "./hero/HeroContent";
 const NewHeroSection = () => {
   const navigate = useNavigate();
   
-  // Images for the background carousel - using existing uploads
+  // Images for the background carousel - added more images
   const backgroundImages = [
     "/lovable-uploads/staff-tce.jpg",
     "/lovable-uploads/equipe-topcenter.jpg",
