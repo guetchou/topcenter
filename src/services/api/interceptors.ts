@@ -1,47 +1,51 @@
 
-import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse, AxiosError, AxiosHeaders } from 'axios';
-import { markServerAsAvailable, markServerAsUnavailable } from './serverStatus';
+import { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { serverIsAvailable, markServerAsAvailable } from './serverStatus';
 
-export function setupInterceptors(api: AxiosInstance) {
-  // Intercepteur de requête
+/**
+ * Sets up request and response interceptors for an Axios instance
+ * @param api The Axios instance to configure
+ */
+export const setupInterceptors = (api: AxiosInstance): void => {
+  // Request interceptor
   api.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      // Récupérer le token d'authentification du localStorage
-      const token = localStorage.getItem('authToken');
-      
-      // Si un token existe, l'ajouter à l'en-tête Authorization
+      // Add authentication token if available
+      const token = localStorage.getItem('auth_token');
       if (token) {
-        // Créer une nouvelle instance de AxiosHeaders pour éviter les erreurs de type
-        if (!config.headers) {
-          config.headers = new AxiosHeaders();
-        }
-        
-        // Définir l'en-tête d'autorisation
-        config.headers.set('Authorization', `Bearer ${token}`);
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      
+      // Add timestamp to prevent caching for GET requests
+      if (config.method === 'get') {
+        config.params = {
+          ...config.params,
+          _t: Date.now()
+        };
       }
       
       return config;
     },
-    (error: AxiosError) => {
-      console.error('Request error:', error);
+    (error) => {
+      console.error('Request interceptor error:', error);
       return Promise.reject(error);
     }
   );
-
-  // Intercepteur de réponse
+  
+  // Response interceptor
   api.interceptors.response.use(
     (response: AxiosResponse) => {
-      // Marquer le serveur comme disponible en cas de réponse réussie
-      markServerAsAvailable();
-      return response;
-    },
-    (error: AxiosError) => {
-      // Si la demande a échoué en raison d'un problème de réseau ou d'un timeout
-      if (error.code === 'ECONNABORTED' || error.message === 'Network Error' || !error.response) {
-        markServerAsUnavailable();
+      // Mark server as available on successful response
+      if (!serverIsAvailable()) {
+        markServerAsAvailable();
       }
       
+      // Add any additional response processing here
+      return response;
+    },
+    (error) => {
+      // Let the error handler deal with errors
       return Promise.reject(error);
     }
   );
-}
+};
