@@ -1,34 +1,35 @@
 
 import React, { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Phone, Users, MessageSquare, Mail, Globe } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Phone, Users } from "lucide-react";
+import { toast } from "sonner";
 import { QuoteForm } from "@/components/deploy/QuoteForm";
 import { QuoteResult } from "@/components/deploy/QuoteResult";
 import { DeploymentView } from "@/components/deploy/DeploymentView";
 import { DeploymentHistory } from "@/components/deploy/DeploymentHistory";
+import { DeploymentLogs } from "@/components/deploy/DeploymentLogs";
+import { DeploymentControls } from "@/components/deploy/DeploymentControls";
 import { defaultPricingModel } from "@/models/pricing";
 
 const DeployDashboard = () => {
-  const { toast } = useToast();
+  // State for navigation and view control
   const [activeTab, setActiveTab] = useState("quotation");
   const [deploymentStatus, setDeploymentStatus] = useState<"idle" | "running" | "success" | "failed">("idle");
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   
-  // Quote simulator state
+  // Business information state
   const [businessInfo, setBusinessInfo] = useState({
     companyName: "",
     contactName: "",
     email: "",
     phone: "",
     industry: "",
-    employees: [10], // for slider
+    employees: [10],
     budget: "",
   });
   
-  // Service package simulator state
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  // Package configuration state
   const [packageConfig, setPackageConfig] = useState({
     agentCount: [5],
     servicePeriod: "monthly",
@@ -38,7 +39,10 @@ const DeployDashboard = () => {
     multilingual: false,
   });
   
-  // Quote result
+  // Service selection state
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  
+  // Quote result state
   const [quoteResult, setQuoteResult] = useState<null | {
     basePrice: number;
     setup: number;
@@ -46,16 +50,7 @@ const DeployDashboard = () => {
     total: number;
   }>(null);
   
-  // Services catalog
-  const servicesCatalog = [
-    { id: "call-center", name: "Centre d'appels", icon: <Phone className="h-5 w-5" />, basePrice: 85000 },
-    { id: "crm", name: "CRM Intégré", icon: <Users className="h-5 w-5" />, basePrice: 200000 },
-    { id: "live-chat", name: "Chat en direct", icon: <MessageSquare className="h-5 w-5" />, basePrice: 150000 },
-    { id: "email-support", name: "Support email", icon: <Mail className="h-5 w-5" />, basePrice: 100000 },
-    { id: "multilingual", name: "Support multilingue", icon: <Globe className="h-5 w-5" />, basePrice: 300000 },
-  ];
-  
-  // Handle simulator changes
+  // Form handlers
   const handleBusinessInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setBusinessInfo(prev => ({
@@ -66,30 +61,18 @@ const DeployDashboard = () => {
   
   const handleSliderChange = (name: string, value: number[]) => {
     if (name === "agentCount") {
-      setPackageConfig(prev => ({
-        ...prev,
-        agentCount: value
-      }));
+      setPackageConfig(prev => ({ ...prev, agentCount: value }));
     } else if (name === "employees") {
-      setBusinessInfo(prev => ({
-        ...prev,
-        employees: value
-      }));
+      setBusinessInfo(prev => ({ ...prev, employees: value }));
     }
   };
   
   const handleSelectChange = (name: string, value: string) => {
-    setPackageConfig(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setPackageConfig(prev => ({ ...prev, [name]: value }));
   };
   
   const handleSwitchChange = (name: string, checked: boolean) => {
-    setPackageConfig(prev => ({
-      ...prev,
-      [name]: checked
-    }));
+    setPackageConfig(prev => ({ ...prev, [name]: checked }));
   };
   
   const toggleService = (serviceId: string) => {
@@ -102,7 +85,7 @@ const DeployDashboard = () => {
     });
   };
   
-  // Calculate quote
+  // Quote calculation
   const calculateQuote = () => {
     // Base calculation
     const agentCount = packageConfig.agentCount[0];
@@ -119,9 +102,6 @@ const DeployDashboard = () => {
     if (packageConfig.servicePeriod === "yearly") {
       // Apply yearly discount
       total = total * 12 * (1 - defaultPricingModel.yearlyDiscount);
-    } else {
-      // Monthly price without discount
-      total = total;
     }
     
     // One-time setup fee
@@ -135,13 +115,11 @@ const DeployDashboard = () => {
     };
   };
   
-  // Generate quote
+  // Action handlers
   const generateQuote = () => {
     if (!businessInfo.companyName || !businessInfo.email) {
-      toast({
-        title: "Information manquante",
-        description: "Veuillez remplir les informations de contact requises.",
-        variant: "destructive"
+      toast.error("Information manquante", {
+        description: "Veuillez remplir les informations de contact requises."
       });
       return;
     }
@@ -149,19 +127,15 @@ const DeployDashboard = () => {
     const quote = calculateQuote();
     setQuoteResult(quote);
     
-    toast({
-      title: "Devis généré",
-      description: "Votre devis a été généré avec succès!",
+    toast.success("Devis généré", {
+      description: "Votre devis a été généré avec succès!"
     });
   };
   
-  // Simulate deployment
   const startDeployment = () => {
     if (!quoteResult) {
-      toast({
-        title: "Génération requise",
-        description: "Veuillez d'abord générer un devis.",
-        variant: "destructive"
+      toast.error("Génération requise", {
+        description: "Veuillez d'abord générer un devis."
       });
       return;
     }
@@ -170,7 +144,7 @@ const DeployDashboard = () => {
     setCurrentStep(1);
     setLogs(["Démarrage du déploiement..."]);
     
-    // Simulate deployment steps
+    // Simulation des étapes de déploiement
     const steps = [
       "Vérification des prérequis...",
       "Configuration des services...",
@@ -199,7 +173,6 @@ const DeployDashboard = () => {
     return () => clearInterval(deployInterval);
   };
   
-  // Reset the form
   const resetForm = () => {
     setBusinessInfo({
       companyName: "",
@@ -226,20 +199,17 @@ const DeployDashboard = () => {
     setCurrentStep(0);
     setLogs([]);
     
-    toast({
-      title: "Formulaire réinitialisé",
+    toast.success("Formulaire réinitialisé", {
       description: "Vous pouvez maintenant créer un nouveau devis."
     });
   };
   
-  // Download quote as PDF
   const downloadQuote = () => {
-    toast({
-      title: "Téléchargement du devis",
+    toast.success("Téléchargement du devis", {
       description: "Le devis sera téléchargé en format PDF."
     });
     
-    // In a real implementation, this would generate and download a PDF
+    // Implémentation future : générer et télécharger un PDF réel
     console.log("Download quote for:", businessInfo, packageConfig, quoteResult);
   };
   
@@ -285,15 +255,30 @@ const DeployDashboard = () => {
           </TabsContent>
           
           <TabsContent value="deployment" className="space-y-8">
-            <DeploymentView 
-              currentStep={currentStep}
-              deploymentStatus={deploymentStatus}
-              logs={logs}
-              startDeployment={startDeployment}
-              setActiveTab={setActiveTab}
-              packageConfig={packageConfig}
-              resetForm={resetForm}
-            />
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="md:col-span-2">
+                <DeploymentView 
+                  currentStep={currentStep}
+                  deploymentStatus={deploymentStatus}
+                  packageConfig={packageConfig}
+                  setActiveTab={setActiveTab}
+                />
+              </div>
+              
+              <div className="space-y-8">
+                <DeploymentControls 
+                  deploymentStatus={deploymentStatus}
+                  startDeployment={startDeployment}
+                  resetForm={resetForm}
+                  setActiveTab={setActiveTab}
+                />
+                
+                <DeploymentLogs 
+                  logs={logs}
+                  deploymentStatus={deploymentStatus}
+                />
+              </div>
+            </div>
           </TabsContent>
           
           <TabsContent value="history" className="space-y-4">
