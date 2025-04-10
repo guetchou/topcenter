@@ -33,8 +33,8 @@ coverage
 .gitignore
 
 # Docker related files
-Dockerfile
-docker-compose.yml
+Dockerfile*
+docker-compose*.yml
 .dockerignore
 
 # OS files
@@ -44,3 +44,22 @@ Thumbs.db
 # Backend logs
 backend/logs/*
 !backend/logs/.gitkeep
+
+# Test files
+**/*.test.tsx
+**/*.spec.tsx
+**/__tests__/
+**/test/
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Temporary files
+tmp/
+temp/
+
+# Cache directories
+.cache/
+.npm/

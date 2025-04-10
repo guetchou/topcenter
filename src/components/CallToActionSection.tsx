@@ -86,8 +86,8 @@ export const CallToActionSection = () => {
         </div>
       </div>
       
-      {/* Add keyframes for animations */}
-      <style jsx>{`
+      <style>
+        {`
         @keyframes gradient-animation {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
@@ -118,7 +118,8 @@ export const CallToActionSection = () => {
           0%, 100% { opacity: 0.3; }
           50% { opacity: 1; }
         }
-      `}</style>
+        `}
+      </style>
     </section>
   );
 };
