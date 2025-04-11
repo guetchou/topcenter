@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
 import {
   Carousel,
   CarouselContent,
@@ -22,16 +21,21 @@ export const TeamSection = () => {
   // Récupération des membres de l'équipe depuis Supabase
   const { data: teamMembers, isLoading, error, refetch } = useTeamMembers();
 
-  // Setup the auto-rotation
+  // Setup the auto-rotation - Correction de la gestion du carousel
   useEffect(() => {
     if (!api || isPaused || !teamMembers?.length) return;
     
     const intervalId = setInterval(() => {
-      api.scrollNext();
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      } else {
+        api.scrollTo(0);
+      }
     }, 4000);
     
     // Update current index when the carousel scrolls
     const onSelect = () => {
+      if (!api) return;
       setCurrentIndex(api.selectedScrollSnap());
     };
     
@@ -100,23 +104,17 @@ export const TeamSection = () => {
                 opts={{ 
                   align: "start", 
                   loop: true,
-                  watchDrag: false // This can help prevent issues with the carousel
+                  dragFree: false // Correction pour éviter les problèmes de défilement
                 }}
                 className="w-full max-w-5xl mx-auto"
               >
                 <CarouselContent>
                   {teamMembers.map((member, index) => (
-                    <CarouselItem key={member.id} className="md:basis-1/2 lg:basis-1/3">
-                      <motion.div 
-                        whileHover={{ scale: 1.05 }}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ 
-                          opacity: 1, 
-                          y: 0,
-                          transition: { delay: index * 0.1 } 
-                        }}
+                    <CarouselItem key={member.id} className="md:basis-1/2 lg:basis-1/3 pl-4">
+                      <div 
+                        className={`transition-all duration-300 ${currentIndex === index ? 'scale-105' : 'scale-100'}`}
                       >
-                        <Card className={`shadow-lg hover:shadow-xl transition-all duration-300 ${currentIndex === index ? 'ring-2 ring-primary/30' : ''}`}>
+                        <Card className={`shadow-lg transition-all duration-300 ${currentIndex === index ? 'ring-2 ring-primary/30' : ''}`}>
                           <CardContent className="p-6">
                             <div className="aspect-square mb-4 overflow-hidden rounded-full">
                               <img
@@ -152,7 +150,7 @@ export const TeamSection = () => {
                             )}
                           </CardContent>
                         </Card>
-                      </motion.div>
+                      </div>
                     </CarouselItem>
                   ))}
                 </CarouselContent>
@@ -164,9 +162,9 @@ export const TeamSection = () => {
                 </div>
               </Carousel>
               
-              {/* Indicators */}
+              {/* Indicators - Optimisés pour éviter le re-rendu excessif */}
               <div className="flex justify-center gap-2 mt-6">
-                {teamMembers.map((_, index) => (
+                {teamMembers.slice(0, 10).map((_, index) => (
                   <button
                     key={index}
                     onClick={() => api?.scrollTo(index)}
@@ -174,6 +172,9 @@ export const TeamSection = () => {
                     aria-label={`Voir le membre d'équipe ${index + 1}`}
                   />
                 ))}
+                {teamMembers.length > 10 && (
+                  <span className="w-2 h-2 rounded-full bg-primary/30"></span>
+                )}
               </div>
             </>
           )}

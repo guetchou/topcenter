@@ -10,6 +10,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import type { UseEmblaCarouselType } from "embla-carousel-react";
 
+// Liste des partenaires (préchargée pour éviter les problèmes de performance)
 const partners = [
   {
     id: 1,
@@ -59,32 +60,41 @@ export const PartnersSection = () => {
   const [api, setApi] = useState<UseEmblaCarouselType[1] | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   const onSelect = useCallback(() => {
     if (!api) return;
     setActiveIndex(api.selectedScrollSnap());
   }, [api]);
 
+  // Configuration optimisée du carousel
   useEffect(() => {
     if (!api) return;
     
-    // Fixed: Added the second argument to api.on with proper callback
     api.on('select', onSelect);
+    
+    // Marquer comme chargé après l'initialisation
+    setIsLoaded(true);
     
     return () => {
       api.off('select', onSelect);
     };
   }, [api, onSelect]);
 
+  // Gestion de l'autoplay avec moins de re-rendus
   useEffect(() => {
-    if (!api || isPaused) return;
+    if (!api || isPaused || !isLoaded) return;
     
     const intervalId = setInterval(() => {
-      api.scrollNext();
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      } else {
+        api.scrollTo(0);
+      }
     }, 3000);
     
     return () => clearInterval(intervalId);
-  }, [api, isPaused]);
+  }, [api, isPaused, isLoaded]);
 
   return (
     <section className="py-16 bg-muted/30">
@@ -101,6 +111,8 @@ export const PartnersSection = () => {
             opts={{
               align: "start",
               loop: true,
+              skipSnaps: false,
+              dragFree: false
             }}
             className="w-full max-w-5xl mx-auto"
           >
@@ -118,7 +130,12 @@ export const PartnersSection = () => {
                         <img 
                           src={partner.logo} 
                           alt={partner.name} 
-                          className="max-h-16 md:max-h-20 w-auto object-contain filter grayscale hover:grayscale-0 transition-all duration-300" 
+                          className="max-h-16 md:max-h-20 w-auto object-contain filter grayscale hover:grayscale-0 transition-all duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            // Fallback en cas d'erreur de chargement d'image
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
                         />
                       </CardContent>
                     </Card>
@@ -135,8 +152,9 @@ export const PartnersSection = () => {
             </div>
           </Carousel>
           
+          {/* Indicateurs optimisés */}
           <div className="flex justify-center mt-6 space-x-2">
-            {partners.map((_, index) => (
+            {partners.slice(0, 7).map((_, index) => (
               <button
                 key={index}
                 className={`h-2 rounded-full transition-all ${

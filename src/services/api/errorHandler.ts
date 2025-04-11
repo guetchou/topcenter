@@ -46,8 +46,9 @@ export const setupErrorHandlers = (api: AxiosInstance): void => {
           });
         } else {
           // Fallback for other errors
-          const errorMessage = error.response.data && typeof error.response.data === 'object' && 'message' in error.response.data 
-            ? String(error.response.data.message) 
+          const errorData = error.response.data;
+          const errorMessage = errorData && typeof errorData === 'object' && 'message' in errorData 
+            ? String(errorData.message) 
             : "Une erreur est survenue";
           
           toast.error("Erreur", {

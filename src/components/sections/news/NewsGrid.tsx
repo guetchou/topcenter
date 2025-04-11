@@ -1,90 +1,85 @@
 
-import React from "react";
+import React, { memo } from "react";
 import { NewsCard } from "@/components/NewsCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface NewsData {
+export interface NewsItem {
   id: string;
   title: string;
-  excerpt?: string;
-  content?: string;
+  excerpt: string;
   date: string;
   category: "company" | "industry";
   imageUrl?: string;
 }
 
 interface NewsGridProps {
-  news: NewsData[];
-  isLoading: boolean;
+  news?: NewsItem[];
+  isLoading?: boolean;
   error?: Error | null;
   showViewAll?: boolean;
   limit?: number;
 }
 
-export const NewsGrid: React.FC<NewsGridProps> = ({ 
-  news, 
-  isLoading, 
-  error, 
-  showViewAll = false,
-  limit = 6 
-}) => {
-  // Limit the number of news items if specified
-  const limitedNews = limit ? news.slice(0, limit) : news;
-
-  // Vérifier si on utilise la nouvelle route 'actualites' ou l'ancienne 'news'
-  const getDetailRoute = (id: string) => {
-    // Vérifier dans quelle route nous sommes en analysant l'URL actuelle
-    const currentPath = window.location.pathname;
-    if (currentPath.includes('/actualites') || currentPath.includes('/blog')) {
-      return `/actualites/${id}`;
-    }
-    return `/news/${id}`;
-  };
-
-  if (isLoading) {
-    return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {Array(limit).fill(0).map((_, i) => (
-          <Skeleton key={i} className="h-[400px] w-full" />
-        ))}
+// Squelette de chargement optimisé
+const NewsGridSkeleton = memo(({ count = 3 }: { count?: number }) => (
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {Array.from({ length: count }).map((_, index) => (
+      <div key={index} className="bg-card rounded-lg shadow overflow-hidden">
+        <Skeleton className="h-48 w-full" />
+        <div className="p-4 space-y-3">
+          <Skeleton className="h-6 w-3/4" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-10 w-1/3 mt-4" />
+        </div>
       </div>
-    );
-  }
+    ))}
+  </div>
+));
+NewsGridSkeleton.displayName = 'NewsGridSkeleton';
 
+// Message d'erreur optimisé
+const ErrorMessage = memo(({ message }: { message: string }) => (
+  <div className="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 text-center">
+    <p>{message}</p>
+  </div>
+));
+ErrorMessage.displayName = 'ErrorMessage';
+
+// Composant principal optimisé
+export const NewsGrid: React.FC<NewsGridProps> = memo(({
+  news = [],
+  isLoading = false,
+  error = null,
+  showViewAll = false,
+  limit = 6
+}) => {
+  const limitedNews = news.slice(0, limit);
+  
+  if (isLoading) {
+    return <NewsGridSkeleton count={limit} />;
+  }
+  
   if (error) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          Une erreur est survenue lors du chargement des actualités.
-        </AlertDescription>
-      </Alert>
-    );
+    return <ErrorMessage message="Une erreur est survenue lors du chargement des actualités." />;
   }
-
-  if (!news?.length) {
-    return (
-      <Alert>
-        <AlertDescription>
-          Aucune actualité n'est disponible pour le moment.
-        </AlertDescription>
-      </Alert>
-    );
+  
+  if (!news || news.length === 0) {
+    return <ErrorMessage message="Aucune actualité n'est disponible pour le moment." />;
   }
-
+  
   return (
     <div className="space-y-8">
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {limitedNews.map((item) => (
           <NewsCard
             key={item.id}
             id={item.id}
             title={item.title}
-            description={item.excerpt || item.content?.substring(0, 150) + "..." || ""}
+            description={item.excerpt}
             date={item.date}
             category={item.category}
             imageUrl={item.imageUrl}
@@ -93,12 +88,18 @@ export const NewsGrid: React.FC<NewsGridProps> = ({
       </div>
       
       {showViewAll && news.length > limit && (
-        <div className="flex justify-center mt-8">
+        <div className="text-center">
           <Button variant="outline" asChild>
-            <Link to="/actualites">Voir toutes les actualités</Link>
+            <Link to="/actualites" className="flex items-center gap-1">
+              Voir toutes les actualités
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
       )}
     </div>
   );
-};
+});
+NewsGrid.displayName = 'NewsGrid';
+
+export default NewsGrid;
