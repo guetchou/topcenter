@@ -2,7 +2,7 @@
 import type { HTMLAttributes } from "react";
 
 declare interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "secondary" | "outline" | "destructive";
+  variant?: "default" | "secondary" | "outline" | "destructive" | "success";
   className?: string;
   children: React.ReactNode;
 }
