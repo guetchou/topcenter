@@ -9,12 +9,11 @@ export const CallToActionSection = () => {
 
   return (
     <section className="py-20 bg-primary text-primary-foreground relative overflow-hidden">
-      {/* Animated background gradient */}
+      {/* Animated background gradient with animation applied via Tailwind */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary to-primary-foreground/20"
+        className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary to-primary-foreground/20 animate-gradient-x"
         style={{
-          backgroundSize: "200% 200%",
-          animation: "gradient-animation 15s ease infinite"
+          backgroundSize: "200% 200%"
         }}
       ></div>
       
@@ -85,39 +84,6 @@ export const CallToActionSection = () => {
           </div>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes gradient-animation {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        
-        @keyframes float {
-          0% { transform: translateY(0) translateX(0); }
-          25% { transform: translateY(-20px) translateX(10px); }
-          50% { transform: translateY(0) translateX(20px); }
-          75% { transform: translateY(20px) translateX(10px); }
-          100% { transform: translateY(0) translateX(0); }
-        }
-        
-        .animation-delay-100 {
-          animation-delay: 100ms;
-        }
-        
-        .animation-delay-200 {
-          animation-delay: 200ms;
-        }
-        
-        .animate-pulse-slow {
-          animation: pulse 3s infinite;
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 1; }
-        }
-      `}</style>
     </section>
   );
 };
