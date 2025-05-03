@@ -12,7 +12,8 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
       const registration = await navigator.serviceWorker.register('/serviceWorker.js', { 
-        scope: '/'
+        scope: '/',
+        updateViaCache: 'none' // Force la vérification des mises à jour du SW
       });
       
       console.log('Service Worker enregistré avec succès:', registration.scope);
@@ -26,12 +27,37 @@ if ('serviceWorker' in navigator) {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
               toast.info(
                 "Une mise à jour est disponible. Veuillez rafraîchir la page pour l'appliquer.",
-                { duration: 10000 }
+                { 
+                  duration: 10000,
+                  action: {
+                    label: "Mettre à jour",
+                    onClick: () => window.location.reload()
+                  }
+                }
               );
             }
           });
         }
       });
+
+      // Vérifiez périodiquement les mises à jour (toutes les 2 heures)
+      setInterval(() => {
+        registration.update();
+        console.log('Vérification des mises à jour du Service Worker');
+      }, 2 * 60 * 60 * 1000);
+      
+      // Enregistrement de la synchronisation périodique si disponible
+      if ('periodicSync' in registration) {
+        try {
+          await registration.periodicSync.register('update-cache', {
+            minInterval: 24 * 60 * 60 * 1000 // Une fois par jour
+          });
+          console.log('Synchronisation périodique enregistrée');
+        } catch (error) {
+          console.warn('Échec de l\'enregistrement de la synchronisation périodique:', error);
+        }
+      }
+      
     } catch (error) {
       console.error('Échec de l\'enregistrement du Service Worker:', error);
     }
@@ -41,6 +67,13 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'CACHE_UPDATED') {
       toast.info('Contenu mis en cache pour utilisation hors ligne');
+    } else if (event.data && event.data.type === 'NEW_CONTENT') {
+      toast.info('Nouveau contenu disponible', {
+        action: {
+          label: "Rafraîchir",
+          onClick: () => window.location.reload()
+        }
+      });
     }
   });
 }
