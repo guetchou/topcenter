@@ -156,7 +156,7 @@ const Index = () => {
         </LazySection>
         
         {/* Design toggle for development */}
-        {process.env.NODE_ENV !== 'production' && <DesignToggle />}
+        {import.meta.env.DEV && <DesignToggle />}
       </main>
     </>
   );

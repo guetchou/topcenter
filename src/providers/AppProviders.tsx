@@ -1,39 +1,18 @@
 
-import { ReactNode } from "react";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "./ThemeProvider";
-import { HelmetProvider } from "react-helmet-async";
-import { Suspense } from "react";
-import PageLoader from "@/components/PageLoader";
-import { SearchProvider } from "@/contexts/SearchContext";
-import { IntlProviderWrapper } from "@/components/IntlProvider";
-import { Toaster } from "sonner";
-
-// Création d'une instance de QueryClient en dehors du composant
-// pour éviter sa recréation à chaque rendu
-const queryClient = new QueryClient();
+import React from 'react';
+import { AuthProvider } from './AuthProvider';
+import { HelmetProvider } from 'react-helmet-async';
 
 interface AppProvidersProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
-export function AppProviders({ children }: AppProvidersProps) {
+export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="light" storageKey="color-theme">
-        <IntlProviderWrapper>
-          <SearchProvider>
-            <Suspense fallback={<PageLoader />}>
-              <HelmetProvider>
-                {children}
-                <Toaster position="top-right" richColors closeButton />
-              </HelmetProvider>
-            </Suspense>
-          </SearchProvider>
-        </IntlProviderWrapper>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </HelmetProvider>
   );
-}
+};

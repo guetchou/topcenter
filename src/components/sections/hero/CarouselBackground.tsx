@@ -76,18 +76,23 @@ export const CarouselBackground = ({
             transform: blur > 0 ? 'scale(1.05)' : undefined, // Slightly larger to prevent white edges during blur
             transition: `opacity ${animationDuration}ms ease-in-out`,
           }}
+          aria-hidden={index !== currentSlide ? "true" : "false"}
         />
       ))}
       
       {/* Optional overlay gradient */}
       {overlayGradient && (
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/30 to-primary/10 mix-blend-overlay"></div>
+        <div 
+          className="absolute inset-0 bg-gradient-to-b from-primary/30 to-primary/10 mix-blend-overlay"
+          aria-hidden="true"
+        ></div>
       )}
       
       {/* Dark overlay for better text readability */}
       <div 
         className="absolute inset-0 bg-black transition-opacity duration-500"
         style={{ opacity: overlayOpacity }}
+        aria-hidden="true"
       ></div>
     </div>
   );
