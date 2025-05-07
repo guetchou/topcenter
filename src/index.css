@@ -1,77 +1,58 @@
 
-@import './styles/animations.css';
-@import './styles/transitions.css';
-@import './styles/overrides.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
+@import "src/styles/animations.css";
+@import "src/styles/transitions.css";
+
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
- 
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
- 
-    /* Muted orange primary color */
-    --primary: 24 70% 50%;
-    --primary-foreground: 0 0% 100%;
- 
-    --secondary: 30 30% 97%;
-    --secondary-foreground: 24 60% 30%;
- 
-    --muted: 30 10% 96.1%;
-    --muted-foreground: 25 5% 46.9%;
- 
-    --accent: 30 30% 97%;
-    --accent-foreground: 24 60% 40%;
- 
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 24 5% 90%;
-    --input: 24 5% 90%;
-    --ring: 24 60% 50%;
- 
-    --radius: 0.75rem;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
  
   .dark {
     --background: 222.2 84% 4.9%;
-    --foreground: 0 0% 98%;
- 
+    --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
-    --card-foreground: 0 0% 98%;
- 
+    --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
-    --popover-foreground: 0 0% 98%;
- 
-    /* Muted orange primary color in dark mode */
-    --primary: 24 60% 50%;
-    --primary-foreground: 0 0% 100%;
- 
-    --secondary: 24 30% 17.5%;
-    --secondary-foreground: 0 0% 98%;
- 
-    --muted: 24 30% 17.5%;
-    --muted-foreground: 24 5% 65.1%;
- 
-    --accent: 24 30% 17.5%;
-    --accent-foreground: 0 0% 98%;
- 
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
- 
-    --border: 24 30% 17.5%;
-    --input: 24 30% 17.5%;
-    --ring: 24 60% 45%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.5% 48%;
   }
 }
+
  
 @layer base {
   * {
@@ -79,61 +60,48 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
 }
 
-@layer utilities {
-  /* Glassmorphism effects */
-  .glass {
-    @apply backdrop-blur-lg bg-white/10 border border-white/20;
+/* Accessibilité */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: white;
+  padding: 8px;
+  z-index: 100;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Animations spécifiques au site */
+.fade-in-slide-up {
+  animation: fadeInSlideUp 0.5s ease forwards;
+}
+
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .glass-dark {
-    @apply backdrop-blur-lg bg-black/30 border border-white/10;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  /* Text gradient effects */
-  .text-gradient {
-    @apply bg-gradient-to-br from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent;
-  }
-  
-  /* Card effects */
-  .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
-  }
-  
-  /* Button effects */
-  .btn-glow {
-    @apply relative overflow-hidden;
-  }
-  
-  .btn-glow::after {
-    @apply content-[''] absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300;
-  }
-  
-  .btn-glow:hover::after {
-    @apply opacity-100;
-  }
-  
-  /* Animation delay utilities */
-  .animation-delay-100 {
-    animation-delay: 100ms;
-  }
-  
-  .animation-delay-200 {
-    animation-delay: 200ms;
-  }
-  
-  .animation-delay-300 {
-    animation-delay: 300ms;
-  }
-  
-  .animation-delay-400 {
-    animation-delay: 400ms;
-  }
-  
-  .animation-delay-500 {
-    animation-delay: 500ms;
-  }
+}
+
+/* Style spécial pour le carrousel hero */
+.hero-carousel .embla__slide {
+  height: 70vh;
+  position: relative;
+}
+
+.hero-content-container {
+  position: relative;
+  z-index: 10;
 }

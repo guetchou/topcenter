@@ -83,8 +83,8 @@ const LazySection = ({
 };
 
 const Index = () => {
-  // Determine which sections to use (old or new design)
-  const useNewHero = shouldUseNewDesign('hero');
+  // Toujours utiliser le nouveau design du héros avec le carrousel
+  const useNewHero = true;
   const useNewServices = shouldUseNewDesign('services');
   const useNewTestimonials = shouldUseNewDesign('testimonials');
 

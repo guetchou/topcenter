@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { CarouselBackground } from "./hero/CarouselBackground";
@@ -8,7 +8,7 @@ import { HeroContent } from "./hero/HeroContent";
 const NewHeroSection = () => {
   const navigate = useNavigate();
   
-  // Images for the background carousel - added more images
+  // Images pour le carrousel d'arrière-plan - ajout de plusieurs images
   const backgroundImages = [
     "/lovable-uploads/staff-tce.jpg",
     "/lovable-uploads/equipe-topcenter.jpg",
@@ -18,7 +18,7 @@ const NewHeroSection = () => {
   ];
 
   const handleCallNow = () => {
-    // Simulate a call or contact request
+    // Simuler une demande d'appel ou de contact
     toast.success("Demande de contact", {
       description: "Un membre de notre équipe vous contactera bientôt."
     });
@@ -34,7 +34,7 @@ const NewHeroSection = () => {
 
   return (
     <section className="relative bg-gradient-to-r from-primary/90 to-primary py-20 text-white overflow-hidden min-h-[80vh] flex items-center">
-      {/* Background carousel with enhanced effects */}
+      {/* Carrousel d'arrière-plan avec effets améliorés */}
       <CarouselBackground 
         images={backgroundImages} 
         interval={5000}
