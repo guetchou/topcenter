@@ -9,15 +9,24 @@ interface AuthContextType {
     email?: string;
     role?: string;
   } | null;
+  impersonatedUser: {
+    id?: string;
+    name?: string;
+    email?: string;
+    role?: string;
+  } | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  stopImpersonation: () => void;
 }
 
 const defaultAuthContext: AuthContextType = {
   isLoggedIn: false,
   user: null,
+  impersonatedUser: null,
   login: async () => false,
-  logout: () => {}
+  logout: () => {},
+  stopImpersonation: () => {}
 };
 
 const AuthContext = createContext<AuthContextType>(defaultAuthContext);
@@ -31,6 +40,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<AuthContextType['user']>(null);
+  const [impersonatedUser, setImpersonatedUser] = useState<AuthContextType['impersonatedUser']>(null);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -53,10 +63,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
+    setImpersonatedUser(null);
+  };
+
+  const stopImpersonation = () => {
+    setImpersonatedUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{ 
+      isLoggedIn, 
+      user, 
+      impersonatedUser,
+      login, 
+      logout,
+      stopImpersonation 
+    }}>
       {children}
     </AuthContext.Provider>
   );

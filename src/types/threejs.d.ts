@@ -11,5 +11,9 @@ declare namespace JSX {
     sphereGeometry: any;
     boxGeometry: any;
     orbitControls: any;
+    text: any;
+    line: any;
+    sphere: any;
+    canvas: any;
   }
 }
