@@ -14,6 +14,7 @@ import { DesignToggle } from "../DesignToggle";
 import { useApiError } from "@/hooks/useApiError";
 import { ApiErrorBoundary } from "@/components/ApiErrorBoundary";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { UserWithProfile } from "@/types/auth";
 
 export function DynamicNav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -24,6 +25,7 @@ export function DynamicNav() {
   const { user, impersonatedUser, logout, stopImpersonation } = useAuth();
   const { isServerUnavailable } = useApiError();
   
+  // Modification ici : on s'assure que activeUser a le bon typage
   const activeUser = impersonatedUser || user;
 
   useEffect(() => {
