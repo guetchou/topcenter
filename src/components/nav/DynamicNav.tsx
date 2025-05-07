@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { SearchDialog } from "./SearchDialog";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "../ThemeToggle";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/providers/AuthProvider";
 import { LogIn, Menu, Search } from "lucide-react";
 import { useMenus, MenuItem } from "@/hooks/useMenus";
 import { UserProfileMenu } from "./UserProfileMenu";
@@ -161,3 +161,5 @@ export function DynamicNav() {
     </header>
   );
 }
+
+export default DynamicNav;

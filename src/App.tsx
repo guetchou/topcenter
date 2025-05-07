@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,9 +9,9 @@ import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { WebPushNotification } from '@/components/notifications/WebPushNotification';
 
 // Import lazily loaded components
-const DynamicNav = lazy(() => import('@/components/nav/DynamicNav'));
-const Footer = lazy(() => import('@/components/Footer'));
-const ScrollToTop = lazy(() => import('@/components/ScrollToTop'));
+const DynamicNav = lazy(() => import('@/components/nav/DynamicNav').then(module => ({ default: module.DynamicNav || module.default || module })));
+const Footer = lazy(() => import('@/components/Footer').then(module => ({ default: module.Footer || module.default || module })));
+const ScrollToTop = lazy(() => import('@/components/ScrollToTop').then(module => ({ default: module.ScrollToTop || module.default || module })));
 
 // Import lazily loaded pages
 const Index = lazy(() => import('@/pages/Index'));
