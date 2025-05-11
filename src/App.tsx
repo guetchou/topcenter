@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -27,6 +26,24 @@ const Appointments = lazy(() => import('@/pages/Appointments'));
 const BookAppointment = lazy(() => import('@/pages/BookAppointment'));
 const Login = lazy(() => import('@/pages/Login'));
 const SignUp = lazy(() => import('@/pages/SignUp'));
+const News = lazy(() => import('@/pages/News'));
+const FAQ = lazy(() => import('@/pages/FAQ'));
+const Devis = lazy(() => import('@/pages/Devis'));
+const Training = lazy(() => import('@/pages/Training'));
+const TrainingContent = lazy(() => import('@/pages/TrainingContent'));
+const PrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+const Terms = lazy(() => import('@/pages/Terms'));
+const Support = lazy(() => import('@/pages/Support'));
+const TeamPage = lazy(() => import('@/pages/TeamPage'));
+const TestimonialsPage = lazy(() => import('@/pages/TestimonialsPage'));
+// Admin modules
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
+const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
+const CredentialsDocPage = lazy(() => import('@/pages/admin/CredentialsDocPage'));
+const PocketBaseDashboard = lazy(() => import('@/pages/admin/PocketBaseDashboard'));
+const PocketBaseTestPage = lazy(() => import('@/pages/admin/PocketBaseTest'));
+const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout'));
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -44,12 +61,30 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/deploy" element={<DeployDashboard />} />
             <Route path="/news/:id" element={<NewsDetail />} />
+            <Route path="/actualites" element={<News />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/devis" element={<Devis />} />
+            <Route path="/training" element={<Training />} />
+            <Route path="/training/content" element={<TrainingContent />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/team" element={<TeamPage />} />
+            <Route path="/testimonials" element={<TestimonialsPage />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/profile" element={isLoggedIn ? <Profile /> : <Login />} />
             <Route path="/appointments" element={isLoggedIn ? <Appointments /> : <Login />} />
             <Route path="/book" element={isLoggedIn ? <BookAppointment /> : <Login />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
+            {/* Admin routes */}
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/credentials" element={<CredentialsDocPage />} />
+            <Route path="/admin/pocketbase" element={<PocketBaseDashboard />} />
+            <Route path="/admin/pocketbase-test" element={<PocketBaseTestPage />} />
+            <Route path="/admin/cms" element={<CMSLayout />} />
           </Routes>
         </main>
         
