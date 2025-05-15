@@ -44,3 +44,8 @@ export interface PermissionCheck {
   minRole: AuthRole;
   currentRole: AuthRole | undefined;
 }
+
+// Legacy auth types for backward compatibility
+export type UserRole = AuthRole;
+export type DbUserRole = AuthRole;
+export type AuthUser = UserWithProfile;
