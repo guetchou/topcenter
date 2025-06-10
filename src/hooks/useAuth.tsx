@@ -40,6 +40,22 @@ export const useAuth = () => {
       throw error;
     }
   };
+
+  const loginWithGoogle = async () => {
+    try {
+      await authService.loginWithGoogle();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const promoteToSuperAdmin = async (userId: string) => {
+    try {
+      await authService.promoteToSuperAdmin(userId);
+    } catch (error) {
+      throw error;
+    }
+  };
   
   return {
     // State
@@ -50,11 +66,13 @@ export const useAuth = () => {
     
     // Actions
     login,
+    loginWithGoogle,
     logout: authService.logout,
     register: authService.register,
     checkUser: authService.checkUser,
     resetPassword: authService.resetPassword,
     impersonateUser: authService.impersonateUser,
     stopImpersonation: authService.stopImpersonation,
+    promoteToSuperAdmin,
   };
 };

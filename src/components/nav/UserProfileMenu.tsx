@@ -1,3 +1,4 @@
+
 import React from "react";
 import {
   DropdownMenu,
@@ -8,16 +9,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { MoreHorizontal } from "lucide-react";
+import { UserWithProfile } from '@/types/auth';
 
 interface UserProfileMenuProps {
+  user: UserWithProfile;
+  logout: () => Promise<void>;
   className?: string;
 }
 
-export function UserProfileMenu({ className }: UserProfileMenuProps) {
-  const { user, logout } = useAuth();
+export function UserProfileMenu({ user, logout, className }: UserProfileMenuProps) {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -37,18 +39,16 @@ export function UserProfileMenu({ className }: UserProfileMenuProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user?.fullName || user?.full_name || 'Utilisateur'}
-                    </p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user?.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-        
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {user?.fullName || user?.full_name || 'Utilisateur'}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user?.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => navigate("/profile")}>
           Profil

@@ -1,3 +1,4 @@
+
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -8,7 +9,7 @@ import { PWAInstallPrompt } from '@/components/PWAInstallPrompt';
 import { WebPushNotification } from '@/components/notifications/WebPushNotification';
 
 // Import lazily loaded components
-const DynamicNav = lazy(() => import('@/components/nav/DynamicNav'));
+const DynamicNav = lazy(() => import('@/components/nav/DynamicNav').then(module => ({ default: module.DynamicNav })));
 const Footer = lazy(() => import('@/components/Footer'));
 const ScrollToTop = lazy(() => import('@/components/ScrollToTop'));
 
@@ -37,13 +38,13 @@ const Support = lazy(() => import('@/pages/Support'));
 const TeamPage = lazy(() => import('@/pages/TeamPage'));
 const TestimonialsPage = lazy(() => import('@/pages/TestimonialsPage'));
 // Admin modules
-const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard').then(module => ({ default: module.default })));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 const CredentialsDocPage = lazy(() => import('@/pages/admin/CredentialsDocPage'));
 const PocketBaseDashboard = lazy(() => import('@/pages/admin/PocketBaseDashboard'));
 const PocketBaseTestPage = lazy(() => import('@/pages/admin/PocketBaseTest'));
-const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout'));
+const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout').then(module => ({ default: module.default })));
 
 function App() {
   const { isLoggedIn } = useAuth();

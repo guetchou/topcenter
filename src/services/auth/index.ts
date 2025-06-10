@@ -3,27 +3,6 @@ import { authenticationService } from './authenticationService';
 import { userService } from './userService';
 import { adminService } from './adminService';
 
-// Add missing methods to satisfy the expected interface
-const updateProfile = async (updates: any) => {
-  console.warn('updateProfile not fully implemented');
-  return Promise.resolve();
-};
-
-const getUsers = async () => {
-  console.warn('getUsers not fully implemented');
-  return Promise.resolve([]);
-};
-
-const createUser = async (userData: any) => {
-  console.warn('createUser not fully implemented');
-  return Promise.resolve();
-};
-
-const deleteUser = async (userId: string) => {
-  console.warn('deleteUser not fully implemented');
-  return Promise.resolve();
-};
-
 export const authService = {
   // Authentication methods
   login: async (email: string, password: string, devMode = false) => {
@@ -47,18 +26,21 @@ export const authService = {
   
   // User methods
   updateUserProfile: async (updates: any) => {
-    return updateProfile(updates);
+    return authenticationService.updateProfile(updates);
   },
   
   // Admin methods
   getUsers: async () => {
-    return getUsers();
+    console.warn('getUsers not fully implemented');
+    return Promise.resolve([]);
   },
   createUser: async (userData: any) => {
-    return createUser(userData);
+    console.warn('createUser not fully implemented');
+    return Promise.resolve();
   },
   deleteUser: async (userId: string) => {
-    return deleteUser(userId);
+    console.warn('deleteUser not fully implemented');
+    return Promise.resolve();
   },
   impersonateUser: async (userId: string) => {
     return adminService.impersonateUser(userId);
