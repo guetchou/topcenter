@@ -9,12 +9,14 @@ declare global {
         position?: [number, number, number];
         rotation?: [number, number, number];
         scale?: [number, number, number];
+        ref?: React.Ref<THREE.Group>;
       };
       mesh: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         children?: React.ReactNode;
         position?: [number, number, number];
         rotation?: [number, number, number];
         scale?: [number, number, number];
+        ref?: React.Ref<THREE.Mesh>;
       };
       sphereGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         args?: [number, number?, number?];
