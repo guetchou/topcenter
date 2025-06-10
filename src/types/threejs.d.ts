@@ -1,5 +1,4 @@
 
-import { Object3D } from 'three';
 import * as THREE from 'three';
 
 declare global {
@@ -10,9 +9,18 @@ declare global {
       sphereGeometry: any;
       boxGeometry: any;
       meshStandardMaterial: any;
+      meshBasicMaterial: any;
       ambientLight: any;
       pointLight: any;
       directionalLight: any;
+      spotLight: any;
+      hemisphereLight: any;
+      primitive: any;
+      scene: any;
+      perspectiveCamera: any;
+      orthographicCamera: any;
+      canvas: any;
+      extend: any;
     }
   }
 }

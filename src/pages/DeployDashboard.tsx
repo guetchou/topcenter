@@ -1,13 +1,10 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { AlertCircle, CheckCircle2, Clock, GitPullRequest, Server, Users } from "lucide-react";
 import { DeploymentView } from "@/components/deploy/DeploymentView";
-import { QuotationTab } from "@/pages/deploy/QuotationTab";
-import { HistoryTab } from "@/pages/deploy/HistoryTab";
+import QuotationTab from "@/pages/deploy/QuotationTab";
+import HistoryTab from "@/pages/deploy/HistoryTab";
 import { useDeploymentSimulator } from "@/hooks/useDeploymentSimulator";
 
 const DeployDashboard = () => {

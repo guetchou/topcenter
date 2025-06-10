@@ -4,15 +4,6 @@ import { QuoteForm } from "@/components/deploy/QuoteForm";
 import { QuoteResult } from "@/components/deploy/QuoteResult";
 
 interface QuotationTabProps {
-  businessInfo: {
-    companyName: string;
-    contactName: string;
-    email: string;
-    phone: string;
-    industry: string;
-    employees: number[];
-    budget: string;
-  };
   packageConfig: {
     agentCount: number[];
     servicePeriod: string;
@@ -21,42 +12,67 @@ interface QuotationTabProps {
     includeCRM: boolean;
     multilingual: boolean;
   };
-  quoteResult: {
-    basePrice: number;
-    setup: number;
-    additionalFeatures: number;
-    total: number;
-  } | null;
-  handleBusinessInfoChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSliderChange: (name: string, value: number[]) => void;
-  handleSelectChange: (name: string, value: string) => void;
-  handleSwitchChange: (name: string, checked: boolean) => void;
-  generateQuote: () => void;
-  resetForm: () => void;
-  downloadQuote: () => void;
-  setActiveTab: (tab: string) => void;
+  setPackageConfig: (config: any) => void;
+  onProceedToDeployment: () => void;
 }
 
 const QuotationTab: React.FC<QuotationTabProps> = ({
-  businessInfo,
   packageConfig,
-  quoteResult,
-  handleBusinessInfoChange,
-  handleSliderChange,
-  handleSelectChange,
-  handleSwitchChange,
-  generateQuote,
-  resetForm,
-  downloadQuote,
-  setActiveTab
+  setPackageConfig,
+  onProceedToDeployment
 }) => {
+  const businessInfo = {
+    companyName: '',
+    contactName: '',
+    email: '',
+    phone: '',
+    industry: '',
+    employees: [10],
+    budget: '10000-50000'
+  };
+
+  const quoteResult = {
+    basePrice: 5000,
+    setup: 1000,
+    additionalFeatures: 2000,
+    total: 8000
+  };
+
+  const handleBusinessInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Handle business info changes
+  };
+
+  const handleSliderChange = (name: string, value: number[]) => {
+    setPackageConfig({ ...packageConfig, [name]: value });
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setPackageConfig({ ...packageConfig, [name]: value });
+  };
+
+  const handleSwitchChange = (name: string, checked: boolean) => {
+    setPackageConfig({ ...packageConfig, [name]: checked });
+  };
+
+  const generateQuote = () => {
+    console.log('Generating quote...');
+  };
+
+  const resetForm = () => {
+    console.log('Resetting form...');
+  };
+
+  const downloadQuote = () => {
+    console.log('Downloading quote...');
+  };
+
   return (
     <div className="space-y-8">
       <QuoteForm 
         businessInfo={businessInfo}
-        setBusinessInfo={() => {}} // This prop is not used in the component
+        setBusinessInfo={() => {}}
         packageConfig={packageConfig}
-        setPackageConfig={() => {}} // This prop is not used in the component
+        setPackageConfig={setPackageConfig}
         generateQuote={generateQuote}
         resetForm={resetForm}
         handleBusinessInfoChange={handleBusinessInfoChange}
@@ -70,7 +86,7 @@ const QuotationTab: React.FC<QuotationTabProps> = ({
           quoteResult={quoteResult}
           packageConfig={packageConfig}
           downloadQuote={downloadQuote}
-          setActiveTab={setActiveTab}
+          setActiveTab={onProceedToDeployment}
         />
       )}
     </div>

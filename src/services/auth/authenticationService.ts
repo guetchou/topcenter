@@ -1,13 +1,10 @@
-
 import { authStore } from '@/stores/authStore';
 import api from '@/services/api';
 import { UserWithProfile } from '@/types/auth';
 
 // Helper for development mode
 const isDevelopment = () => {
-  return window.location.hostname === 'localhost' || 
-         window.location.hostname === '127.0.0.1' || 
-         window.location.hostname.includes('vercel.app');
+  return import.meta.env.DEV || window.location.hostname === 'localhost';
 };
 
 export const authenticationService = {
@@ -33,10 +30,10 @@ export const authenticationService = {
         return mockUser;
       }
       
-      // Utiliser la vraie API
+      // Utiliser la vraie API backend
       const response = await api.post('/auth/login', { email, password });
       
-      if (response.data.success && response.data.token) {
+      if (response.data.token) {
         localStorage.setItem('auth_token', response.data.token);
         authStore.setState({ 
           user: response.data.user,
@@ -49,12 +46,9 @@ export const authenticationService = {
       throw new Error(response.data.message || 'Erreur de connexion');
     } catch (error: any) {
       authStore.setState({ isLoading: false });
-      throw new Error(error.response?.data?.message || error.message || 'Erreur de connexion');
+      const errorMessage = error.response?.data?.message || error.message || 'Erreur de connexion';
+      throw new Error(errorMessage);
     }
-  },
-  
-  loginWithGoogle: async () => {
-    throw new Error('Google login not implemented yet');
   },
   
   register: async (email: string, password: string, fullName: string) => {
@@ -71,13 +65,12 @@ export const authenticationService = {
       throw new Error(response.data.message || 'Erreur lors de l\'inscription');
     } catch (error: any) {
       authStore.setState({ isLoading: false });
-      throw new Error(error.response?.data?.message || error.message || 'Erreur lors de l\'inscription');
+      const errorMessage = error.response?.data?.message || error.message || 'Erreur lors de l\'inscription';
+      throw new Error(errorMessage);
     }
   },
   
   logout: async () => {
-    authStore.setState({ isLoading: true });
-    
     try {
       localStorage.removeItem('auth_token');
       authStore.setState({ 
@@ -87,17 +80,7 @@ export const authenticationService = {
         impersonatedUser: null
       });
     } catch (error: any) {
-      authStore.setState({ isLoading: false });
-      throw error;
-    }
-  },
-  
-  resetPassword: async (email: string) => {
-    try {
-      const response = await api.post('/auth/reset-password', { email });
-      return response.data;
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || error.message || 'Erreur lors de la réinitialisation');
+      console.error('Erreur lors de la déconnexion:', error);
     }
   },
   
@@ -135,7 +118,7 @@ export const authenticationService = {
         return mockUser;
       }
       
-      // Utiliser la vraie API
+      // Utiliser la vraie API backend
       const response = await api.get('/users/profile');
       
       if (response.data.success && response.data.user) {
@@ -154,6 +137,19 @@ export const authenticationService = {
       localStorage.removeItem('auth_token');
       authStore.setState({ isLoading: false });
     }
+  },
+
+  resetPassword: async (email: string) => {
+    try {
+      const response = await api.post('/auth/reset-password', { email });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Erreur lors de la réinitialisation');
+    }
+  },
+  
+  loginWithGoogle: async () => {
+    throw new Error('Google login not implemented yet');
   },
 
   updateProfile: async (updates: any) => {
