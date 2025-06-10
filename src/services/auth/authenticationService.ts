@@ -1,6 +1,7 @@
 
 import { authStore } from '@/stores/authStore';
 import api from '@/services/api';
+import { UserWithProfile } from '@/types/auth';
 
 // Helper for development mode
 const isDevelopment = () => {
@@ -16,8 +17,8 @@ export const authenticationService = {
     try {
       // Si on est en mode développement et devMode est true, on utilise le mode dev
       if (devMode && isDevelopment()) {
-        const mockUser = {
-          id: 1,
+        const mockUser: UserWithProfile = {
+          id: '1',
           email: email,
           fullName: 'Utilisateur Dev',
           role: 'admin'
@@ -50,6 +51,10 @@ export const authenticationService = {
       authStore.setState({ isLoading: false });
       throw new Error(error.response?.data?.message || error.message || 'Erreur de connexion');
     }
+  },
+  
+  loginWithGoogle: async () => {
+    throw new Error('Google login not implemented yet');
   },
   
   register: async (email: string, password: string, fullName: string) => {
@@ -115,8 +120,8 @@ export const authenticationService = {
       
       // En mode dev avec token fictif
       if (isDevelopment() && token === 'dev-mode-token') {
-        const mockUser = {
-          id: 1,
+        const mockUser: UserWithProfile = {
+          id: '1',
           email: 'admin@topcenter.app',
           fullName: 'Utilisateur Dev',
           role: 'admin'
