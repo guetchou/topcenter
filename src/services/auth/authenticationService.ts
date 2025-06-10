@@ -1,6 +1,6 @@
 
 import { authStore } from '@/stores/authStore';
-import { authModule } from '@/integrations/api/modules/authModule';
+import api from '@/services/api';
 
 // Helper for development mode
 const isDevelopment = () => {
@@ -15,38 +15,40 @@ export const authenticationService = {
     
     try {
       // Si on est en mode développement et devMode est true, on utilise le mode dev
-      const { data, error } = await authModule.signIn({ email, password }, devMode && isDevelopment());
-      
-      if (error) throw error;
-      
-      if (data && data.user) {
+      if (devMode && isDevelopment()) {
+        const mockUser = {
+          id: 1,
+          email: email,
+          fullName: 'Utilisateur Dev',
+          role: 'admin'
+        };
+        
+        localStorage.setItem('auth_token', 'dev-mode-token');
         authStore.setState({ 
-          user: data.user,
+          user: mockUser,
           isAuthenticated: true,
           isLoading: false
         });
-        return data.user;
+        return mockUser;
       }
       
-      throw new Error('Erreur de connexion: données utilisateur manquantes');
-    } catch (error: any) {
-      authStore.setState({ isLoading: false });
-      throw error;
-    }
-  },
-  
-  loginWithGoogle: async () => {
-    authStore.setState({ isLoading: true });
-    
-    try {
-      // Rediriger vers l'auth Google via Supabase ou autre provider
-      // Cette partie dépend de votre implémentation spécifique
+      // Utiliser la vraie API
+      const response = await api.post('/auth/login', { email, password });
       
-      // Pour simulation, on va juste lancer une erreur
-      throw new Error('Google login not implemented yet');
+      if (response.data.success && response.data.token) {
+        localStorage.setItem('auth_token', response.data.token);
+        authStore.setState({ 
+          user: response.data.user,
+          isAuthenticated: true,
+          isLoading: false
+        });
+        return response.data.user;
+      }
+      
+      throw new Error(response.data.message || 'Erreur de connexion');
     } catch (error: any) {
       authStore.setState({ isLoading: false });
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Erreur de connexion');
     }
   },
   
@@ -54,15 +56,17 @@ export const authenticationService = {
     authStore.setState({ isLoading: true });
     
     try {
-      const { data, error } = await authModule.signUp({ email, password });
+      const response = await api.post('/auth/register', { email, password, fullName });
       
-      if (error) throw error;
+      if (response.data.success) {
+        authStore.setState({ isLoading: false });
+        return response.data;
+      }
       
-      authStore.setState({ isLoading: false });
-      return data;
+      throw new Error(response.data.message || 'Erreur lors de l\'inscription');
     } catch (error: any) {
       authStore.setState({ isLoading: false });
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Erreur lors de l\'inscription');
     }
   },
   
@@ -70,10 +74,7 @@ export const authenticationService = {
     authStore.setState({ isLoading: true });
     
     try {
-      const { error } = await authModule.signOut();
-      
-      if (error) throw error;
-      
+      localStorage.removeItem('auth_token');
       authStore.setState({ 
         user: null,
         isAuthenticated: false,
@@ -88,18 +89,14 @@ export const authenticationService = {
   
   resetPassword: async (email: string) => {
     try {
-      const { data, error } = await authModule.resetPasswordForEmail(email);
-      
-      if (error) throw error;
-      
-      return data;
+      const response = await api.post('/auth/reset-password', { email });
+      return response.data;
     } catch (error: any) {
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Erreur lors de la réinitialisation');
     }
   },
   
   checkUser: async () => {
-    // Ne pas afficher le loader pour cette vérification silencieuse
     const currentState = authStore.getState();
     
     if (currentState.isLoading || currentState.isAuthenticated) {
@@ -109,27 +106,72 @@ export const authenticationService = {
     authStore.setState({ isLoading: true });
     
     try {
-      const { data, error } = await authModule.getUser();
+      const token = localStorage.getItem('auth_token');
       
-      if (error) {
-        console.error('Error checking user:', error);
+      if (!token) {
         authStore.setState({ isLoading: false });
         return;
       }
       
-      if (data && data.user) {
+      // En mode dev avec token fictif
+      if (isDevelopment() && token === 'dev-mode-token') {
+        const mockUser = {
+          id: 1,
+          email: 'admin@topcenter.app',
+          fullName: 'Utilisateur Dev',
+          role: 'admin'
+        };
+        
         authStore.setState({ 
-          user: data.user,
+          user: mockUser,
           isAuthenticated: true,
           isLoading: false
         });
-        return data.user;
+        return mockUser;
+      }
+      
+      // Utiliser la vraie API
+      const response = await api.get('/users/profile');
+      
+      if (response.data.success && response.data.user) {
+        authStore.setState({ 
+          user: response.data.user,
+          isAuthenticated: true,
+          isLoading: false
+        });
+        return response.data.user;
       } else {
+        localStorage.removeItem('auth_token');
         authStore.setState({ isLoading: false });
       }
     } catch (error: any) {
       console.error('Error checking user:', error);
+      localStorage.removeItem('auth_token');
       authStore.setState({ isLoading: false });
+    }
+  },
+
+  updateProfile: async (updates: any) => {
+    try {
+      const response = await api.put('/users/profile', updates);
+      
+      if (response.data.success) {
+        authStore.setState({ user: response.data.user });
+        return response.data.user;
+      }
+      
+      throw new Error(response.data.message || 'Erreur lors de la mise à jour');
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Erreur lors de la mise à jour');
+    }
+  },
+
+  updatePassword: async (currentPassword: string, newPassword: string) => {
+    try {
+      const response = await api.put('/users/password', { currentPassword, newPassword });
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || error.message || 'Erreur lors du changement de mot de passe');
     }
   }
 };
