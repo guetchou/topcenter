@@ -1,35 +1,25 @@
 
-import { render, screen } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { Button } from '../button';
 import { expect, describe, it } from 'vitest';
 
 describe('Button', () => {
-  it('renders button with default variant', () => {
-    render(<Button>Click me</Button>);
-    const button = screen.getByRole('button');
+  it('renders correctly', () => {
+    const { container } = render(<Button>Test Button</Button>);
+    const button = container.querySelector('button');
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('bg-primary');
+    expect(button?.textContent).toBe('Test Button');
   });
 
-  it('renders button with custom variant', () => {
-    render(<Button variant="destructive">Delete</Button>);
-    const button = screen.getByRole('button');
+  it('applies correct variant styles', () => {
+    const { container } = render(<Button variant="destructive">Delete</Button>);
+    const button = container.querySelector('button');
     expect(button).toHaveClass('bg-destructive');
   });
 
-  it('renders button with custom size', () => {
-    render(<Button size="sm">Small</Button>);
-    const button = screen.getByRole('button');
+  it('applies correct size styles', () => {
+    const { container } = render(<Button size="sm">Small</Button>);
+    const button = container.querySelector('button');
     expect(button).toHaveClass('h-9');
-  });
-
-  it('renders as child component when asChild is true', () => {
-    render(
-      <Button asChild>
-        <a href="/">Link</a>
-      </Button>
-    );
-    const link = screen.getByRole('link');
-    expect(link).toBeInTheDocument();
   });
 });

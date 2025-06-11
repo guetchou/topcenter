@@ -72,6 +72,7 @@ function App() {
             <Route path="/support" element={<Support />} />
             <Route path="/team" element={<TeamPage />} />
             <Route path="/testimonials" element={<TestimonialsPage />} />
+            <Route path="/python-services" element={<PythonServices />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/profile" element={isLoggedIn ? <Profile /> : <Login />} />
             <Route path="/appointments" element={isLoggedIn ? <Appointments /> : <Login />} />
