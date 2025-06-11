@@ -17,6 +17,9 @@ declare global {
         rotation?: [number, number, number];
         scale?: [number, number, number];
         ref?: React.Ref<THREE.Mesh>;
+        onClick?: (event: any) => void;
+        onPointerOver?: (event: any) => void;
+        onPointerOut?: (event: any) => void;
       };
       sphereGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         args?: [number, number?, number?];
@@ -24,13 +27,20 @@ declare global {
       boxGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         args?: [number, number?, number?];
       };
+      cylinderGeometry: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
+        args?: [number, number?, number?, number?];
+      };
       meshStandardMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         color?: string | number;
         metalness?: number;
         roughness?: number;
+        transparent?: boolean;
+        opacity?: number;
       };
       meshBasicMaterial: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         color?: string | number;
+        transparent?: boolean;
+        opacity?: number;
       };
       ambientLight: React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
         intensity?: number;

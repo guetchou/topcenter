@@ -38,14 +38,13 @@ const Support = lazy(() => import('@/pages/Support'));
 const TeamPage = lazy(() => import('@/pages/TeamPage'));
 const TestimonialsPage = lazy(() => import('@/pages/TestimonialsPage'));
 
-// Admin modules - fix imports with proper default exports
-const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard').then(module => ({ default: module.default })));
+// Admin modules - simplified imports
+const AdminDashboard = lazy(() => import('@/pages/Dashboard'));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 const CredentialsDocPage = lazy(() => import('@/pages/admin/CredentialsDocPage'));
 const PocketBaseDashboard = lazy(() => import('@/pages/admin/PocketBaseDashboard'));
 const PocketBaseTestPage = lazy(() => import('@/pages/admin/PocketBaseTest'));
-const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout').then(module => ({ default: module.default })));
 
 function App() {
   const { isLoggedIn } = useAuth();
@@ -86,7 +85,6 @@ function App() {
             <Route path="/admin/credentials" element={<CredentialsDocPage />} />
             <Route path="/admin/pocketbase" element={<PocketBaseDashboard />} />
             <Route path="/admin/pocketbase-test" element={<PocketBaseTestPage />} />
-            <Route path="/admin/cms" element={<CMSLayout />} />
           </Routes>
         </main>
         
