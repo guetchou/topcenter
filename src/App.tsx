@@ -37,14 +37,15 @@ const Terms = lazy(() => import('@/pages/Terms'));
 const Support = lazy(() => import('@/pages/Support'));
 const TeamPage = lazy(() => import('@/pages/TeamPage'));
 const TestimonialsPage = lazy(() => import('@/pages/TestimonialsPage'));
-// Admin modules - fix imports
-const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard'));
+
+// Admin modules - fix imports with proper default exports
+const AdminDashboard = lazy(() => import('@/pages/admin/Dashboard').then(module => ({ default: module.default })));
 const UserManagement = lazy(() => import('@/pages/admin/UserManagement'));
 const AdminSettings = lazy(() => import('@/pages/admin/AdminSettings'));
 const CredentialsDocPage = lazy(() => import('@/pages/admin/CredentialsDocPage'));
 const PocketBaseDashboard = lazy(() => import('@/pages/admin/PocketBaseDashboard'));
 const PocketBaseTestPage = lazy(() => import('@/pages/admin/PocketBaseTest'));
-const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout'));
+const CMSLayout = lazy(() => import('@/pages/admin/CMSLayout').then(module => ({ default: module.default })));
 
 function App() {
   const { isLoggedIn } = useAuth();

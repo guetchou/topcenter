@@ -1,21 +1,12 @@
+
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { MainNav } from "@/components/nav/MainNav"
 import { SiteHeader } from "@/components/nav/SiteHeader"
 import { UserProfileMenu } from "@/components/nav/UserProfileMenu"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { LogOut } from "lucide-react"
 import { UserWithProfile } from '@/types/auth';
 
 interface Props extends React.HTMLAttributes<HTMLElement> {
@@ -27,9 +18,6 @@ export function DynamicNav({ className }: Props) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Determine if the current route is the root path
-  const isRootPath = location.pathname === '/';
-
   // Mock user data for development
   const mockUser: UserWithProfile = {
     id: '1',
@@ -40,11 +28,7 @@ export function DynamicNav({ className }: Props) {
 
   const currentUser = user || mockUser;
 
-  // Conditionally render the header based on the route
-  if (isRootPath) {
-    return null;
-  }
-
+  // Always show the header - remove the conditional return
   return (
     <SiteHeader className={cn("bg-background border-b", className)}>
       <div className="container flex items-center space-x-2">
