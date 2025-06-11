@@ -37,6 +37,7 @@ const Terms = lazy(() => import('@/pages/Terms'));
 const Support = lazy(() => import('@/pages/Support'));
 const TeamPage = lazy(() => import('@/pages/TeamPage'));
 const TestimonialsPage = lazy(() => import('@/pages/TestimonialsPage'));
+const PythonServices = lazy(() => import('@/pages/PythonServices'));
 
 // Admin modules - simplified imports
 const AdminDashboard = lazy(() => import('@/pages/Dashboard'));
