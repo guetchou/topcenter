@@ -1,4 +1,4 @@
-
+import { pythonConnector } from './pythonConnector';
 import { apiGateway } from '../api/gateway';
 import { microserviceAuth } from '../auth/microserviceAuth';
 
@@ -57,6 +57,96 @@ export class PythonDataService {
       healthCheck: '/health',
       timeout: 30000
     });
+  }
+
+  public async analyzeData(request: DataAnalysisRequest): Promise<string> {
+    try {
+      // Use the new Python connector for real service calls
+      const response = await pythonConnector.analyzeData(request.data, request.type);
+      
+      if (response.success) {
+        const jobId = response.data.jobId || `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
+        const job: DataProcessingJob = {
+          id: jobId,
+          status: 'running',
+          progress: 0,
+          createdAt: new Date().toISOString()
+        };
+
+        this.jobs.set(jobId, job);
+        
+        // If real service provided immediate result
+        if (response.data.result) {
+          job.status = 'completed';
+          job.progress = 100;
+          job.result = response.data.result;
+          job.completedAt = new Date().toISOString();
+        } else {
+          // Monitor job progress for async processing
+          this.monitorJobProgress(jobId);
+        }
+        
+        return jobId;
+      } else {
+        throw new Error(response.error || 'Service call failed');
+      }
+    } catch (error) {
+      console.log('Real Python service not available, using simulation');
+      
+      // Fallback to simulation
+      return this.simulateAnalysis(request);
+    }
+  }
+
+  private async monitorJobProgress(jobId: string): Promise<void> {
+    const checkProgress = async () => {
+      try {
+        const response = await pythonConnector.callService({
+          service: 'data',
+          endpoint: `/jobs/${jobId}`,
+          method: 'GET',
+          authenticated: true
+        });
+
+        if (response.success && response.data) {
+          const updatedJob = {
+            ...this.jobs.get(jobId)!,
+            ...response.data
+          };
+          this.jobs.set(jobId, updatedJob);
+
+          if (updatedJob.status === 'completed' || updatedJob.status === 'failed') {
+            return; // Stop monitoring
+          }
+        }
+
+        // Continue monitoring if job is still running
+        setTimeout(checkProgress, 2000);
+      } catch (error) {
+        console.error('Error monitoring job progress:', error);
+      }
+    };
+
+    setTimeout(checkProgress, 1000);
+  }
+
+  private simulateAnalysis(request: DataAnalysisRequest): string {
+    const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    const job: DataProcessingJob = {
+      id: jobId,
+      status: 'running',
+      progress: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    this.jobs.set(jobId, job);
+
+    // Simulate processing with the old method
+    this.simulateProcessing(jobId, request);
+    
+    return jobId;
   }
 
   // Simulate Python data analysis for development
@@ -120,42 +210,6 @@ export class PythonDataService {
     };
   }
 
-  public async analyzeData(request: DataAnalysisRequest): Promise<string> {
-    try {
-      // Try to call real Python service first
-      const jobId = await microserviceAuth.callAuthenticatedService<{ jobId: string }>(
-        'python-data',
-        '/analyze',
-        {
-          method: 'POST',
-          data: request,
-          permissions: ['data:read', 'analytics:read']
-        }
-      );
-
-      return jobId.jobId;
-    } catch (error) {
-      console.log('Python service not available, using simulation');
-      
-      // Fallback to simulation
-      const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      const job: DataProcessingJob = {
-        id: jobId,
-        status: 'running',
-        progress: 0,
-        createdAt: new Date().toISOString()
-      };
-
-      this.jobs.set(jobId, job);
-
-      // Simulate processing
-      this.simulateProcessing(jobId, request);
-      
-      return jobId;
-    }
-  }
-
   private simulateProcessing(jobId: string, request: DataAnalysisRequest): void {
     const job = this.jobs.get(jobId);
     if (!job) return;
@@ -186,17 +240,24 @@ export class PythonDataService {
   }
 
   public async getJobStatus(jobId: string): Promise<DataProcessingJob | null> {
+    // Try to get status from real Python service first
     try {
-      // Try to get status from real Python service
-      const status = await apiGateway.callService<DataProcessingJob>(
-        'python-data',
-        `/jobs/${jobId}`
-      );
-      return status;
+      const response = await pythonConnector.callService({
+        service: 'data',
+        endpoint: `/jobs/${jobId}`,
+        method: 'GET',
+        authenticated: true
+      });
+
+      if (response.success) {
+        return response.data;
+      }
     } catch (error) {
-      // Fallback to local simulation
-      return this.jobs.get(jobId) || null;
+      console.log('Using local job status');
     }
+
+    // Fallback to local simulation
+    return this.jobs.get(jobId) || null;
   }
 
   public async getJobResult(jobId: string): Promise<DataAnalysisResult | null> {
@@ -206,15 +267,29 @@ export class PythonDataService {
 
   public async processDataStream(data: any[], callback: (chunk: any) => void): Promise<void> {
     try {
-      // Implementation for real-time data processing
-      // This would connect to a WebSocket or Server-Sent Events endpoint
-      for (const chunk of data) {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Simulate processing time
-        callback(chunk);
+      // Try real-time processing with Python service
+      const response = await pythonConnector.callService({
+        service: 'data',
+        endpoint: '/stream',
+        data: { stream: data },
+        authenticated: true
+      });
+
+      if (response.success && response.data.chunks) {
+        for (const chunk of response.data.chunks) {
+          callback(chunk);
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        return;
       }
     } catch (error) {
-      console.error('Error processing data stream:', error);
-      throw error;
+      console.log('Fallback to simulated streaming');
+    }
+
+    // Fallback to simulation
+    for (const chunk of data) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      callback(chunk);
     }
   }
 

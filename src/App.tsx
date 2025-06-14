@@ -1,4 +1,3 @@
-
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
@@ -47,6 +46,8 @@ const CredentialsDocPage = lazy(() => import('@/pages/admin/CredentialsDocPage')
 const PocketBaseDashboard = lazy(() => import('@/pages/admin/PocketBaseDashboard'));
 const PocketBaseTestPage = lazy(() => import('@/pages/admin/PocketBaseTest'));
 
+const ExternalIntegrations = lazy(() => import('@/pages/ExternalIntegrations'));
+
 function App() {
   const { isLoggedIn } = useAuth();
 
@@ -74,6 +75,7 @@ function App() {
             <Route path="/team" element={<TeamPage />} />
             <Route path="/testimonials" element={<TestimonialsPage />} />
             <Route path="/python-services" element={<PythonServices />} />
+            <Route path="/external-integrations" element={<ExternalIntegrations />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/profile" element={isLoggedIn ? <Profile /> : <Login />} />
             <Route path="/appointments" element={isLoggedIn ? <Appointments /> : <Login />} />
