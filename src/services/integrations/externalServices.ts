@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 
 // Service configuration
@@ -130,11 +129,17 @@ export class ExternalServicesManager {
       
       // For Python services, test with health check
       if (integrationId.startsWith('python-')) {
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), integration.config.timeout);
+        
         const response = await fetch(`${integration.config.baseUrl}/health`, {
           method: 'GET',
           headers: integration.config.headers,
-          timeout: integration.config.timeout
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
         
         if (response.ok) {
           integration.status = 'active';
@@ -169,14 +174,21 @@ export class ExternalServicesManager {
     }
 
     try {
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), integration.config.timeout);
+
       const response = await fetch(`${integration.config.baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
           ...integration.config.headers,
           'Authorization': `Bearer ${integration.config.apiKey || 'dev-token'}`
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -189,6 +201,25 @@ export class ExternalServicesManager {
       // Fallback to simulation for development
       console.log('Falling back to simulation mode');
       return this.simulateServiceResponse(serviceId, endpoint, data);
+    }
+  }
+
+  public getIntegrations(): ExternalIntegration[] {
+    return Array.from(this.integrations.values());
+  }
+
+  public getIntegration(id: string): ExternalIntegration | undefined {
+    return this.integrations.get(id);
+  }
+
+  public updateIntegrationApiKey(id: string, apiKey: string): void {
+    const integration = this.integrations.get(id);
+    if (integration) {
+      integration.config.apiKey = apiKey;
+      integration.config.headers = {
+        ...integration.config.headers,
+        'Authorization': `Bearer ${apiKey}`
+      };
     }
   }
 
@@ -219,25 +250,6 @@ export class ExternalServicesManager {
     }
 
     return { status: 'simulated', message: 'Service simulation active' };
-  }
-
-  public getIntegrations(): ExternalIntegration[] {
-    return Array.from(this.integrations.values());
-  }
-
-  public getIntegration(id: string): ExternalIntegration | undefined {
-    return this.integrations.get(id);
-  }
-
-  public updateIntegrationApiKey(id: string, apiKey: string): void {
-    const integration = this.integrations.get(id);
-    if (integration) {
-      integration.config.apiKey = apiKey;
-      integration.config.headers = {
-        ...integration.config.headers,
-        'Authorization': `Bearer ${apiKey}`
-      };
-    }
   }
 }
 
