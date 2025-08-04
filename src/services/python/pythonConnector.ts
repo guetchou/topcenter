@@ -1,6 +1,6 @@
 
 import { externalServicesManager } from '../integrations/externalServices';
-import { microserviceAuth } from '../auth/microserviceAuth';
+import { clientAuth } from '../auth/clientAuth';
 
 export interface PythonServiceRequest {
   service: 'data' | 'ai';
@@ -43,7 +43,7 @@ export class PythonConnector {
       
       if (request.authenticated) {
         // Use authenticated call through microservice auth
-        result = await microserviceAuth.callAuthenticatedService(
+        result = await clientAuth.callAuthenticatedService(
           serviceId,
           request.endpoint,
           {

@@ -1,5 +1,7 @@
-
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -8,13 +10,12 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
+  error?: Error;
 }
 
-class ErrorBoundary extends Component<Props, State> {
+export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
-    hasError: false,
-    error: null
+    hasError: false
   };
 
   public static getDerivedStateFromError(error: Error): State {
@@ -22,22 +23,35 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
   }
+
+  private handleReset = () => {
+    this.setState({ hasError: false, error: undefined });
+  };
 
   public render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
       }
+
       return (
-        <div className="p-4 rounded-md bg-red-50 border border-red-200">
-          <h2 className="text-lg font-semibold text-red-700 mb-2">
-            Une erreur s'est produite
-          </h2>
-          <p className="text-red-600">
-            Nous rencontrons des difficultés à charger ce contenu. Veuillez rafraîchir la page.
-          </p>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <Alert className="max-w-md">
+            <AlertTitle>Quelque chose s'est mal passé</AlertTitle>
+            <AlertDescription className="mt-2">
+              {this.state.error?.message || 'Une erreur inattendue s\'est produite.'}
+            </AlertDescription>
+            <Button 
+              onClick={this.handleReset}
+              className="mt-4"
+              variant="outline"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Réessayer
+            </Button>
+          </Alert>
         </div>
       );
     }

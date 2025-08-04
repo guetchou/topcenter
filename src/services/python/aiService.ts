@@ -1,6 +1,6 @@
 
 import { apiGateway } from '../api/gateway';
-import { microserviceAuth } from '../auth/microserviceAuth';
+import { clientAuth } from '../auth/clientAuth';
 
 export interface AIModelRequest {
   model: 'chat' | 'classification' | 'sentiment' | 'translation' | 'summarization';
@@ -87,7 +87,7 @@ export class PythonAIService {
   public async processWithAI(request: AIModelRequest): Promise<AIModelResponse> {
     try {
       // Try to call real Python AI service first
-      const response = await microserviceAuth.callAuthenticatedService<AIModelResponse>(
+      const response = await clientAuth.callAuthenticatedService<AIModelResponse>(
         'python-ai',
         '/process',
         {

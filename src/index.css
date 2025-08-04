@@ -1,10 +1,10 @@
 
+@import "src/styles/animations.css";
+@import "src/styles/transitions.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "src/styles/animations.css";
-@import "src/styles/transitions.css";
 
 @layer base {
   :root {

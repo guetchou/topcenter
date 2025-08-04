@@ -1,7 +1,7 @@
 
 import { apiGateway } from '../api/gateway';
 import { messageQueue } from '../messaging/messageQueue';
-import { microserviceAuth } from '../auth/microserviceAuth';
+import { clientAuth } from '../auth/clientAuth';
 import { serviceMonitor } from '../monitoring/serviceMonitor';
 
 export class ServiceOrchestrator {
@@ -45,13 +45,13 @@ export class ServiceOrchestrator {
 
   private async registerCoreServices(): Promise<void> {
     // Register Node.js backend services
-    await microserviceAuth.registerService('auth', ['user:read', 'user:write', 'admin:read']);
-    await microserviceAuth.registerService('deploy', ['deploy:read', 'deploy:write', 'admin:read']);
-    await microserviceAuth.registerService('analytics', ['analytics:read', 'admin:read']);
+    await clientAuth.registerService('auth', ['user:read', 'user:write', 'admin:read']);
+    await clientAuth.registerService('deploy', ['deploy:read', 'deploy:write', 'admin:read']);
+    await clientAuth.registerService('analytics', ['analytics:read', 'admin:read']);
 
     // Register Python services (will be available when implemented)
-    await microserviceAuth.registerService('python-data', ['data:read', 'data:write', 'analytics:read']);
-    await microserviceAuth.registerService('python-ai', ['ai:read', 'ai:write', 'analytics:read']);
+    await clientAuth.registerService('python-data', ['data:read', 'data:write', 'analytics:read']);
+    await clientAuth.registerService('python-ai', ['ai:read', 'ai:write', 'analytics:read']);
 
     console.log('Core services registered with authentication');
   }
@@ -62,7 +62,7 @@ export class ServiceOrchestrator {
       const { deploymentData, userId } = message.payload;
       
       try {
-        const result = await microserviceAuth.callAuthenticatedService(
+        const result = await clientAuth.callAuthenticatedService(
           'deploy',
           '/start-deployment',
           {
@@ -83,7 +83,7 @@ export class ServiceOrchestrator {
       const { analysisType, data, userId } = message.payload;
       
       try {
-        const result = await microserviceAuth.callAuthenticatedService(
+        const result = await clientAuth.callAuthenticatedService(
           'python-data',
           '/analyze',
           {
@@ -108,7 +108,7 @@ export class ServiceOrchestrator {
       const { modelType, input, userId } = message.payload;
       
       try {
-        const result = await microserviceAuth.callAuthenticatedService(
+        const result = await clientAuth.callAuthenticatedService(
           'python-ai',
           '/process',
           {

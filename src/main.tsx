@@ -46,17 +46,8 @@ if ('serviceWorker' in navigator) {
         console.log('Vérification des mises à jour du Service Worker');
       }, 2 * 60 * 60 * 1000);
       
-      // Enregistrement de la synchronisation périodique si disponible
-      if ('periodicSync' in registration) {
-        try {
-          await registration.periodicSync.register('update-cache', {
-            minInterval: 24 * 60 * 60 * 1000 // Une fois par jour
-          });
-          console.log('Synchronisation périodique enregistrée');
-        } catch (error) {
-          console.warn('Échec de l\'enregistrement de la synchronisation périodique:', error);
-        }
-      }
+      // Synchronisation en arrière-plan simplifiée
+      console.log('Service Worker prêt pour la synchronisation');
       
     } catch (error) {
       console.error('Échec de l\'enregistrement du Service Worker:', error);

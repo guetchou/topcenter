@@ -1,6 +1,6 @@
 import { pythonConnector } from './pythonConnector';
 import { apiGateway } from '../api/gateway';
-import { microserviceAuth } from '../auth/microserviceAuth';
+import { clientAuth } from '../auth/clientAuth';
 
 export interface DataAnalysisRequest {
   type: 'sales' | 'customer' | 'performance' | 'predictive';
