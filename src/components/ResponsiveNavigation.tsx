@@ -32,8 +32,8 @@ const ResponsiveNavigation: React.FC = () => {
     <header 
       className={`sticky top-0 z-40 w-full transition-all duration-300 ${
         scrolled 
-          ? 'bg-background/95 backdrop-blur shadow-sm' 
-          : 'bg-background/50 backdrop-blur-sm'
+          ? 'bg-background/10 backdrop-blur-md border-b border-white/10 shadow-lg shadow-black/5' 
+          : 'bg-background/5 backdrop-blur-sm'
       }`}
       role="banner"
       aria-label="En-tête du site"
